@@ -28,7 +28,7 @@ I am completely unaffiliated with any prior remake attempts. This has just been 
 
 #### Versioning
 
-Automatic versioning is planned for the future, but at the moment the version number needs to be manually updated in the ``.csproject`` file. The system to update the version numbers goes as follows:
+Automatic versioning is planned for the future, but at the moment the version number needs to be manually updated in the ``Module`` class. The system to update the version numbers goes as follows:
 
 |Number|Description|
 |--:|:--|
