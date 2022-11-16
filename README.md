@@ -1,5 +1,5 @@
 <p align="center" width="100%">
-    <img width="33%" src="Banner.png?raw=true">
+    <img width="100%" src="Banner.png?raw=true">
 </p>
 
 ### This server is completely free of intellectual property from the original game. If you see infringing code, please let me know and I will take it down to be rewritten.
