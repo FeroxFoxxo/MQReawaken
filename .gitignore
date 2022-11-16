@@ -363,4 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /Server.Reawakened/Dependencies/*.dll
-/Server.Reawakened/Data/*.xml
+/Server.Reawakened/XMLs/*.xml
