@@ -12,7 +12,7 @@ namespace Server.Base.Network.Services;
 
 public class MessagePump : IService
 {
-    private readonly ServerConfig _config;
+    private readonly InternalServerConfig _config;
     private readonly NetStateHandler _handler;
     private readonly IPEndPoint[] _ipEndPoints;
     private readonly IpLimiter _limiter;
@@ -25,7 +25,7 @@ public class MessagePump : IService
 
     public MessagePump(Logger logger, NetworkLogger networkLogger,
         NetStateHandler handler, IpLimiter limiter,
-        ServerConfig config, EventSink sink, ServerHandler serverHandler)
+        InternalServerConfig config, EventSink sink, ServerHandler serverHandler)
     {
         _logger = logger;
         _networkLogger = networkLogger;

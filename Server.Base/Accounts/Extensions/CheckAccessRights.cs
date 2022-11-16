@@ -11,15 +11,15 @@ namespace Server.Base.Accounts.Extensions;
 public static class CheckAccessRights
 {
     public static bool CheckAccess(this Account account, NetState netState, AccountHandler handler,
-        ServerConfig config) =>
+        InternalServerConfig config) =>
         netState != null && account.CheckAccess(netState.Address, handler, config);
 
     public static bool HasAccess(this Account account, NetState netState, AccountHandler handler,
-        ServerConfig config) =>
+        InternalServerConfig config) =>
         netState != null && account.HasAccess(netState.Address, handler, config);
 
     public static bool CheckAccess(this Account account, IPAddress ipAddress, AccountHandler handler,
-        ServerConfig config)
+        InternalServerConfig config)
     {
         var hasAccess = account.HasAccess(ipAddress, handler, config);
 
@@ -29,7 +29,8 @@ public static class CheckAccessRights
         return hasAccess;
     }
 
-    public static bool HasAccess(this Account account, IPAddress ipAddress, AccountHandler handler, ServerConfig config)
+    public static bool HasAccess(this Account account, IPAddress ipAddress, AccountHandler handler,
+        InternalServerConfig config)
     {
         var accessLevel = config.LockDownLevel;
 
@@ -49,7 +50,8 @@ public static class CheckAccessRights
         return accessAllowed;
     }
 
-    public static void LogAccess(this Account account, NetState netState, AccountHandler handler, ServerConfig config)
+    public static void LogAccess(this Account account, NetState netState, AccountHandler handler,
+        InternalServerConfig config)
     {
         if (netState != null)
             account.LogAccess(netState.Address, handler);

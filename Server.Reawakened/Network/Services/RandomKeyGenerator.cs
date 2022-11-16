@@ -1,8 +1,8 @@
 ﻿using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
-using Server.Base.Core.Models;
 using Server.Base.Network;
 using Server.Base.Network.Events;
+using Server.Reawakened.Data.Modals;
 
 namespace Server.Reawakened.Network.Services;
 

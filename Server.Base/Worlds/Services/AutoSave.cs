@@ -23,7 +23,8 @@ public class AutoSave : IService
     private readonly TimerThread _timerThread;
     private readonly World _world;
 
-    private AutoSave(ServerConfig config, Logger logger, ServerHandler handler, World world, ArchivedSaves archives,
+    private AutoSave(InternalServerConfig config, Logger logger, ServerHandler handler, World world,
+        ArchivedSaves archives,
         EventSink sink, TimerThread timerThread)
     {
         _logger = logger;

@@ -18,10 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Icon.ico" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\Protocols.External\Protocols.External.csproj" />
         <ProjectReference Include="..\Protocols.System\Protocols.System.csproj" />
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />

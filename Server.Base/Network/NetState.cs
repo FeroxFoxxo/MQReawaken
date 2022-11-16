@@ -44,7 +44,7 @@ public class NetState
 
     public NetState(Socket socket, Logger logger,
         NetworkLogger networkLogger, NetStateHandler handler, IpLimiter limiter,
-        ServerConfig config, EventSink sink)
+        InternalServerConfig config, EventSink sink)
     {
         Socket = socket;
         AsyncLock = new object();

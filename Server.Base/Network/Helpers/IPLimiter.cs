@@ -7,12 +7,12 @@ namespace Server.Base.Network.Helpers;
 public class IpLimiter
 {
     private readonly NetStateHandler _handler;
+    private readonly InternalServerConfig _internalServerConfig;
     private readonly Dictionary<IPAddress, IPAddress> _ipAddressTable;
-    private readonly ServerConfig _serverConfig;
 
-    public IpLimiter(ServerConfig serverConfig, NetStateHandler handler)
+    public IpLimiter(InternalServerConfig internalServerConfig, NetStateHandler handler)
     {
-        _serverConfig = serverConfig;
+        _internalServerConfig = internalServerConfig;
         _handler = handler;
         _ipAddressTable = new Dictionary<IPAddress, IPAddress>();
     }
@@ -38,7 +38,7 @@ public class IpLimiter
         {
             ++count;
 
-            if (count >= _serverConfig.MaxAddresses)
+            if (count >= _internalServerConfig.MaxAddresses)
                 return false;
         }
 

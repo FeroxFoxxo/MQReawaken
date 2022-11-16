@@ -29,7 +29,7 @@ public class ArchivedSaves : IService
     public TimeSpan ExpireAge;
     public MergeType Merge;
 
-    private ArchivedSaves(Logger logger, EventSink eventSink, ServerHandler serverHandler, ServerConfig config)
+    private ArchivedSaves(Logger logger, EventSink eventSink, ServerHandler serverHandler, InternalServerConfig config)
     {
         _logger = logger;
         _eventSink = eventSink;

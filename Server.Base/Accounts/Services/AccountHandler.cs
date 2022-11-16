@@ -14,21 +14,21 @@ namespace Server.Base.Accounts.Services;
 public class AccountHandler : DataHandler<Account>
 {
     private readonly AccountAttackLimiter _attackLimiter;
-    private readonly ServerConfig _config;
+    private readonly InternalServerConfig _config;
     private readonly PasswordHasher _hasher;
+    private readonly InternalServerConfig _internalServerConfig;
     private readonly IpLimiter _ipLimiter;
     private readonly Logger _logger;
     private readonly NetworkLogger _networkLogger;
-    private readonly ServerConfig _serverConfig;
 
     public Dictionary<IPAddress, int> IpTable;
 
-    public AccountHandler(EventSink sink, Logger logger, ServerConfig serverConfig,
+    public AccountHandler(EventSink sink, Logger logger, InternalServerConfig internalServerConfig,
         PasswordHasher hasher, AccountAttackLimiter attackLimiter, IpLimiter ipLimiter,
-        NetworkLogger networkLogger, ServerConfig config) : base(sink, logger)
+        NetworkLogger networkLogger, InternalServerConfig config) : base(sink, logger)
     {
         _logger = logger;
-        _serverConfig = serverConfig;
+        _internalServerConfig = internalServerConfig;
         _hasher = hasher;
         _attackLimiter = attackLimiter;
         _ipLimiter = ipLimiter;
@@ -88,7 +88,7 @@ public class AccountHandler : DataHandler<Account>
     {
         AlrReason rejectReason;
 
-        if (!_serverConfig.SocketBlock && !_ipLimiter.Verify(netState.Address))
+        if (!_internalServerConfig.SocketBlock && !_ipLimiter.Verify(netState.Address))
         {
             _networkLogger.IpLimitedError(netState);
             rejectReason = AlrReason.InUse;
@@ -120,7 +120,9 @@ public class AccountHandler : DataHandler<Account>
             }
             else if (!account.HasAccess(netState, this, _config))
             {
-                rejectReason = _serverConfig.LockDownLevel > AccessLevel.Vip ? AlrReason.BadComm : AlrReason.BadPass;
+                rejectReason = _internalServerConfig.LockDownLevel > AccessLevel.Vip
+                    ? AlrReason.BadComm
+                    : AlrReason.BadPass;
             }
             else if (!_hasher.CheckPassword(account, password))
             {
@@ -197,7 +199,7 @@ public class AccountHandler : DataHandler<Account>
         for (var i = 0; isSafe && i < username.Length; ++i)
         {
             isSafe = username[i] >= 0x20 && username[i] < 0x7F &&
-                     _serverConfig.ForbiddenChars.All(t => username[i] != t);
+                     _internalServerConfig.ForbiddenChars.All(t => username[i] != t);
         }
 
         for (var i = 0; isSafe && i < password.Length; ++i)
@@ -209,8 +211,8 @@ public class AccountHandler : DataHandler<Account>
         if (!CanCreate(netState.Address))
         {
             _logger.WriteLine(ConsoleColor.DarkYellow,
-                $"Login: {netState}: Account '{username}' not created, ip already has {_serverConfig.MaxAccountsPerIp} " +
-                $"account{(_serverConfig.MaxAccountsPerIp == 1 ? "" : "s")}.");
+                $"Login: {netState}: Account '{username}' not created, ip already has {_internalServerConfig.MaxAccountsPerIp} " +
+                $"account{(_internalServerConfig.MaxAccountsPerIp == 1 ? "" : "s")}.");
             return null;
         }
 

@@ -2,7 +2,7 @@
 
 namespace Server.Base.Core.Models;
 
-public class ServerConfig
+public class InternalServerConfig
 {
     public int MaxAccountsPerIp { get; set; }
     public char[] ForbiddenChars { get; set; }
@@ -12,9 +12,7 @@ public class ServerConfig
     public int BreakCount { get; set; }
     public double[] Delays { get; set; }
     public int GlobalUpdateRange { get; set; }
-    public int RandomKeyLength { get; set; }
     public int BufferSize { get; set; }
-    public int PlayerCap { get; set; }
     public int BackupCapacity { get; set; }
     public int RestartWarningSeconds { get; set; }
     public int RestartDelaySeconds { get; set; }
@@ -23,7 +21,7 @@ public class ServerConfig
     public int SaveAutomaticallyMinutes { get; set; }
     public string[] Backups { get; set; }
 
-    public ServerConfig()
+    public InternalServerConfig()
     {
         MaxAccountsPerIp = 1;
         ForbiddenChars = new[]
@@ -36,9 +34,7 @@ public class ServerConfig
         BreakCount = 20000;
         Delays = new double[] { 0, 10, 25, 50, 250, 1000, 5000, 60000 };
         GlobalUpdateRange = 18;
-        RandomKeyLength = 16;
         BufferSize = 65535;
-        PlayerCap = 100;
         BackupCapacity = 64;
         RestartWarningSeconds = 60;
         RestartDelaySeconds = 10;

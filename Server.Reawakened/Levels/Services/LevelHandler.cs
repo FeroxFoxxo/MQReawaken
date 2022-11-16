@@ -1,8 +1,8 @@
 ﻿using System.Runtime.Serialization;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
-using Server.Base.Core.Models;
 using Server.Base.Logging;
+using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Data.Services;
 using Server.Reawakened.XMLs;
 
