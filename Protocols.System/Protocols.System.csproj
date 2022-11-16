@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\Server.Reawakened\Dependencies\Assembly-CSharp.dll</HintPath>
+      </Reference>
+      <Reference Include="SmartFoxClient">
+        <HintPath>..\Server.Reawakened\Dependencies\SmartFoxClient.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine">
+        <HintPath>..\Server.Reawakened\Dependencies\UnityEngine.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ApplicationIcon>Icon.ico</ApplicationIcon>
+        <Authors>FeroxFoxxo</Authors>
+        <Description>MQReawaken is a private server for Monkey Quest</Description>
+        <PackageLicenseFile>../LICENSE</PackageLicenseFile>
+        <PackageIcon>Icon.ico</PackageIcon>
+        <RepositoryUrl>https://github.com/FeroxFoxxo/MQReawaken</RepositoryUrl>
+        <RepositoryType>Github</RepositoryType>
+        <NeutralLanguage>en-NZ</NeutralLanguage>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Icon.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Protocols.External\Protocols.External.csproj" />
+        <ProjectReference Include="..\Protocols.System\Protocols.System.csproj" />
+        <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
+        <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="[A] AchievementsHandler\" />
+        <Folder Include="[a] ChatHandler\" />
+        <Folder Include="[C] CashShopHandler\" />
+        <Folder Include="[d] DescriptionHandler\" />
+        <Folder Include="[e] EmailHandler\" />
+        <Folder Include="[f] FriendsHandler\" />
+        <Folder Include="[m] GameCommandHandler\" />
+        <Folder Include="[p] GroupHandler\" />
+        <Folder Include="[u] GuildHandler\" />
+        <Folder Include="[h] HotbarHandler\" />
+        <Folder Include="[H] HousingHandler\" />
+        <Folder Include="[i] InventoryHandler\" />
+        <Folder Include="[x] ItemHandler\" />
+        <Folder Include="[b] LocalizationHandler\" />
+        <Folder Include="[j] LootHandler\" />
+        <Folder Include="[y] MessageCenterHandler\" />
+        <Folder Include="[M] MinigameHandler\" />
+        <Folder Include="[w] WarningMessageHandler\" />
+        <Folder Include="[t] TradeHandler\" />
+        <Folder Include="[s] Synchronizer\" />
+        <Folder Include="[k] SyncClock\" />
+        <Folder Include="[q] SupergiveHandler\" />
+        <Folder Include="[r] RoomHandler\" />
+        <Folder Include="[o] ReportMessageHandler\" />
+        <Folder Include="[Z] PetHandler\" />
+        <Folder Include="[n] NpcHandler\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\Server.Reawakened\Dependencies\Assembly-CSharp.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>
