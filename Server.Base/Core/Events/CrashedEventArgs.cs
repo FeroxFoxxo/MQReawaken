@@ -5,5 +5,5 @@ public class CrashedEventArgs : EventArgs
     public Exception Exception { get; }
     public bool Close { get; set; }
 
-    public CrashedEventArgs(Exception exception) => Exception = exception;
+    public CrashedEventArgs(Exception ex) => Exception = ex;
 }

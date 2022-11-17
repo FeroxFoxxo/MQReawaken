@@ -1,9 +1,9 @@
-﻿using Server.Base.Core.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
 using Server.Base.Core.Services;
-using Server.Base.Logging;
 using Server.Base.Timers.Extensions;
 using Server.Base.Timers.Services;
 
@@ -18,12 +18,12 @@ public class AutoSave : IService
     private readonly TimeSpan _delayWarning;
 
     private readonly ServerHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<AutoSave> _logger;
     private readonly EventSink _sink;
     private readonly TimerThread _timerThread;
     private readonly World _world;
 
-    private AutoSave(InternalServerConfig config, Logger logger, ServerHandler handler, World world,
+    public AutoSave(InternalServerConfig config, ILogger<AutoSave> logger, ServerHandler handler, World world,
         ArchivedSaves archives,
         EventSink sink, TimerThread timerThread)
     {
@@ -57,12 +57,11 @@ public class AutoSave : IService
         try
         {
             if (!Backup())
-                _logger.WriteLine<AutoSave>(ConsoleColor.Red, "Automatic backup failed");
+                _logger.LogError("Automatic backup failed: backup returned false");
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            _logger.WriteLine<AutoSave>(ConsoleColor.Red, "Automatic backup failed:");
-            _logger.LogException<AutoSave>(exception);
+            _logger.LogError(ex, "Automatic backup failed");
         }
 
         _world.Save(true, false);
@@ -106,9 +105,9 @@ public class AutoSave : IService
 
                     anySuccess = true;
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    _logger.LogException<AutoSave>(exception);
+                    _logger.LogError(ex, "Could not move directory");
                 }
             }
             else
@@ -121,9 +120,9 @@ public class AutoSave : IService
 
                     delete = !_archives.Process(tempRoot);
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    _logger.LogException<AutoSave>(exception);
+                    _logger.LogError(ex, "Could not move directory");
                 }
 
                 if (!delete)
@@ -133,9 +132,9 @@ public class AutoSave : IService
                 {
                     directoryInfo.Delete(true);
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    _logger.LogException<AutoSave>(exception);
+                    _logger.LogError(ex, "Could not delete directory");
                 }
             }
         }

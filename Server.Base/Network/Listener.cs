@@ -2,10 +2,12 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Events;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Services;
 using Server.Base.Logging;
+using Server.Base.Network.Services;
 
 namespace Server.Base.Network;
 
@@ -15,14 +17,15 @@ public class Listener : IDisposable
     private readonly object _acceptedSyncRoot;
     private readonly Socket[] _emptySockets = Array.Empty<Socket>();
     private readonly ServerHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<MessagePump> _logger;
     private readonly NetworkLogger _networkLogger;
     private readonly AsyncCallback _onAccept;
     private readonly EventSink _sink;
 
     private Socket _listener;
 
-    public Listener(IPEndPoint ipEp, NetworkLogger networkLogger, Logger logger, ServerHandler handler, EventSink sink)
+    public Listener(IPEndPoint ipEp, NetworkLogger networkLogger, ILogger<MessagePump> logger, ServerHandler handler,
+        EventSink sink)
     {
         _networkLogger = networkLogger;
         _logger = logger;
@@ -77,22 +80,21 @@ public class Listener : IDisposable
 
             return socket;
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            if (exception is not SocketException socketException)
+            if (ex is not SocketException socketException)
                 return null;
+
             switch (socketException.ErrorCode)
             {
                 case 10048:
-                    _logger.WriteLine<Listener>(ConsoleColor.Red,
-                        $"Failed: {ipEndPoint.Address}:{ipEndPoint.Port} (In Use)");
+                    _logger.LogError("Failed: {Address}:{Port} (In Use)", ipEndPoint.Address, ipEndPoint.Port);
                     break;
                 case 10049:
-                    _logger.WriteLine<Listener>(ConsoleColor.Red,
-                        $"Failed: {ipEndPoint.Address}:{ipEndPoint.Port} (Unavailable)");
+                    _logger.LogError("Failed: {Address}:{Port} (Unavailable)", ipEndPoint.Address, ipEndPoint.Port);
                     break;
                 default:
-                    _logger.LogException<Listener>(exception);
+                    _logger.LogError(ex, "Could not connect to socket");
                     break;
             }
 
@@ -114,18 +116,14 @@ public class Listener : IDisposable
                 foreach (var uniCast in properties.UnicastAddresses)
                 {
                     if (ipEndPoint.AddressFamily == uniCast.Address.AddressFamily)
-                        _logger.WriteLine<Listener>(ConsoleColor.Green,
-                            $"Listening: {uniCast.Address}, {ipEndPoint.Port}");
+                        _logger.LogInformation("Listening: {Address}:{Port}", uniCast.Address, ipEndPoint.Port);
                 }
             }
         }
         else
         {
-            _logger.WriteLine<Listener>(ConsoleColor.Green, $"Listening: {ipEndPoint.Address}, {ipEndPoint.Port}");
+            _logger.LogInformation("Listening: {Address}:{Port}", ipEndPoint.Address, ipEndPoint.Port);
         }
-
-        _logger.WriteLine<Listener>(ConsoleColor.Green,
-            @"--------------------------------------------------------------");
     }
 
     private void OnAccept(IAsyncResult asyncResult)

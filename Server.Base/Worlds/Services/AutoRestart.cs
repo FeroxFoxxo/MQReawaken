@@ -1,8 +1,8 @@
-﻿using Server.Base.Core.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
 using Server.Base.Core.Services;
-using Server.Base.Logging;
 using Server.Base.Timers.Extensions;
 using Server.Base.Timers.Services;
 using Timer = Server.Base.Timers.Timer;
@@ -18,7 +18,7 @@ public class AutoRestart : Timer, IService
     private readonly TimeSpan _delayWarning;
 
     private readonly ServerHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<AutoRestart> _logger;
     private readonly EventSink _sink;
     private readonly TimerThread _timerThread;
     private readonly World _world;
@@ -27,7 +27,8 @@ public class AutoRestart : Timer, IService
 
     public DateTime RestartTime;
 
-    public AutoRestart(Logger logger, TimerThread timerThread, InternalServerConfig config, ServerHandler handler,
+    public AutoRestart(ILogger<AutoRestart> logger, TimerThread timerThread, InternalServerConfig config,
+        ServerHandler handler,
         World world, AutoSave autoSave, EventSink sink)
         : base(TimeSpan.FromSeconds(1.0), TimeSpan.FromSeconds(1.0), 0, timerThread)
     {
@@ -54,10 +55,10 @@ public class AutoRestart : Timer, IService
 
     private void ServerStarted()
     {
-        _logger.WriteLine<AutoRestart>(ConsoleColor.Magenta,
-            $"Configured for {RestartTime.Hour}:{RestartTime.Minute}:00, every {_delayAutoRestart.TotalHours} hours!");
+        _logger.LogDebug("Configured for {RestartHour}:{RestartMinute}:00, every {TotalHours} hours!",
+            RestartTime.Hour, RestartTime.Minute, _delayAutoRestart.TotalHours);
 
-        _logger.WriteLine<AutoRestart>(ConsoleColor.Magenta, $"Next Restart: {RestartTime}");
+        _logger.LogDebug("Next Restart: {RestartTime}", RestartTime);
 
         Start();
     }

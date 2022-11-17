@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.Extensions.Logging;
 using Server.Base.Accounts.Enums;
 using Server.Base.Accounts.Extensions;
 using Server.Base.Accounts.Helpers;
@@ -18,16 +19,14 @@ public class AccountHandler : DataHandler<Account>
     private readonly PasswordHasher _hasher;
     private readonly InternalServerConfig _internalServerConfig;
     private readonly IpLimiter _ipLimiter;
-    private readonly Logger _logger;
     private readonly NetworkLogger _networkLogger;
 
     public Dictionary<IPAddress, int> IpTable;
 
-    public AccountHandler(EventSink sink, Logger logger, InternalServerConfig internalServerConfig,
+    public AccountHandler(EventSink sink, ILogger<Account> logger, InternalServerConfig internalServerConfig,
         PasswordHasher hasher, AccountAttackLimiter attackLimiter, IpLimiter ipLimiter,
         NetworkLogger networkLogger, InternalServerConfig config) : base(sink, logger)
     {
-        _logger = logger;
         _internalServerConfig = internalServerConfig;
         _hasher = hasher;
         _attackLimiter = attackLimiter;
@@ -50,24 +49,23 @@ public class AccountHandler : DataHandler<Account>
         if (Data.Count != 0)
             return;
 
-        _logger.WriteLine<AccountHandler>(ConsoleColor.Yellow, "This server has no accounts.");
-        _logger.Write<AccountHandler>(ConsoleColor.Yellow, "Do you want to create the owner account now? ( Y / N ) ");
+        Logger.LogInformation("This server has no accounts.");
+        Logger.LogInformation("Do you want to create the owner account now? ( Y / N ) ");
 
         var key = Console.ReadKey();
-
-        _logger.WriteNewLine();
+        Console.WriteLine();
 
         if (key.KeyChar.ToString().ToUpper() == "Y")
         {
-            _logger.WriteLine<AccountHandler>(ConsoleColor.Cyan, "Username: ");
+            Logger.LogDebug("Username: ");
             var username = Console.ReadLine();
 
-            _logger.WriteLine<AccountHandler>(ConsoleColor.Cyan, "Password: ");
+            Logger.LogDebug("Password: ");
             var password = Console.ReadLine();
 
             if (username == null)
             {
-                _logger.WriteLine<AccountHandler>(ConsoleColor.Green, "Username for account is null!");
+                Logger.LogError("Username for account is null!");
                 return;
             }
 
@@ -76,11 +74,11 @@ public class AccountHandler : DataHandler<Account>
                 AccessLevel = AccessLevel.Owner
             });
 
-            _logger.WriteLine<AccountHandler>(ConsoleColor.Green, "Account created.");
+            Logger.LogInformation("Account created.");
         }
         else
         {
-            _logger.WriteLine<AccountHandler>(ConsoleColor.Red, "Account not created.");
+            Logger.LogError("Account not created.");
         }
     }
 
@@ -149,10 +147,13 @@ public class AccountHandler : DataHandler<Account>
             AlrReason.Blocked => "Banned account",
             AlrReason.InUse => "Past IP limit threshold",
             AlrReason.Invalid => "Invalid username",
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(rejectReason.ToString())
         };
 
-        _logger.WriteLine<AccountHandler>(ConsoleColor.Red, $"Login: {netState}: {errorReason} for '{username}'");
+        if (rejectReason == AlrReason.Accepted)
+            Logger.LogInformation("Login: {NetState}: {Reason} for '{Username}'", netState, errorReason, username);
+        else
+            Logger.LogError("Login: {NetState}: {Reason} for '{Username}'", netState, errorReason, username);
 
         if (rejectReason != AlrReason.Accepted && rejectReason != AlrReason.InUse)
             _attackLimiter.RegisterInvalidAccess(netState);
@@ -175,8 +176,8 @@ public class AccountHandler : DataHandler<Account>
             }
             else
             {
-                _logger.WriteLine<AccountHandler>(ConsoleColor.Red,
-                    $"Unable to parse IPAddress {account.LoginIPs[0]} for {account.Username}");
+                Logger.LogError("Unable to parse IPAddress {IP} for {Username}",
+                    account.LoginIPs[0], account.Username);
             }
         }
     }
@@ -210,13 +211,15 @@ public class AccountHandler : DataHandler<Account>
 
         if (!CanCreate(netState.Address))
         {
-            _logger.WriteLine<AccountHandler>(ConsoleColor.DarkYellow,
-                $"Login: {netState}: Account '{username}' not created, ip already has {_internalServerConfig.MaxAccountsPerIp} " +
-                $"account{(_internalServerConfig.MaxAccountsPerIp == 1 ? "" : "s")}.");
+            Logger.LogWarning(
+                "Login: {NetState}: Account '{Username}' not created, ip already has {Accounts} account{Plural}.",
+                netState, username, _internalServerConfig.MaxAccountsPerIp,
+                _internalServerConfig.MaxAccountsPerIp == 1 ? "" : "s");
             return null;
         }
 
-        _logger.WriteLine<AccountHandler>(ConsoleColor.Green, $"Login: {netState}: Creating new account '{username}'");
+        Logger.LogInformation("Login: {NetState}: Creating new account '{Username}'",
+            netState, username);
 
         return new Account(username, password, Data.Count, _hasher);
     }

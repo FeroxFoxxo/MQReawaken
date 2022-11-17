@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Events;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
-using Server.Base.Logging;
 using Server.Base.Network.Services;
 using Server.Base.Worlds;
 
@@ -13,12 +13,12 @@ namespace Server.Base.Core.Services;
 public class CrashGuard : IService
 {
     private readonly NetStateHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<CrashGuard> _logger;
     private readonly Module[] _modules;
     private readonly EventSink _sink;
     private readonly World _world;
 
-    public CrashGuard(NetStateHandler handler, Logger logger, EventSink sink, World world,
+    public CrashGuard(NetStateHandler handler, ILogger<CrashGuard> logger, EventSink sink, World world,
         IServiceProvider serviceProvider)
     {
         _handler = handler;
@@ -44,24 +44,24 @@ public class CrashGuard : IService
 
     private void Restart(CrashedEventArgs e)
     {
-        _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Restarting...");
+        _logger.LogInformation("Restarting...");
 
         try
         {
             Process.Start(GetExePath.Path());
-            _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Successfully restarted!");
+            _logger.LogDebug("Successfully restarted!");
 
             e.Close = true;
         }
-        catch
+        catch (Exception ex)
         {
-            _logger.WriteLine<CrashGuard>(ConsoleColor.Red, "Failed");
+            _logger.LogError(ex, "Failed to restart server");
         }
     }
 
     private void Backup()
     {
-        _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Backing up...");
+        _logger.LogInformation("Backing up...");
 
         try
         {
@@ -76,11 +76,11 @@ public class CrashGuard : IService
 
             CopyFile(rootOrigin, rootBackup, "Accounts/Accounts.xml");
 
-            _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Backed up!");
+            _logger.LogDebug("Backed up!");
         }
-        catch
+        catch (Exception ex)
         {
-            _logger.WriteLine<CrashGuard>(ConsoleColor.Red, "Unable to back up server.");
+            _logger.LogError(ex, "Unable to back up server.");
         }
     }
 
@@ -94,9 +94,9 @@ public class CrashGuard : IService
             if (File.Exists(originPath))
                 File.Copy(originPath, backupPath);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogException<CrashGuard>(e);
+            _logger.LogError(ex, "Unable to copy file.");
         }
     }
 
@@ -106,16 +106,16 @@ public class CrashGuard : IService
         {
             return Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            _logger.LogException<CrashGuard>(exception);
+            _logger.LogError(ex, "Unable to get root.");
             return "";
         }
     }
 
     private void GenerateCrashReport(CrashedEventArgs crashedEventArgs)
     {
-        _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Generating report...");
+        _logger.LogInformation("Generating report...");
 
         try
         {
@@ -168,11 +168,12 @@ public class CrashGuard : IService
                 }
             }
 
-            _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Logged error.");
+
+            _logger.LogDebug("Logged error!");
         }
-        catch
+        catch (Exception ex)
         {
-            _logger.WriteLine<CrashGuard>(ConsoleColor.Red, "Unable to log error!");
+            _logger.LogError(ex, "Unable to log error.");
         }
     }
 }

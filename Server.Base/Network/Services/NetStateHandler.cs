@@ -1,4 +1,5 @@
-﻿using Server.Base.Core.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Logging;
@@ -12,7 +13,7 @@ public class NetStateHandler : IService
 {
     public delegate void RunProtocol(NetState state, string protocol);
 
-    private readonly Logger _logger;
+    private readonly ILogger<NetStateHandler> _logger;
     private readonly NetworkLogger _networkLogger;
     private readonly EventSink _sink;
     private readonly TimerThread _thread;
@@ -24,7 +25,8 @@ public class NetStateHandler : IService
 
     public bool Paused;
 
-    public NetStateHandler(Logger logger, NetworkLogger networkLogger, TimerThread thread, EventSink sink)
+    public NetStateHandler(ILogger<NetStateHandler> logger, NetworkLogger networkLogger, TimerThread thread,
+        EventSink sink)
     {
         _logger = logger;
         _networkLogger = networkLogger;
@@ -54,11 +56,11 @@ public class NetStateHandler : IService
 
                 Instances.Remove(netState);
 
-                var userInfo = netState.Account != null
+                var username = netState.Account != null
                     ? $"[{netState.Account.Username}]"
                     : "UNKNOWN";
 
-                _logger.WriteLine<NetState>(ConsoleColor.Red, $"Disconnected. [{Instances.Count} Online] {userInfo}");
+                _logger.LogError("Disconnected. [{Count} Online] {Username}", Instances.Count, username);
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Events;
 using Server.Base.Core.Helpers;
@@ -16,14 +17,14 @@ public class MessagePump : IService
     private readonly NetStateHandler _handler;
     private readonly IPEndPoint[] _ipEndPoints;
     private readonly IpLimiter _limiter;
-    private readonly Logger _logger;
+    private readonly ILogger<MessagePump> _logger;
     private readonly NetworkLogger _networkLogger;
     private readonly ServerHandler _serverHandler;
     private readonly EventSink _sink;
 
     public readonly Listener[] Listeners;
 
-    public MessagePump(Logger logger, NetworkLogger networkLogger,
+    public MessagePump(ILogger<MessagePump> logger, NetworkLogger networkLogger,
         NetStateHandler handler, IpLimiter limiter,
         InternalServerConfig config, EventSink sink, ServerHandler serverHandler)
     {
@@ -63,7 +64,7 @@ public class MessagePump : IService
 
             if (success) continue;
 
-            _logger.WriteLine<MessagePump>(ConsoleColor.Yellow, "Retrying listeners...");
+            _logger.LogWarning("Retrying listeners...");
 
             Thread.Sleep(10000);
         } while (!success);

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Server.Base.Accounts.Modals;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
@@ -18,7 +19,7 @@ public class NetState
     public delegate bool ThrottlePacketCallback(NetState state);
 
     private readonly NetStateHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<MessagePump> _logger;
     private readonly NetworkLogger _networkLogger;
     private readonly EventSink _sink;
 
@@ -42,7 +43,7 @@ public class NetState
     public Socket Socket { get; private set; }
     public bool Running { get; private set; }
 
-    public NetState(Socket socket, Logger logger,
+    public NetState(Socket socket, ILogger<MessagePump> logger,
         NetworkLogger networkLogger, NetStateHandler handler, IpLimiter limiter,
         InternalServerConfig config, EventSink sink)
     {
@@ -79,9 +80,10 @@ public class NetState
     }
 
     public void WriteServer(string text) =>
-        _logger.WriteLine<NetState>(ConsoleColor.DarkGray, $"{this}: {text} (SERVER)");
+        _logger.LogTrace("{NetState}: {Written} (SERVER)", this, text);
 
-    public void WriteClient(string text) => _logger.WriteLine<NetState>(ConsoleColor.Gray, $"{this}: {text} (CLIENT)");
+    public void WriteClient(string text) =>
+        _logger.LogTrace("{NetState}: {Written} (CLIENT)", this, text);
 
     public void CheckAlive(double curTicks)
     {
@@ -91,7 +93,7 @@ public class NetState
         if (_nextCheckActivity - curTicks >= 0)
             return;
 
-        _logger.WriteLine<NetState>(ConsoleColor.Red, $"Client: {this}: Disconnecting due to inactivity...");
+        _logger.LogError("{NetState}: Disconnecting due to inactivity...", this);
 
         Dispose(true);
     }
@@ -108,9 +110,7 @@ public class NetState
             if (Socket == null || _handler.Paused)
                 return;
 
-            _logger.WriteLine<NetState>(ConsoleColor.Green,
-                $"{this}: Connected. [{_handler.Instances.Count} Online]"
-            );
+            _logger.LogInformation("{NetState}: Connected. [{Count} Online]", this, _handler.Instances.Count);
         }
 
         try

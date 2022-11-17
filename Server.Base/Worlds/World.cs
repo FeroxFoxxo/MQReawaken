@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Helpers;
-using Server.Base.Logging;
 using Server.Base.Network.Services;
 using Server.Base.Worlds.Events;
 
@@ -11,14 +11,14 @@ public class World
     private readonly ManualResetEvent _diskWriteHandle;
 
     private readonly NetStateHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<World> _logger;
     private readonly EventSink _sink;
 
     public bool Saving { get; private set; }
     public bool Loaded { get; private set; }
     public bool Loading { get; private set; }
 
-    public World(Logger logger, EventSink sink, NetStateHandler handler)
+    public World(ILogger<World> logger, EventSink sink, NetStateHandler handler)
     {
         _logger = logger;
         _sink = sink;
@@ -38,7 +38,7 @@ public class World
 
         Loaded = true;
 
-        _logger.WriteLine<World>(ConsoleColor.Green, "Loading...");
+        _logger.LogInformation("Loading...");
 
         var stopWatch = Stopwatch.StartNew();
 
@@ -50,7 +50,7 @@ public class World
 
         stopWatch.Stop();
 
-        _logger.WriteLine<World>(ConsoleColor.Green, $"Finished loading in {stopWatch.Elapsed.TotalSeconds} seconds.");
+        _logger.LogDebug("Finished loading in {SECONDS} seconds.", stopWatch.Elapsed.TotalSeconds);
     }
 
     public void WaitForWriteCompletion() => _diskWriteHandle.WaitOne();
@@ -58,7 +58,7 @@ public class World
     public void NotifyDiskWriteComplete()
     {
         if (_diskWriteHandle.Set())
-            _logger.WriteLine<World>(ConsoleColor.Green, "Closing Save Files.");
+            _logger.LogDebug("Closing Save Files.");
     }
 
     public void Save(bool message, bool permitBackgroundWrite)
@@ -74,7 +74,7 @@ public class World
 
         _diskWriteHandle.Reset();
 
-        _logger.WriteLine<World>(ConsoleColor.Green, "Saving...");
+        _logger.LogInformation("Saving...");
 
         var stopWatch = Stopwatch.StartNew();
 
@@ -82,9 +82,9 @@ public class World
         {
             _sink.InvokeWorldSave(new WorldSaveEventArgs(message));
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            throw new Exception("FATAL: Exception in EventSink.WorldSave", e);
+            throw new Exception("FATAL: Exception in EventSink.WorldSave", ex);
         }
 
         stopWatch.Stop();
@@ -94,7 +94,7 @@ public class World
         if (!permitBackgroundWrite)
             NotifyDiskWriteComplete();
 
-        _logger.WriteLine<World>(ConsoleColor.Green, $"Save finished in {stopWatch.Elapsed.TotalSeconds} seconds.");
+        _logger.LogDebug("Save finished in {SECONDS} seconds.", stopWatch.Elapsed.TotalSeconds);
 
         _handler.Resume();
     }
@@ -102,6 +102,6 @@ public class World
     public void Broadcast(string message)
     {
         _sink.InvokeWorldBroadcast(new WorldBroadcastEventArgs(message));
-        _logger.WriteLine<World>(ConsoleColor.Green, message);
+        _logger.LogInformation("{MESSAGE}", message);
     }
 }

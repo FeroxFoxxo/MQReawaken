@@ -1,7 +1,7 @@
-﻿using Server.Base.Core.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
-using Server.Base.Logging;
 using Server.Base.Timers.Extensions;
 using Server.Base.Timers.Services;
 using Timer = Server.Base.Timers.Timer;
@@ -12,7 +12,7 @@ public class ServerConsole : IService
 {
     private readonly Dictionary<string, Command> _commands;
     private readonly ServerHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<ServerConsole> _logger;
     private readonly EventSink _sink;
     private readonly TimerThread _timerThread;
 
@@ -20,7 +20,7 @@ public class ServerConsole : IService
 
     public Timer PollTimer;
 
-    public ServerConsole(EventSink sink, TimerThread timerThread, ServerHandler handler, Logger logger)
+    public ServerConsole(EventSink sink, TimerThread timerThread, ServerHandler handler, ILogger<ServerConsole> logger)
     {
         _sink = sink;
         _timerThread = timerThread;
@@ -45,7 +45,7 @@ public class ServerConsole : IService
 
         AddCommand(new Command(
             "crash",
-            "Forces an exception to be thrown.",
+            "Forces an ex to be thrown.",
             _ => _timerThread.DelayCall(() => throw new Exception("Forced Crash"))
         ));
     }
@@ -106,14 +106,13 @@ public class ServerConsole : IService
 
     private void DisplayHelp()
     {
-        _logger.WriteLine<ServerConsole>(ConsoleColor.Cyan, "Commands:");
+        _logger.LogInformation("Commands:");
 
         foreach (var command in _commands.Values)
         {
             var padding = 8 - command.Name.Length;
             if (padding < 0) padding = 0;
-            _logger.WriteLine<ServerConsole>(ConsoleColor.DarkCyan,
-                $"{command.Name.PadRight(padding)} - {command.Description}");
+            _logger.LogDebug("{Name} - {Description}", command.Name.PadRight(padding), command.Description);
         }
     }
 }

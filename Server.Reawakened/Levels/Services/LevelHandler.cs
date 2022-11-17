@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
-using Server.Base.Logging;
 using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Data.Services;
 using Server.Reawakened.XMLs;
@@ -16,7 +16,8 @@ public class LevelHandler : IService
     private readonly EventSink _sink;
     private readonly WorldGraph _worldGraph;
 
-    public LevelHandler(Logger logger, EventSink sink, ServerConfig config, UserHandler handler)
+    public LevelHandler(Microsoft.Extensions.Logging.ILogger logger, EventSink sink, ServerConfig config,
+        UserHandler handler)
     {
         _sink = sink;
         _config = config;
@@ -25,7 +26,7 @@ public class LevelHandler : IService
         _worldGraph = FormatterServices.GetUninitializedObject(typeof(WorldGraph)) as WorldGraph;
 
         if (_worldGraph is null)
-            logger.WriteLine<LevelHandler>(ConsoleColor.Red, "World graph was unable to initialize!");
+            logger.LogError("World graph was unable to initialize!");
     }
 
     public void Initialize() => _sink.WorldLoad += LoadLevels;

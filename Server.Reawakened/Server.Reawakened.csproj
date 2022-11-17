@@ -7,6 +7,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
+        
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>

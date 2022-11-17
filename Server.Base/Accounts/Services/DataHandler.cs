@@ -1,29 +1,29 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
-using Server.Base.Logging;
 using Server.Base.Worlds.Events;
 
 namespace Server.Base.Accounts.Services;
 
 public abstract class DataHandler<T> : IService
 {
-    private readonly Logger _logger;
-    private readonly EventSink _sink;
+    public readonly ILogger<T> Logger;
+    public readonly EventSink Sink;
 
     public Dictionary<string, T> Data;
 
-    protected DataHandler(EventSink sink, Logger logger)
+    protected DataHandler(EventSink sink, ILogger<T> logger)
     {
-        _sink = sink;
-        _logger = logger;
+        Sink = sink;
+        Logger = logger;
         Data = new Dictionary<string, T>();
     }
 
     public void Initialize()
     {
-        _sink.WorldLoad += Load;
-        _sink.WorldSave += Save;
+        Sink.WorldLoad += Load;
+        Sink.WorldSave += Save;
     }
 
     public string GetFileName() => Path.Combine("Saves", $"{typeof(T).Name.ToLower()}.json");
@@ -45,12 +45,12 @@ public abstract class DataHandler<T> : IService
 
             var count = Data.Count;
 
-            _logger.WriteLine<T>(ConsoleColor.Green,
-                $"{GetType().Name}: Loaded {count} {typeof(T).Name}{(count != 1 ? "s" : "")} to memory.");
+            Logger.LogInformation("Loaded {Count} {Name}{Plural} to memory", count, typeof(T).Name,
+                count != 1 ? "s" : "");
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            _logger.LogException<T>(exception);
+            Logger.LogError(ex, "Could not deserialize save for {Type}.", typeof(T).Name);
         }
 
         streamReader.Close();

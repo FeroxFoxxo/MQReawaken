@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using System.IO.Compression;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
 using Server.Base.Core.Services;
-using Server.Base.Logging;
 using Server.Base.Timers.Enums;
 using Server.Base.Worlds.Events;
 
@@ -17,7 +17,7 @@ public class ArchivedSaves : IService
     private readonly string _defaultDestination;
 
     private readonly EventSink _eventSink;
-    private readonly Logger _logger;
+    private readonly ILogger<ArchivedSaves> _logger;
 
     private readonly Action<string> _pack;
     private readonly Action<DateTime> _prune;
@@ -29,7 +29,8 @@ public class ArchivedSaves : IService
     public TimeSpan ExpireAge;
     public MergeType Merge;
 
-    private ArchivedSaves(Logger logger, EventSink eventSink, ServerHandler serverHandler, InternalServerConfig config)
+    public ArchivedSaves(ILogger<ArchivedSaves> logger, EventSink eventSink, ServerHandler serverHandler,
+        InternalServerConfig config)
     {
         _logger = logger;
         _eventSink = eventSink;
@@ -72,12 +73,12 @@ public class ArchivedSaves : IService
         if (pending <= 0)
             return;
 
-        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, $"Waiting for {pending} pending tasks...");
+        _logger.LogInformation("Waiting for {TaskCount} pending tasks...", pending);
 
         while (GetPendingTasks() > 0)
             _sync.WaitOne(10);
 
-        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, "All tasks completed.");
+        _logger.LogDebug("All tasks completed.");
     }
 
     private void InternalPrune(DateTime threshold)
@@ -85,7 +86,7 @@ public class ArchivedSaves : IService
         if (!Directory.Exists(_defaultDestination))
             return;
 
-        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, "Pruning started...");
+        _logger.LogInformation("Pruning started...");
 
         var stopwatch = Stopwatch.StartNew();
 
@@ -100,26 +101,25 @@ public class ArchivedSaves : IService
                     if (archive.LastWriteTimeUtc < threshold)
                         archive.Delete();
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    _logger.LogException<ArchivedSaves>(exception);
+                    _logger.LogError(ex, "Unable to delete archived saves");
                 }
             }
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            _logger.LogException<ArchivedSaves>(exception);
+            _logger.LogError(ex, "Unable to get files");
         }
 
         stopwatch.Stop();
 
-        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan,
-            $"Pruning done in {stopwatch.Elapsed.TotalSeconds} seconds.");
+        _logger.LogDebug("Pruning done in {Seconds} seconds.", stopwatch.Elapsed.TotalSeconds);
     }
 
     private void InternalPack(string source)
     {
-        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, "Packing started...");
+        _logger.LogInformation("Packing started...");
 
         var stopwatch = Stopwatch.StartNew();
 
@@ -145,31 +145,30 @@ public class ArchivedSaves : IService
             {
                 File.Delete(destinationName);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                _logger.LogException<ArchivedSaves>(exception);
+                _logger.LogError(ex, "Unable to get delete file {Name}", destinationName);
             }
 
             ZipFile.CreateFromDirectory(source, destinationName, CompressionLevel.Optimal, false);
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            _logger.LogException<ArchivedSaves>(exception);
+            _logger.LogError(ex, "Unable to create zip file");
         }
 
         try
         {
             Directory.Delete(source, true);
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            _logger.LogException<ArchivedSaves>(exception);
+            _logger.LogError(ex, "Unable to delete directory {Name}", source);
         }
 
         stopwatch.Stop();
 
-        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan,
-            $"Packing done in {stopwatch.Elapsed.TotalSeconds} seconds.");
+        _logger.LogDebug("Packing done in {Seconds} seconds.", stopwatch.Elapsed.TotalSeconds);
     }
 
     private void BeginPrune(DateTime threshold)

@@ -1,23 +1,34 @@
 ﻿using System.Collections;
-using System.Text;
+using Microsoft.Extensions.Logging;
+using Server.Base.Core.Extensions;
 
 namespace Server.Base.Logging;
 
-public class Logger : TextWriter
+public class Logger : ILogger
 {
-    private readonly Stack<ConsoleColor> _consoleColors = new();
-    private StreamWriter _output;
-    public string LogDirectory { get; set; }
+    private const LogLevel Level = LogLevel.Trace;
+    private static readonly Stack<ConsoleColor> ConsoleColors = new();
+    private static StreamWriter _output;
 
-    public override Encoding Encoding => Encoding.Default;
+    private readonly string _categoryName;
 
-    public StreamWriter Output
+    private bool _shouldDebugName;
+
+    private static string LogDirectory => "Logs/Exceptions";
+
+    private static StreamWriter Output
     {
         get
         {
             if (_output != null) return _output;
 
-            _output = new StreamWriter(Path.Combine(LogDirectory, $"{DateTime.UtcNow.ToLongDateString()}.log"), true)
+            var currentLog = Path.Combine(InternalDirectory.GetBaseDirectory(), LogDirectory,
+                $"{DateTime.UtcNow.ToShortDateString().Replace('/', '_')}.log");
+
+            _output = new StreamWriter(
+                !File.Exists(currentLog)
+                    ? File.Create(currentLog)
+                    : File.Open(currentLog, FileMode.Append))
             {
                 AutoFlush = true
             };
@@ -30,65 +41,95 @@ public class Logger : TextWriter
         }
     }
 
-    public void Write<T>(ConsoleColor color, string @string)
+    public Logger(string categoryName)
     {
-        lock (((ICollection)_consoleColors).SyncRoot)
+        _categoryName = categoryName;
+        _shouldDebugName = true;
+    }
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception ex,
+        Func<TState, Exception, string> formatter)
+    {
+        if (!IsEnabled(logLevel))
+            return;
+
+        var message = formatter(state, ex);
+
+        if (ex != null)
         {
-            PushColor<T>(color);
-            Console.Write($"{typeof(T).Name}: {@string}");
-            PopColor<T>();
+            WriteLine(ConsoleColor.Red, message);
+            LogException(ex);
+        }
+        else
+        {
+            var color = logLevel switch
+            {
+                LogLevel.Trace => ConsoleColor.Magenta,
+                LogLevel.Debug => ConsoleColor.DarkCyan,
+                LogLevel.Information => ConsoleColor.Cyan,
+                LogLevel.Warning => ConsoleColor.Yellow,
+                LogLevel.Error => ConsoleColor.Red,
+                LogLevel.Critical => ConsoleColor.DarkRed,
+                _ => ConsoleColor.DarkMagenta
+            };
+
+            WriteLine(color, message);
         }
     }
 
-    public void WriteLine<T>(ConsoleColor color, string @string)
+    public bool IsEnabled(LogLevel logLevel) => logLevel >= Level;
+
+    public IDisposable BeginScope<TState>(TState state) => null;
+
+    public void ShouldDebugWithName(bool shouldDebugName) => _shouldDebugName = shouldDebugName;
+
+    private void WriteLine(ConsoleColor color, string message)
     {
-        lock (((ICollection)_consoleColors).SyncRoot)
+        lock (((ICollection)ConsoleColors).SyncRoot)
         {
-            PushColor<T>(color);
-            Console.WriteLine($"{typeof(T).Name}: {@string}");
-            PopColor<T>();
+            PushColor(color);
+            Console.WriteLine($"{(_shouldDebugName ? $"{_categoryName}: " : "")}{message}");
+            PopColor();
         }
     }
 
-    public void WriteNewLine() => Console.WriteLine();
-
-    private void PushColor<T>(ConsoleColor color)
+    private void PushColor(ConsoleColor color)
     {
         try
         {
-            lock (((ICollection)_consoleColors).SyncRoot)
+            lock (((ICollection)ConsoleColors).SyncRoot)
             {
-                _consoleColors.Push(Console.ForegroundColor);
+                ConsoleColors.Push(Console.ForegroundColor);
 
                 Console.ForegroundColor = color;
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            LogException<T>(e);
+            LogException(ex);
         }
     }
 
-    private void PopColor<T>()
+    private void PopColor()
     {
         try
         {
-            lock (((ICollection)_consoleColors).SyncRoot)
-                Console.ForegroundColor = _consoleColors.Pop();
+            lock (((ICollection)ConsoleColors).SyncRoot)
+                Console.ForegroundColor = ConsoleColors.Pop();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            LogException<T>(e);
+            LogException(ex);
         }
     }
 
-    public void LogException<T>(Exception exception)
+    private void LogException(Exception ex)
     {
-        WriteLine<T>(ConsoleColor.Red, "Caught Exception:");
-        WriteLine<T>(ConsoleColor.DarkRed, exception.ToString());
+        WriteLine(ConsoleColor.Red, "Caught Exception:");
+        WriteLine(ConsoleColor.DarkRed, ex.ToString());
 
         Output.WriteLine($"Exception Caught: {DateTime.UtcNow}");
-        Output.WriteLine(exception);
+        Output.WriteLine(ex);
         Output.WriteLine();
     }
 }

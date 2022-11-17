@@ -3,11 +3,11 @@ using System.Reflection;
 using System.Runtime;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Events;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
-using Server.Base.Logging;
 using Server.Base.Logging.Internal;
 using Server.Base.Network.Services;
 using Server.Base.Timers.Services;
@@ -19,7 +19,7 @@ namespace Server.Base.Core.Services;
 public class ServerHandler : IService
 {
     private readonly NetStateHandler _handler;
-    private readonly Logger _logger;
+    private readonly ILogger<ServerHandler> _logger;
     private readonly Module[] _modules;
     private readonly MessagePump _pump;
     private readonly EventSink _sink;
@@ -34,7 +34,8 @@ public class ServerHandler : IService
     public bool Restarting;
     public bool Saving;
 
-    public ServerHandler(TimerThread timerThread, World world, EventSink sink, MessagePump pump, Logger logger,
+    public ServerHandler(TimerThread timerThread, World world, EventSink sink, MessagePump pump,
+        ILogger<ServerHandler> logger,
         NetStateHandler handler, IServiceProvider serviceProvider)
     {
         _timerThread = timerThread;
@@ -70,9 +71,9 @@ public class ServerHandler : IService
 
             Console.SetOut(MultiConsoleOut);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogException<ServerHandler>(e);
+            _logger.LogError(ex, "Could not get log directory!");
         }
 
         Thread.CurrentThread.Name = "Server Thread";
@@ -83,21 +84,19 @@ public class ServerHandler : IService
             Directory.SetCurrentDirectory(baseDirectory);
 
         foreach (var module in _modules)
-            _logger.WriteLine<ServerHandler>(ConsoleColor.Cyan, module.GetModuleInformation());
+            _logger.LogDebug("{ModuleInfo}", module.GetModuleInformation());
 
         if (GetOsType.IsUnix())
-            _logger.WriteLine<ServerHandler>(ConsoleColor.Yellow, "Unix environment detected");
+            _logger.LogWarning("Unix environment detected");
 
         var frameworkName = Assembly.GetEntryAssembly()?
             .GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName;
 
-        _logger.WriteLine<ServerHandler>(ConsoleColor.Green,
-            $"Compiled for {(GetOsType.IsUnix() ? "UNIX " : "WINDOWS")} " +
-            $"and running on {(string.IsNullOrEmpty(frameworkName) ? "UNKNOWN" : frameworkName)}"
-        );
+        _logger.LogDebug("Compiled for {OS} and running on {NETVersion}", GetOsType.IsUnix() ? "UNIX " : "WINDOWS",
+            string.IsNullOrEmpty(frameworkName) ? "UNKNOWN" : frameworkName);
 
         if (GCSettings.IsServerGC)
-            _logger.WriteLine<ServerHandler>(ConsoleColor.Green, "Server garbage collection mode enabled");
+            _logger.LogDebug("Server garbage collection mode enabled");
 
         _world.Load();
 
@@ -115,24 +114,26 @@ public class ServerHandler : IService
                 _handler.ProcessDisposedQueue();
             }
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            UnhandledException(null, new UnhandledExceptionEventArgs(exception, true));
+            UnhandledException(null, new UnhandledExceptionEventArgs(ex, true));
         }
     }
 
-    private void UnhandledException(object sender, UnhandledExceptionEventArgs exception)
+    private void UnhandledException(object sender, UnhandledExceptionEventArgs ex)
     {
-        _logger.WriteLine<ServerHandler>(exception.IsTerminating ? ConsoleColor.Red : ConsoleColor.Yellow,
-            exception.IsTerminating ? $"Error: {exception.ExceptionObject}" : $"Warning: {exception.ExceptionObject}");
+        if (ex.IsTerminating)
+            _logger.LogError("Unhandled Error: {ERROR}", ex.ExceptionObject);
+        else
+            _logger.LogWarning("Unhandled Warning: {WARNING}", ex.ExceptionObject);
 
-        if (!exception.IsTerminating) return;
+        if (!ex.IsTerminating) return;
 
         HasCrashed = true;
 
         var doClose = false;
 
-        CrashedEventArgs arguments = new(exception.ExceptionObject as Exception);
+        CrashedEventArgs arguments = new(ex.ExceptionObject as Exception);
 
         try
         {
@@ -141,7 +142,7 @@ public class ServerHandler : IService
         }
         catch (Exception crashedException)
         {
-            _logger.LogException<ServerHandler>(crashedException);
+            _logger.LogError(crashedException, "Unable to invoke crashed arguments");
         }
 
         if (!doClose)
@@ -157,7 +158,7 @@ public class ServerHandler : IService
                 // ignored
             }
 
-            _logger.WriteLine<ServerHandler>(ConsoleColor.Red, "This exception is fatal, press return to exit.");
+            _logger.LogCritical("This exception is fatal, press return to exit.");
             Console.ReadLine();
         }
 
@@ -181,7 +182,7 @@ public class ServerHandler : IService
 
         IsClosing = true;
 
-        _logger.WriteLine<ServerHandler>(ConsoleColor.Red, "Exiting server, please wait!");
+        _logger.LogError("Exiting server, please wait!");
 
         _world.Save(false, true);
 
@@ -190,7 +191,7 @@ public class ServerHandler : IService
 
         _timerThread.Set();
 
-        _logger.WriteLine<ServerHandler>(ConsoleColor.Red, "Successfully quit server.");
+        _logger.LogCritical("Successfully quit server.");
     }
 
     public void Set() => Signal.Set();
