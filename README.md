@@ -28,12 +28,12 @@ I am completely unaffiliated with any prior remake attempts. This has just been 
 
 #### Versioning
 
-Automatic versioning is planned for the future, but at the moment the version number needs to be manually updated in the ``.csproject`` file. The system to update the version numbers goes as follows:
+Automatic versioning is planned for the future, but at the moment the version number needs to be manually updated in the ``Module`` class. The system to update the version numbers goes as follows:
 
 |Number|Description|
 |--:|:--|
 |Major|Only updated by the repository administrators once a completely new version is deployed.|
-|Minor|Updated once a batch of features (or a [project](https://github.com/Frostrix/MQReawakened/projects)) is fully implemented.|
+|Minor|Updated once a batch of features (or a [project](https://github.com/FeroxFoxxo/MQReawaken/projects)) is fully implemented.|
 |Patch|Updated once a new feature is added.|
 
 #### Credits
