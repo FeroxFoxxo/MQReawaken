@@ -30,33 +30,29 @@ public class Logger : TextWriter
         }
     }
 
-    public override void Write(char character) => WriteLine(ConsoleColor.DarkMagenta, character.ToString());
-
-    public override void Write(string line) => Write(ConsoleColor.DarkMagenta, line);
-
-    public override void WriteLine(string line) => WriteLine(ConsoleColor.DarkMagenta, line);
-
-    public void Write(ConsoleColor color, string @string)
+    public void Write<T>(ConsoleColor color, string @string)
     {
         lock (((ICollection)_consoleColors).SyncRoot)
         {
-            PushColor(color);
-            Console.Write(@string);
-            PopColor();
+            PushColor<T>(color);
+            Console.Write($"{typeof(T).Name}: {@string}");
+            PopColor<T>();
         }
     }
 
-    public void WriteLine(ConsoleColor color, string @string)
+    public void WriteLine<T>(ConsoleColor color, string @string)
     {
         lock (((ICollection)_consoleColors).SyncRoot)
         {
-            PushColor(color);
-            Console.WriteLine(@string);
-            PopColor();
+            PushColor<T>(color);
+            Console.WriteLine($"{typeof(T).Name}: {@string}");
+            PopColor<T>();
         }
     }
 
-    private void PushColor(ConsoleColor color)
+    public void WriteNewLine() => Console.WriteLine();
+
+    private void PushColor<T>(ConsoleColor color)
     {
         try
         {
@@ -69,11 +65,11 @@ public class Logger : TextWriter
         }
         catch (Exception e)
         {
-            LogException(e);
+            LogException<T>(e);
         }
     }
 
-    private void PopColor()
+    private void PopColor<T>()
     {
         try
         {
@@ -82,14 +78,14 @@ public class Logger : TextWriter
         }
         catch (Exception e)
         {
-            LogException(e);
+            LogException<T>(e);
         }
     }
 
-    public void LogException(Exception exception)
+    public void LogException<T>(Exception exception)
     {
-        WriteLine(ConsoleColor.Red, "Caught Exception:");
-        WriteLine(ConsoleColor.DarkRed, exception.ToString());
+        WriteLine<T>(ConsoleColor.Red, "Caught Exception:");
+        WriteLine<T>(ConsoleColor.DarkRed, exception.ToString());
 
         Output.WriteLine($"Exception Caught: {DateTime.UtcNow}");
         Output.WriteLine(exception);

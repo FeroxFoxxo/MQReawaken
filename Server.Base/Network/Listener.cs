@@ -84,15 +84,15 @@ public class Listener : IDisposable
             switch (socketException.ErrorCode)
             {
                 case 10048:
-                    _logger.WriteLine(ConsoleColor.Red,
-                        $"Listener Failed: {ipEndPoint.Address}:{ipEndPoint.Port} (In Use)");
+                    _logger.WriteLine<Listener>(ConsoleColor.Red,
+                        $"Failed: {ipEndPoint.Address}:{ipEndPoint.Port} (In Use)");
                     break;
                 case 10049:
-                    _logger.WriteLine(ConsoleColor.Red,
-                        $"Listener Failed: {ipEndPoint.Address}:{ipEndPoint.Port} (Unavailable)");
+                    _logger.WriteLine<Listener>(ConsoleColor.Red,
+                        $"Failed: {ipEndPoint.Address}:{ipEndPoint.Port} (Unavailable)");
                     break;
                 default:
-                    _logger.WriteLine(ConsoleColor.Red, $"Listener Exception: {exception}");
+                    _logger.LogException<Listener>(exception);
                     break;
             }
 
@@ -114,17 +114,18 @@ public class Listener : IDisposable
                 foreach (var uniCast in properties.UnicastAddresses)
                 {
                     if (ipEndPoint.AddressFamily == uniCast.Address.AddressFamily)
-                        _logger.WriteLine(ConsoleColor.Green, $"Listening: {uniCast.Address}, {ipEndPoint.Port}");
+                        _logger.WriteLine<Listener>(ConsoleColor.Green,
+                            $"Listening: {uniCast.Address}, {ipEndPoint.Port}");
                 }
             }
         }
         else
         {
-            _logger.WriteLine(ConsoleColor.Green, $"Listening: {ipEndPoint.Address}, {ipEndPoint.Port}");
+            _logger.WriteLine<Listener>(ConsoleColor.Green, $"Listening: {ipEndPoint.Address}, {ipEndPoint.Port}");
         }
 
-        _logger.WriteLine(ConsoleColor.Green,
-            @"----------------------------------------------------------------------");
+        _logger.WriteLine<Listener>(ConsoleColor.Green,
+            @"--------------------------------------------------------------");
     }
 
     private void OnAccept(IAsyncResult asyncResult)

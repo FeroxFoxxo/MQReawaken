@@ -78,9 +78,10 @@ public class NetState
         _sink.InvokeNetStateAdded(new NetStateAddedEventArgs(this));
     }
 
-    public void WriteServer(string text) => _logger.WriteLine(ConsoleColor.DarkGray, $"Server: {this}: {text}");
+    public void WriteServer(string text) =>
+        _logger.WriteLine<NetState>(ConsoleColor.DarkGray, $"{this}: {text} (SERVER)");
 
-    public void WriteClient(string text) => _logger.WriteLine(ConsoleColor.Gray, $"Client: {this}: {text}");
+    public void WriteClient(string text) => _logger.WriteLine<NetState>(ConsoleColor.Gray, $"{this}: {text} (CLIENT)");
 
     public void CheckAlive(double curTicks)
     {
@@ -90,7 +91,7 @@ public class NetState
         if (_nextCheckActivity - curTicks >= 0)
             return;
 
-        _logger.WriteLine(ConsoleColor.Red, $"Client: {this}: Disconnecting due to inactivity...");
+        _logger.WriteLine<NetState>(ConsoleColor.Red, $"Client: {this}: Disconnecting due to inactivity...");
 
         Dispose(true);
     }
@@ -106,6 +107,10 @@ public class NetState
         {
             if (Socket == null || _handler.Paused)
                 return;
+
+            _logger.WriteLine<NetState>(ConsoleColor.Green,
+                $"{this}: Connected. [{_handler.Instances.Count} Online]"
+            );
         }
 
         try

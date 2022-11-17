@@ -1,6 +1,7 @@
 ﻿using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
+using Server.Base.Logging;
 using Server.Base.Timers.Extensions;
 using Server.Base.Timers.Services;
 using Timer = Server.Base.Timers.Timer;
@@ -11,6 +12,7 @@ public class ServerConsole : IService
 {
     private readonly Dictionary<string, Command> _commands;
     private readonly ServerHandler _handler;
+    private readonly Logger _logger;
     private readonly EventSink _sink;
     private readonly TimerThread _timerThread;
 
@@ -18,18 +20,14 @@ public class ServerConsole : IService
 
     public Timer PollTimer;
 
-    public ServerConsole(EventSink sink, TimerThread timerThread, ServerHandler handler)
+    public ServerConsole(EventSink sink, TimerThread timerThread, ServerHandler handler, Logger logger)
     {
         _sink = sink;
         _timerThread = timerThread;
         _handler = handler;
+        _logger = logger;
 
         _commands = new Dictionary<string, Command>();
-    }
-
-    public void Initialize()
-    {
-        _sink.ServerStarted += PollCommands;
 
         AddCommand(new Command(
             "restart",
@@ -51,6 +49,8 @@ public class ServerConsole : IService
             _ => _timerThread.DelayCall(() => throw new Exception("Forced Crash"))
         ));
     }
+
+    public void Initialize() => _sink.ServerStarted += PollCommands;
 
     public void AddCommand(Command command) => _commands.Add(command.Name, command);
 
@@ -106,13 +106,14 @@ public class ServerConsole : IService
 
     private void DisplayHelp()
     {
-        Console.WriteLine("Commands:");
+        _logger.WriteLine<ServerConsole>(ConsoleColor.Cyan, "Commands:");
 
         foreach (var command in _commands.Values)
         {
             var padding = 8 - command.Name.Length;
             if (padding < 0) padding = 0;
-            Console.WriteLine($"{command.Name.PadRight(padding)} - {command.Description}");
+            _logger.WriteLine<ServerConsole>(ConsoleColor.DarkCyan,
+                $"{command.Name.PadRight(padding)} - {command.Description}");
         }
     }
 }

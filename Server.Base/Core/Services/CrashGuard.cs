@@ -44,24 +44,24 @@ public class CrashGuard : IService
 
     private void Restart(CrashedEventArgs e)
     {
-        _logger.WriteLine(ConsoleColor.Magenta, "Crash: Restarting...");
+        _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Restarting...");
 
         try
         {
             Process.Start(GetExePath.Path());
-            _logger.WriteLine(ConsoleColor.Magenta, "Crash: Successfully restarted!");
+            _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Successfully restarted!");
 
             e.Close = true;
         }
         catch
         {
-            _logger.WriteLine(ConsoleColor.Red, "Crash: Failed");
+            _logger.WriteLine<CrashGuard>(ConsoleColor.Red, "Failed");
         }
     }
 
     private void Backup()
     {
-        _logger.WriteLine(ConsoleColor.Magenta, "Crash: Backing up...");
+        _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Backing up...");
 
         try
         {
@@ -76,11 +76,11 @@ public class CrashGuard : IService
 
             CopyFile(rootOrigin, rootBackup, "Accounts/Accounts.xml");
 
-            _logger.WriteLine(ConsoleColor.Magenta, "Crash: Backed up!");
+            _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Backed up!");
         }
         catch
         {
-            _logger.WriteLine(ConsoleColor.Red, "Crash: Unable to back up server.");
+            _logger.WriteLine<CrashGuard>(ConsoleColor.Red, "Unable to back up server.");
         }
     }
 
@@ -96,7 +96,7 @@ public class CrashGuard : IService
         }
         catch (Exception e)
         {
-            _logger.LogException(e);
+            _logger.LogException<CrashGuard>(e);
         }
     }
 
@@ -108,14 +108,14 @@ public class CrashGuard : IService
         }
         catch (Exception exception)
         {
-            _logger.LogException(exception);
+            _logger.LogException<CrashGuard>(exception);
             return "";
         }
     }
 
     private void GenerateCrashReport(CrashedEventArgs crashedEventArgs)
     {
-        _logger.WriteLine(ConsoleColor.Magenta, "Crash: Generating report...");
+        _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Generating report...");
 
         try
         {
@@ -168,11 +168,11 @@ public class CrashGuard : IService
                 }
             }
 
-            _logger.WriteLine(ConsoleColor.Magenta, "Crash: Logged error.");
+            _logger.WriteLine<CrashGuard>(ConsoleColor.Magenta, "Logged error.");
         }
         catch
         {
-            _logger.WriteLine(ConsoleColor.Red, "Crash: Unable to log error!");
+            _logger.WriteLine<CrashGuard>(ConsoleColor.Red, "Unable to log error!");
         }
     }
 }

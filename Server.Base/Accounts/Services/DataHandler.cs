@@ -45,12 +45,12 @@ public abstract class DataHandler<T> : IService
 
             var count = Data.Count;
 
-            _logger.WriteLine(ConsoleColor.Green,
+            _logger.WriteLine<T>(ConsoleColor.Green,
                 $"{GetType().Name}: Loaded {count} {typeof(T).Name}{(count != 1 ? "s" : "")} to memory.");
         }
         catch (Exception exception)
         {
-            _logger.LogException(exception);
+            _logger.LogException<T>(exception);
         }
 
         streamReader.Close();

@@ -38,7 +38,7 @@ public class World
 
         Loaded = true;
 
-        _logger.WriteLine(ConsoleColor.Green, "World: Loading...");
+        _logger.WriteLine<World>(ConsoleColor.Green, "Loading...");
 
         var stopWatch = Stopwatch.StartNew();
 
@@ -50,7 +50,7 @@ public class World
 
         stopWatch.Stop();
 
-        _logger.WriteLine(ConsoleColor.Green, $"World: Finished loading in {stopWatch.Elapsed.TotalSeconds} seconds.");
+        _logger.WriteLine<World>(ConsoleColor.Green, $"Finished loading in {stopWatch.Elapsed.TotalSeconds} seconds.");
     }
 
     public void WaitForWriteCompletion() => _diskWriteHandle.WaitOne();
@@ -58,7 +58,7 @@ public class World
     public void NotifyDiskWriteComplete()
     {
         if (_diskWriteHandle.Set())
-            _logger.WriteLine(ConsoleColor.Green, "Closing Save Files.");
+            _logger.WriteLine<World>(ConsoleColor.Green, "Closing Save Files.");
     }
 
     public void Save(bool message, bool permitBackgroundWrite)
@@ -74,7 +74,7 @@ public class World
 
         _diskWriteHandle.Reset();
 
-        _logger.WriteLine(ConsoleColor.Green, "World: Saving...");
+        _logger.WriteLine<World>(ConsoleColor.Green, "Saving...");
 
         var stopWatch = Stopwatch.StartNew();
 
@@ -94,7 +94,7 @@ public class World
         if (!permitBackgroundWrite)
             NotifyDiskWriteComplete();
 
-        _logger.WriteLine(ConsoleColor.Green, $"World: Save finished in {stopWatch.Elapsed.TotalSeconds} seconds.");
+        _logger.WriteLine<World>(ConsoleColor.Green, $"Save finished in {stopWatch.Elapsed.TotalSeconds} seconds.");
 
         _handler.Resume();
     }
@@ -102,6 +102,6 @@ public class World
     public void Broadcast(string message)
     {
         _sink.InvokeWorldBroadcast(new WorldBroadcastEventArgs(message));
-        _logger.WriteLine(ConsoleColor.Green, $"World: {message}");
+        _logger.WriteLine<World>(ConsoleColor.Green, message);
     }
 }

@@ -25,7 +25,7 @@ public class LevelHandler : IService
         _worldGraph = FormatterServices.GetUninitializedObject(typeof(WorldGraph)) as WorldGraph;
 
         if (_worldGraph is null)
-            logger.WriteLine(ConsoleColor.Red, "Level Handler: World graph was unable to initialize!");
+            logger.WriteLine<LevelHandler>(ConsoleColor.Red, "World graph was unable to initialize!");
     }
 
     public void Initialize() => _sink.WorldLoad += LoadLevels;

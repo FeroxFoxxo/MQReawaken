@@ -1,8 +1,11 @@
 ﻿using System.Net.Sockets;
 using System.Text;
+using Server.Base.Accounts.Helpers;
 using Server.Base.Accounts.Modals;
 using Server.Base.Logging.Internal;
 using Server.Base.Network;
+using Server.Base.Network.Helpers;
+using Server.Base.Network.Services;
 
 namespace Server.Base.Logging;
 
@@ -24,7 +27,7 @@ public class NetworkLogger
                         $"Past IP limit threshold\t" +
                         $"{netState}");
 
-        WriteToFile("ipLimits.log", builder, ConsoleColor.DarkGray);
+        WriteToFile<IpLimiter>("ipLimits.log", builder, ConsoleColor.DarkGray);
     }
 
     public void ThrottledError(NetState netState, InvalidAccountAccessLog accessLog)
@@ -34,7 +37,7 @@ public class NetworkLogger
                         $"{netState}\t" +
                         $"{accessLog.Counts}");
 
-        WriteToFile("throttle.log", builder, ConsoleColor.DarkGray);
+        WriteToFile<AccountAttackLimiter>("throttle.log", builder, ConsoleColor.DarkGray);
     }
 
     public void TracePacketError(string packetId, string packet, NetState state)
@@ -47,7 +50,7 @@ public class NetworkLogger
             .AppendLine()
             .AppendLine(packet);
 
-        WriteToFile("packets.log", builder, ConsoleColor.Yellow);
+        WriteToFile<MessagePump>("packets.log", builder, ConsoleColor.Yellow);
     }
 
     public void TraceNetworkError(Exception exception, NetState state)
@@ -57,7 +60,7 @@ public class NetworkLogger
             .AppendLine()
             .AppendLine(exception.ToString());
 
-        WriteToFile("network-errors.log", builder, ConsoleColor.Red);
+        WriteToFile<NetState>("network-errors.log", builder, ConsoleColor.Red);
     }
 
     public void TraceListenerError(Exception exception, Socket socket)
@@ -67,10 +70,10 @@ public class NetworkLogger
             .AppendLine()
             .AppendLine(exception.ToString());
 
-        WriteToFile("listener-errors.log", builder, ConsoleColor.Red);
+        WriteToFile<Listener>("listener-errors.log", builder, ConsoleColor.Red);
     }
 
-    private void WriteToFile(string fileName, StringBuilder builder, ConsoleColor color)
+    private void WriteToFile<T>(string fileName, StringBuilder builder, ConsoleColor color)
     {
         try
         {
@@ -81,9 +84,9 @@ public class NetworkLogger
         }
         catch (Exception ex)
         {
-            _logger.LogException(ex);
+            _logger.LogException<NetworkLogger>(ex);
         }
 
-        _logger.WriteLine(color, builder.ToString());
+        _logger.WriteLine<T>(color, builder.ToString());
     }
 }

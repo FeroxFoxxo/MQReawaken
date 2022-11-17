@@ -1,4 +1,5 @@
 ﻿using Server.Base.Core.Abstractions;
+using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
 using Server.Base.Core.Services;
 using Server.Base.Logging;
@@ -18,6 +19,7 @@ public class AutoRestart : Timer, IService
 
     private readonly ServerHandler _handler;
     private readonly Logger _logger;
+    private readonly EventSink _sink;
     private readonly TimerThread _timerThread;
     private readonly World _world;
 
@@ -26,8 +28,7 @@ public class AutoRestart : Timer, IService
     public DateTime RestartTime;
 
     public AutoRestart(Logger logger, TimerThread timerThread, InternalServerConfig config, ServerHandler handler,
-        World world,
-        AutoSave autoSave)
+        World world, AutoSave autoSave, EventSink sink)
         : base(TimeSpan.FromSeconds(1.0), TimeSpan.FromSeconds(1.0), 0, timerThread)
     {
         _logger = logger;
@@ -35,13 +36,11 @@ public class AutoRestart : Timer, IService
         _handler = handler;
         _world = world;
         _autoSave = autoSave;
+        _sink = sink;
         _delayRestart = TimeSpan.FromSeconds(config.RestartDelaySeconds);
         _delayWarning = TimeSpan.FromSeconds(config.RestartWarningSeconds);
         _delayAutoRestart = TimeSpan.FromHours(config.RestartAutomaticallyHours);
-    }
 
-    public void Initialize()
-    {
         var now = DateTime.Now;
         DateTime force = new(now.Year, now.Month, now.Day, 12, 0, 0);
 
@@ -49,13 +48,18 @@ public class AutoRestart : Timer, IService
             force += _delayAutoRestart;
 
         RestartTime = force;
+    }
+
+    public void Initialize() => _sink.ServerStarted += ServerStarted;
+
+    private void ServerStarted()
+    {
+        _logger.WriteLine<AutoRestart>(ConsoleColor.Magenta,
+            $"Configured for {RestartTime.Hour}:{RestartTime.Minute}:00, every {_delayAutoRestart.TotalHours} hours!");
+
+        _logger.WriteLine<AutoRestart>(ConsoleColor.Magenta, $"Next Restart: {RestartTime}");
 
         Start();
-
-        _logger.WriteLine(ConsoleColor.Magenta,
-            $"[Auto Restart] Configured for {RestartTime.Hour}:{RestartTime.Minute}:00, every {_delayAutoRestart.TotalHours} hours!");
-
-        _logger.WriteLine(ConsoleColor.Magenta, $"[Auto Restart] Next Restart: {RestartTime}");
     }
 
     public override void OnTick()

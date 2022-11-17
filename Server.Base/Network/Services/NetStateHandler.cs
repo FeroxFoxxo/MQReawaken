@@ -1,5 +1,6 @@
 ﻿using Server.Base.Core.Abstractions;
 using Server.Base.Core.Extensions;
+using Server.Base.Core.Helpers;
 using Server.Base.Logging;
 using Server.Base.Network.Enums;
 using Server.Base.Timers.Extensions;
@@ -13,6 +14,7 @@ public class NetStateHandler : IService
 
     private readonly Logger _logger;
     private readonly NetworkLogger _networkLogger;
+    private readonly EventSink _sink;
     private readonly TimerThread _thread;
 
     public readonly Queue<NetState> Disposed;
@@ -22,11 +24,12 @@ public class NetStateHandler : IService
 
     public bool Paused;
 
-    public NetStateHandler(Logger logger, NetworkLogger networkLogger, TimerThread thread)
+    public NetStateHandler(Logger logger, NetworkLogger networkLogger, TimerThread thread, EventSink sink)
     {
         _logger = logger;
         _networkLogger = networkLogger;
         _thread = thread;
+        _sink = sink;
 
         Instances = new List<NetState>();
         Disposed = new Queue<NetState>();
@@ -36,7 +39,8 @@ public class NetStateHandler : IService
     }
 
     public void Initialize() =>
-        _thread.DelayCall(CheckAllAlive, TimeSpan.FromMinutes(1.0), TimeSpan.FromMinutes(1.5), 0);
+        _sink.ServerStarted += () =>
+            _thread.DelayCall(CheckAllAlive, TimeSpan.FromMinutes(1.0), TimeSpan.FromMinutes(1.5), 0);
 
     public void ProcessDisposedQueue()
     {
@@ -54,7 +58,7 @@ public class NetStateHandler : IService
                     ? $"[{netState.Account.Username}]"
                     : "UNKNOWN";
 
-                _logger.WriteLine(ConsoleColor.Red, $"Disconnected. [{Instances.Count} Online] {userInfo}");
+                _logger.WriteLine<NetState>(ConsoleColor.Red, $"Disconnected. [{Instances.Count} Online] {userInfo}");
             }
         }
     }

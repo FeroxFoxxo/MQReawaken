@@ -59,7 +59,10 @@ public class ServerHandler : IService
     {
         AppDomain.CurrentDomain.UnhandledException += UnhandledException;
         AppDomain.CurrentDomain.ProcessExit += (_, _) => HandleClosed();
+    }
 
+    public void StartServer()
+    {
         try
         {
             if (!Directory.Exists("Logs"))
@@ -69,7 +72,7 @@ public class ServerHandler : IService
         }
         catch (Exception e)
         {
-            _logger.LogException(e);
+            _logger.LogException<ServerHandler>(e);
         }
 
         Thread.CurrentThread.Name = "Server Thread";
@@ -80,25 +83,22 @@ public class ServerHandler : IService
             Directory.SetCurrentDirectory(baseDirectory);
 
         foreach (var module in _modules)
-            _logger.WriteLine(ConsoleColor.Cyan, module.GetModuleInformation());
+            _logger.WriteLine<ServerHandler>(ConsoleColor.Cyan, module.GetModuleInformation());
 
         if (GetOsType.IsUnix())
-            _logger.WriteLine(ConsoleColor.Yellow, "Core: Unix environment detected");
+            _logger.WriteLine<ServerHandler>(ConsoleColor.Yellow, "Unix environment detected");
 
         var frameworkName = Assembly.GetEntryAssembly()?
             .GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName;
 
-        _logger.WriteLine(ConsoleColor.Green,
-            $"Core: Compiled for {(GetOsType.IsUnix() ? "UNIX " : "WINDOWS")} " +
+        _logger.WriteLine<ServerHandler>(ConsoleColor.Green,
+            $"Compiled for {(GetOsType.IsUnix() ? "UNIX " : "WINDOWS")} " +
             $"and running on {(string.IsNullOrEmpty(frameworkName) ? "UNKNOWN" : frameworkName)}"
         );
 
         if (GCSettings.IsServerGC)
-            _logger.WriteLine(ConsoleColor.Green, "Core: Server garbage collection mode enabled");
-    }
+            _logger.WriteLine<ServerHandler>(ConsoleColor.Green, "Server garbage collection mode enabled");
 
-    public void StartServer()
-    {
         _world.Load();
 
         _sink.InvokeServerStarted();
@@ -123,7 +123,7 @@ public class ServerHandler : IService
 
     private void UnhandledException(object sender, UnhandledExceptionEventArgs exception)
     {
-        _logger.WriteLine(exception.IsTerminating ? ConsoleColor.Red : ConsoleColor.Yellow,
+        _logger.WriteLine<ServerHandler>(exception.IsTerminating ? ConsoleColor.Red : ConsoleColor.Yellow,
             exception.IsTerminating ? $"Error: {exception.ExceptionObject}" : $"Warning: {exception.ExceptionObject}");
 
         if (!exception.IsTerminating) return;
@@ -141,7 +141,7 @@ public class ServerHandler : IService
         }
         catch (Exception crashedException)
         {
-            _logger.LogException(crashedException);
+            _logger.LogException<ServerHandler>(crashedException);
         }
 
         if (!doClose)
@@ -157,7 +157,7 @@ public class ServerHandler : IService
                 // ignored
             }
 
-            _logger.WriteLine(ConsoleColor.Red, "This exception is fatal, press return to exit.");
+            _logger.WriteLine<ServerHandler>(ConsoleColor.Red, "This exception is fatal, press return to exit.");
             Console.ReadLine();
         }
 
@@ -181,7 +181,7 @@ public class ServerHandler : IService
 
         IsClosing = true;
 
-        _logger.WriteLine(ConsoleColor.Red, "Core: Exiting server, please wait!");
+        _logger.WriteLine<ServerHandler>(ConsoleColor.Red, "Exiting server, please wait!");
 
         _world.Save(false, true);
 
@@ -190,7 +190,7 @@ public class ServerHandler : IService
 
         _timerThread.Set();
 
-        _logger.WriteLine(ConsoleColor.Red, "Core: Successfully quit server.");
+        _logger.WriteLine<ServerHandler>(ConsoleColor.Red, "Successfully quit server.");
     }
 
     public void Set() => Signal.Set();

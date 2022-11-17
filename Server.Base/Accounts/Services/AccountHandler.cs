@@ -50,24 +50,24 @@ public class AccountHandler : DataHandler<Account>
         if (Data.Count != 0)
             return;
 
-        _logger.WriteLine(ConsoleColor.Yellow, "This server has no accounts.");
-        _logger.Write(ConsoleColor.Yellow, "Do you want to create the owner account now? ( Y / N ) ");
+        _logger.WriteLine<AccountHandler>(ConsoleColor.Yellow, "This server has no accounts.");
+        _logger.Write<AccountHandler>(ConsoleColor.Yellow, "Do you want to create the owner account now? ( Y / N ) ");
 
         var key = Console.ReadKey();
 
-        Console.WriteLine();
+        _logger.WriteNewLine();
 
         if (key.KeyChar.ToString().ToUpper() == "Y")
         {
-            _logger.WriteLine(ConsoleColor.Cyan, "Username: ");
+            _logger.WriteLine<AccountHandler>(ConsoleColor.Cyan, "Username: ");
             var username = Console.ReadLine();
 
-            _logger.WriteLine(ConsoleColor.Cyan, "Password: ");
+            _logger.WriteLine<AccountHandler>(ConsoleColor.Cyan, "Password: ");
             var password = Console.ReadLine();
 
             if (username == null)
             {
-                _logger.WriteLine(ConsoleColor.Green, "Username for account is null!");
+                _logger.WriteLine<AccountHandler>(ConsoleColor.Green, "Username for account is null!");
                 return;
             }
 
@@ -76,11 +76,11 @@ public class AccountHandler : DataHandler<Account>
                 AccessLevel = AccessLevel.Owner
             });
 
-            _logger.WriteLine(ConsoleColor.Green, "Account created.");
+            _logger.WriteLine<AccountHandler>(ConsoleColor.Green, "Account created.");
         }
         else
         {
-            _logger.WriteLine(ConsoleColor.Red, "Account not created.");
+            _logger.WriteLine<AccountHandler>(ConsoleColor.Red, "Account not created.");
         }
     }
 
@@ -152,7 +152,7 @@ public class AccountHandler : DataHandler<Account>
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        _logger.WriteLine(ConsoleColor.Red, $"Login: {netState}: {errorReason} for '{username}'");
+        _logger.WriteLine<AccountHandler>(ConsoleColor.Red, $"Login: {netState}: {errorReason} for '{username}'");
 
         if (rejectReason != AlrReason.Accepted && rejectReason != AlrReason.InUse)
             _attackLimiter.RegisterInvalidAccess(netState);
@@ -175,7 +175,7 @@ public class AccountHandler : DataHandler<Account>
             }
             else
             {
-                _logger.WriteLine(ConsoleColor.Red,
+                _logger.WriteLine<AccountHandler>(ConsoleColor.Red,
                     $"Unable to parse IPAddress {account.LoginIPs[0]} for {account.Username}");
             }
         }
@@ -210,13 +210,13 @@ public class AccountHandler : DataHandler<Account>
 
         if (!CanCreate(netState.Address))
         {
-            _logger.WriteLine(ConsoleColor.DarkYellow,
+            _logger.WriteLine<AccountHandler>(ConsoleColor.DarkYellow,
                 $"Login: {netState}: Account '{username}' not created, ip already has {_internalServerConfig.MaxAccountsPerIp} " +
                 $"account{(_internalServerConfig.MaxAccountsPerIp == 1 ? "" : "s")}.");
             return null;
         }
 
-        _logger.WriteLine(ConsoleColor.Green, $"Login: {netState}: Creating new account '{username}'");
+        _logger.WriteLine<AccountHandler>(ConsoleColor.Green, $"Login: {netState}: Creating new account '{username}'");
 
         return new Account(username, password, Data.Count, _hasher);
     }

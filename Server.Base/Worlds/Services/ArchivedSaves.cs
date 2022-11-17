@@ -72,12 +72,12 @@ public class ArchivedSaves : IService
         if (pending <= 0)
             return;
 
-        _logger.WriteLine(ConsoleColor.Cyan, $"Archives: Waiting for {pending} pending tasks...");
+        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, $"Waiting for {pending} pending tasks...");
 
         while (GetPendingTasks() > 0)
             _sync.WaitOne(10);
 
-        _logger.WriteLine(ConsoleColor.Cyan, "Archives: All tasks completed.");
+        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, "All tasks completed.");
     }
 
     private void InternalPrune(DateTime threshold)
@@ -85,7 +85,7 @@ public class ArchivedSaves : IService
         if (!Directory.Exists(_defaultDestination))
             return;
 
-        _logger.WriteLine(ConsoleColor.Cyan, "Archives: Pruning started...");
+        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, "Pruning started...");
 
         var stopwatch = Stopwatch.StartNew();
 
@@ -102,23 +102,24 @@ public class ArchivedSaves : IService
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogException(exception);
+                    _logger.LogException<ArchivedSaves>(exception);
                 }
             }
         }
         catch (Exception exception)
         {
-            _logger.LogException(exception);
+            _logger.LogException<ArchivedSaves>(exception);
         }
 
         stopwatch.Stop();
 
-        _logger.WriteLine(ConsoleColor.Cyan, $"Archives: Pruning done in {stopwatch.Elapsed.TotalSeconds} seconds.");
+        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan,
+            $"Pruning done in {stopwatch.Elapsed.TotalSeconds} seconds.");
     }
 
     private void InternalPack(string source)
     {
-        _logger.WriteLine(ConsoleColor.Cyan, "Archives: Packing started...");
+        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan, "Packing started...");
 
         var stopwatch = Stopwatch.StartNew();
 
@@ -146,14 +147,14 @@ public class ArchivedSaves : IService
             }
             catch (Exception exception)
             {
-                _logger.LogException(exception);
+                _logger.LogException<ArchivedSaves>(exception);
             }
 
             ZipFile.CreateFromDirectory(source, destinationName, CompressionLevel.Optimal, false);
         }
         catch (Exception exception)
         {
-            _logger.LogException(exception);
+            _logger.LogException<ArchivedSaves>(exception);
         }
 
         try
@@ -162,12 +163,13 @@ public class ArchivedSaves : IService
         }
         catch (Exception exception)
         {
-            _logger.LogException(exception);
+            _logger.LogException<ArchivedSaves>(exception);
         }
 
         stopwatch.Stop();
 
-        _logger.WriteLine(ConsoleColor.Cyan, $"Archives: Packing done in {stopwatch.Elapsed.TotalSeconds} seconds.");
+        _logger.WriteLine<ArchivedSaves>(ConsoleColor.Cyan,
+            $"Packing done in {stopwatch.Elapsed.TotalSeconds} seconds.");
     }
 
     private void BeginPrune(DateTime threshold)

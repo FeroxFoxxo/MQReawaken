@@ -46,7 +46,11 @@ public class MessagePump : IService
     public void Initialize()
     {
         _sink.SocketConnect += SocketConnect;
+        _sink.ServerStarted += ServerStarted;
+    }
 
+    private void ServerStarted()
+    {
         var success = false;
 
         do
@@ -59,13 +63,13 @@ public class MessagePump : IService
 
             if (success) continue;
 
-            _logger.WriteLine(ConsoleColor.Yellow, "MessagePump: Retrying listeners...");
+            _logger.WriteLine<MessagePump>(ConsoleColor.Yellow, "Retrying listeners...");
 
             Thread.Sleep(10000);
         } while (!success);
     }
 
-    private void SocketConnect(SocketConnectEventArgs @event)
+    private static void SocketConnect(SocketConnectEventArgs @event)
     {
         if (!@event.AllowConnection)
             return;
@@ -81,15 +85,9 @@ public class MessagePump : IService
 
             foreach (var socket in accepted)
             {
-                NetState netStateInstance = new(socket, _logger, _networkLogger,
-                    _handler, _limiter, _config, _sink);
-
-                netStateInstance.Start();
-
-                if (netStateInstance.Running)
-                    _logger.WriteLine(ConsoleColor.Green,
-                        $"Client: {netStateInstance}: Connected. [{_handler.Instances.Count} Online]"
-                    );
+                new NetState(socket, _logger, _networkLogger,
+                        _handler, _limiter, _config, _sink)
+                    .Start();
             }
         }
     }

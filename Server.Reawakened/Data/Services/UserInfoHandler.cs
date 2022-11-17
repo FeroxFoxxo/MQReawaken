@@ -17,4 +17,7 @@ public class UserInfoHandler : DataHandler<UserInfo>
         _handler.AddUser(username, new User(info));
         Data.Add(username, info);
     }
+
+    public void InitializeUser(string username) =>
+        AddUserInfo(username, Data.ContainsKey(username) ? Data[username] : new UserInfo());
 }

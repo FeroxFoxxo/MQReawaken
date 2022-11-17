@@ -57,12 +57,12 @@ public class AutoSave : IService
         try
         {
             if (!Backup())
-                Console.WriteLine("WARNING: Automatic backup FAILED");
+                _logger.WriteLine<AutoSave>(ConsoleColor.Red, "Automatic backup failed");
         }
         catch (Exception exception)
         {
-            Console.WriteLine("WARNING: Automatic backup FAILED:\n{0}", exception);
-            _logger.LogException(exception);
+            _logger.WriteLine<AutoSave>(ConsoleColor.Red, "Automatic backup failed:");
+            _logger.LogException<AutoSave>(exception);
         }
 
         _world.Save(true, false);
@@ -108,7 +108,7 @@ public class AutoSave : IService
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogException(exception);
+                    _logger.LogException<AutoSave>(exception);
                 }
             }
             else
@@ -123,7 +123,7 @@ public class AutoSave : IService
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogException(exception);
+                    _logger.LogException<AutoSave>(exception);
                 }
 
                 if (!delete)
@@ -135,7 +135,7 @@ public class AutoSave : IService
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogException(exception);
+                    _logger.LogException<AutoSave>(exception);
                 }
             }
         }

@@ -2,6 +2,7 @@
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using Server.Base.Core.Abstractions;
+using Server.Base.Core.Helpers;
 using Server.Base.Logging;
 using Server.Base.Network;
 using Server.Base.Network.Services;
@@ -27,21 +28,25 @@ public class PacketHandler : IService
 
     private readonly ReflectionUtils _reflectionUtils;
     private readonly IServiceProvider _services;
+    private readonly EventSink _sink;
     private readonly UserHandler _userHandler;
 
     public PacketHandler(IServiceProvider services, ReflectionUtils reflectionUtils, NetworkLogger logger,
-        NetStateHandler handler, UserHandler userHandler)
+        NetStateHandler handler, UserHandler userHandler, EventSink sink)
     {
         _services = services;
         _reflectionUtils = reflectionUtils;
         _logger = logger;
         _handler = handler;
         _userHandler = userHandler;
+        _sink = sink;
         _protocolsXt = new Dictionary<string, ExternalCallback>();
         _protocolsSystem = new Dictionary<string, SystemCallback>();
     }
 
-    public void Initialize()
+    public void Initialize() => _sink.ServerStarted += AddProtocols;
+
+    private void AddProtocols()
     {
         foreach (var type in _services.GetServices<Module>().Select(m => m.GetType().Assembly.GetTypes())
                      .SelectMany(sl => sl).Where(myType => myType.IsClass && !myType.IsAbstract))
