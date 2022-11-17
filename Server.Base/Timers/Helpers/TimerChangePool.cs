@@ -4,7 +4,7 @@ public class TimerChangePool
 {
     public readonly Queue<TimerChangeEntry> InstancePool;
 
-    public TimerChangePool(Queue<TimerChangeEntry> instancePool) => InstancePool = instancePool;
+    public TimerChangePool() => InstancePool = new Queue<TimerChangeEntry>();
 
     public TimerChangeEntry GetInstance(Timer timer, int index, bool adding)
     {

@@ -3,8 +3,8 @@ using System.Reflection;
 using System.Runtime;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Server.Base.Core.Abstractions;
 using Server.Base.Core.Events;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
@@ -16,7 +16,7 @@ using Module = Server.Base.Core.Abstractions.Module;
 
 namespace Server.Base.Core.Services;
 
-public class ServerHandler : IService
+public class ServerHandler : IHostedService
 {
     private readonly NetStateHandler _handler;
     private readonly ILogger<ServerHandler> _logger;
@@ -56,14 +56,10 @@ public class ServerHandler : IService
         MultiConsoleOut = new MultiTextWriter(Console.Out, new FileLogger("console.log"));
     }
 
-    public void Initialize()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         AppDomain.CurrentDomain.UnhandledException += UnhandledException;
-        AppDomain.CurrentDomain.ProcessExit += (_, _) => HandleClosed();
-    }
 
-    public void StartServer()
-    {
         try
         {
             if (!Directory.Exists("Logs"))
@@ -118,6 +114,14 @@ public class ServerHandler : IService
         {
             UnhandledException(null, new UnhandledExceptionEventArgs(ex, true));
         }
+
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        HandleClosed();
+        return Task.CompletedTask;
     }
 
     private void UnhandledException(object sender, UnhandledExceptionEventArgs ex)

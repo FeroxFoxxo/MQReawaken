@@ -22,8 +22,14 @@ public class Logger : ILogger
         {
             if (_output != null) return _output;
 
-            var currentLog = Path.Combine(InternalDirectory.GetBaseDirectory(), LogDirectory,
+            var currentLog = Path.Combine(
+                InternalDirectory.GetBaseDirectory(), LogDirectory,
                 $"{DateTime.UtcNow.ToShortDateString().Replace('/', '_')}.log");
+
+            var path = Path.GetDirectoryName(currentLog);
+
+            if (!Directory.Exists(path) && path != null)
+                Directory.CreateDirectory(path);
 
             _output = new StreamWriter(
                 !File.Exists(currentLog)
@@ -57,7 +63,7 @@ public class Logger : ILogger
 
         if (ex != null)
         {
-            WriteLine(ConsoleColor.Red, message);
+            WriteLine(ConsoleColor.Red, message, "E", eventId.Id);
             LogException(ex);
         }
         else
@@ -73,7 +79,18 @@ public class Logger : ILogger
                 _ => ConsoleColor.DarkMagenta
             };
 
-            WriteLine(color, message);
+            var shortLogLevel = logLevel switch
+            {
+                LogLevel.Trace => "T",
+                LogLevel.Debug => "D",
+                LogLevel.Information => "I",
+                LogLevel.Warning => "W",
+                LogLevel.Error => "E",
+                LogLevel.Critical => "C",
+                _ => "U"
+            };
+
+            WriteLine(color, message, shortLogLevel, eventId.Id);
         }
     }
 
@@ -83,12 +100,15 @@ public class Logger : ILogger
 
     public void ShouldDebugWithName(bool shouldDebugName) => _shouldDebugName = shouldDebugName;
 
-    private void WriteLine(ConsoleColor color, string message)
+    private void WriteLine(ConsoleColor color, string message, string shortLogLevel, int eventId)
     {
+        var currentTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+        var prefix = $"[{currentTime}] [{shortLogLevel}]{(_shouldDebugName ? $" {_categoryName}[{eventId}]" : "")}: ";
+
         lock (((ICollection)ConsoleColors).SyncRoot)
         {
             PushColor(color);
-            Console.WriteLine($"{(_shouldDebugName ? $"{_categoryName}: " : "")}{message}");
+            Console.WriteLine($"{(_shouldDebugName ? $"{prefix}: " : "")}{message}");
             PopColor();
         }
     }
@@ -125,8 +145,7 @@ public class Logger : ILogger
 
     private void LogException(Exception ex)
     {
-        WriteLine(ConsoleColor.Red, "Caught Exception:");
-        WriteLine(ConsoleColor.DarkRed, ex.ToString());
+        WriteLine(ConsoleColor.DarkRed, ex.ToString(), "C", ex.HResult);
 
         Output.WriteLine($"Exception Caught: {DateTime.UtcNow}");
         Output.WriteLine(ex);

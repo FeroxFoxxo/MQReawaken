@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Server.Base.Core.Abstractions;
+using Server.Base.Core.Services;
 using Server.Base.Logging;
 using Server.Web.Abstractions;
 
@@ -24,7 +25,7 @@ public class Initialize
 
             var builder = WebApplication.CreateBuilder();
 
-            builder.Services.AddSingleton(logger);
+            builder.Services.AddHostedService<ServerHandler>();
 
             logger.LogInformation("Getting Modules");
             var modules = GetModules(logger);
@@ -51,9 +52,9 @@ public class Initialize
         }
     }
 
-    private static List<Module> GetModules(ILogger logger)
+    private static List<Module> GetModules(Logger logger)
     {
-        var modules = ImportModules.GetModules();
+        var modules = ImportModules.GetModules(logger);
 
         foreach (var module in modules)
         {

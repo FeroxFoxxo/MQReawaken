@@ -1,4 +1,5 @@
 ﻿using Server.Base.Core.Abstractions;
+using Server.Base.Logging;
 
 namespace Protocols.System;
 
@@ -9,4 +10,8 @@ public class SysProtocol : Module
     public override int Patch => 1;
 
     public override string[] Contributors { get; } = { "Ferox" };
+
+    public SysProtocol(Logger logger) : base(logger)
+    {
+    }
 }
