@@ -14,27 +14,15 @@ public class Logger : ILogger
 
     private bool _shouldDebugName;
 
-    private static string LogDirectory => "Logs/Exceptions";
-
     private static StreamWriter Output
     {
         get
         {
             if (_output != null) return _output;
 
-            var currentLog = Path.Combine(
-                InternalDirectory.GetBaseDirectory(), LogDirectory,
-                $"{DateTime.UtcNow.ToShortDateString().Replace('/', '_')}.log");
+            var fileName = $"{DateTime.UtcNow.ToShortDateString().Replace('/', '_')}.log";
 
-            var path = Path.GetDirectoryName(currentLog);
-
-            if (!Directory.Exists(path) && path != null)
-                Directory.CreateDirectory(path);
-
-            _output = new StreamWriter(
-                !File.Exists(currentLog)
-                    ? File.Create(currentLog)
-                    : File.Open(currentLog, FileMode.Append))
+            _output = new StreamWriter(GetLogFileStream.GetLogFile(fileName, "Exceptions"))
             {
                 AutoFlush = true
             };

@@ -16,7 +16,7 @@ public class LevelHandler : IService
     private readonly EventSink _sink;
     private readonly WorldGraph _worldGraph;
 
-    public LevelHandler(Microsoft.Extensions.Logging.ILogger logger, EventSink sink, ServerConfig config,
+    public LevelHandler(ILogger<LevelHandler> logger, EventSink sink, ServerConfig config,
         UserHandler handler)
     {
         _sink = sink;

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Server.Base.Core.Extensions;
 
 namespace Server.Base.Logging.Internal;
 
@@ -12,18 +13,20 @@ public class FileLogger : TextWriter
 
     public override Encoding Encoding => Encoding.Default;
 
-    public FileLogger(string file) : this(file, false)
+    public FileLogger(string file)
     {
-    }
-
-    public FileLogger(string file, bool append)
-    {
-        FileName = $"Logs/{file}";
-
         using (
-            StreamWriter writer = new(new FileStream(FileName, append ? FileMode.Append : FileMode.Create,
-                FileAccess.Write, FileShare.Read)))
+            var fileStream = GetLogFileStream.GetLogFile(file, ""))
+        {
+            FileName = fileStream.Name;
+
+            using var writer = new StreamWriter(fileStream)
+            {
+                AutoFlush = true
+            };
+
             writer.WriteLine(">>>Logging started on {0:f}.", DateTime.Now);
+        }
 
         _newLine = true;
     }
@@ -31,6 +34,7 @@ public class FileLogger : TextWriter
     public override void Write(char character)
     {
         using StreamWriter writer = new(new FileStream(FileName, FileMode.Append, FileAccess.Write, FileShare.Read));
+
         if (_newLine)
         {
             writer.Write(DateTime.UtcNow.ToString(DateFormat));
@@ -43,6 +47,7 @@ public class FileLogger : TextWriter
     public override void Write(string @string)
     {
         using StreamWriter writer = new(new FileStream(FileName, FileMode.Append, FileAccess.Write, FileShare.Read));
+
         if (_newLine)
         {
             writer.Write(DateTime.UtcNow.ToString(DateFormat));
@@ -55,6 +60,7 @@ public class FileLogger : TextWriter
     public override void WriteLine(string line)
     {
         using StreamWriter writer = new(new FileStream(FileName, FileMode.Append, FileAccess.Write, FileShare.Read));
+
         if (_newLine)
             writer.Write(DateTime.UtcNow.ToString(DateFormat));
 

@@ -79,7 +79,7 @@ public class NetworkLogger
         try
         {
             if (!_fileLoggers.ContainsKey(fileName))
-                _fileLoggers.Add(fileName, new FileLogger(fileName, true));
+                _fileLoggers.Add(fileName, new FileLogger(fileName));
 
             _fileLoggers[fileName].WriteLine(builder);
         }

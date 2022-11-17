@@ -4,9 +4,12 @@ using Server.Base.Accounts.Helpers;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
+using Server.Base.Core.Services;
 using Server.Base.Logging;
+using Server.Base.Network.Helpers;
 using Server.Base.Timers.Helpers;
 using Server.Base.Timers.Services;
+using Server.Base.Worlds;
 
 namespace Server.Base;
 
@@ -45,13 +48,17 @@ public class ServerBase : Module
         }
 
         services
+            .AddSingleton<Random>()
             .AddSingleton<InternalServerConfig>()
+            .AddSingleton<ServerHandler>()
+            .AddSingleton<EventSink>()
+            .AddSingleton<World>()
             .AddSingleton<TimerThread>()
             .AddSingleton<TimerChangePool>()
-            .AddSingleton<EventSink>()
+            .AddSingleton<AccountAttackLimiter>()
             .AddSingleton<PasswordHasher>()
-            .AddSingleton<Random>()
-            .AddSingleton<NetworkLogger>();
+            .AddSingleton<NetworkLogger>()
+            .AddSingleton<IpLimiter>();
     }
 
     public override void PostBuild(IServiceProvider services)

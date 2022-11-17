@@ -8,6 +8,8 @@ public class EventSink
 {
     public delegate void CrashedEventHandler(CrashedEventArgs @event);
 
+    public delegate void InternalShutdownEventHandler();
+
     public delegate void NetStateAddedHandler(NetStateAddedEventArgs @event);
 
     public delegate void NetStateRemovedHandler(NetStateRemovedEventArgs @event);
@@ -26,6 +28,7 @@ public class EventSink
 
     public event CrashedEventHandler Crashed;
     public event ShutdownEventHandler Shutdown;
+    public event InternalShutdownEventHandler InternalShutdown;
     public event ServerStartedEventHandler ServerStarted;
     public event SocketConnectEventHandler SocketConnect;
     public event WorldLoadEventHandler WorldLoad;
@@ -36,6 +39,7 @@ public class EventSink
 
     public void InvokeCrashed(CrashedEventArgs @event) => Crashed?.Invoke(@event);
     public void InvokeShutdown() => Shutdown?.Invoke();
+    public void InvokeInternalShutdown() => InternalShutdown?.Invoke();
     public void InvokeServerStarted() => ServerStarted?.Invoke();
     public void InvokeSocketConnect(SocketConnectEventArgs @event) => SocketConnect?.Invoke(@event);
     public void InvokeWorldLoad() => WorldLoad?.Invoke();

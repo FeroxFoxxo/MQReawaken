@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Server.Base.Core.Abstractions;
-using Server.Base.Core.Services;
+using Server.Base.Core.Workers;
 using Server.Base.Logging;
 using Server.Web.Abstractions;
 
@@ -25,7 +25,7 @@ public class Initialize
 
             var builder = WebApplication.CreateBuilder();
 
-            builder.Services.AddHostedService<ServerHandler>();
+            builder.Services.AddHostedService<ServerWorker>();
 
             logger.LogInformation("Getting Modules");
             var modules = GetModules(logger);

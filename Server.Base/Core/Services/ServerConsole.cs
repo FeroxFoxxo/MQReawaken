@@ -45,7 +45,7 @@ public class ServerConsole : IService
 
         AddCommand(new Command(
             "crash",
-            "Forces an ex to be thrown.",
+            "Forces an exception to be thrown.",
             _ => _timerThread.DelayCall(() => throw new Exception("Forced Crash"))
         ));
     }
