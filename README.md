@@ -6,7 +6,7 @@
 
 My email is feroxfoxxo@gmail.com if you need to get into contact with me directly.
 
-The logo above was made by Z6mbie, in [Grobold](https://www.dafont.com/grobold.font) font.
+The logo above was made by Z6mbie through vector art. Big thanks to him for the design!
 
 #### None of the repo, the tool, nor the repo owner is affiliated with, or sponsored or authorized by any affiliates of the original game.
 
