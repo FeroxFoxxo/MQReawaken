@@ -50,36 +50,26 @@ public class AccountHandler : DataHandler<Account>
             return;
 
         Logger.LogInformation("This server has no accounts.");
-        Logger.LogInformation("Do you want to create the owner account now? ( Y / N ) ");
+        Logger.LogInformation("Please create an owner account now");
 
-        var key = Console.ReadKey();
-        Console.WriteLine();
+        Logger.LogDebug("Username: ");
+        var username = Console.ReadLine();
 
-        if (key.KeyChar.ToString().ToUpper() == "Y")
+        Logger.LogDebug("Password: ");
+        var password = Console.ReadLine();
+
+        if (username == null)
         {
-            Logger.LogDebug("Username: ");
-            var username = Console.ReadLine();
-
-            Logger.LogDebug("Password: ");
-            var password = Console.ReadLine();
-
-            if (username == null)
-            {
-                Logger.LogError("Username for account is null!");
-                return;
-            }
-
-            Data.Add(username, new Account(username, password, Data.Count, _hasher)
-            {
-                AccessLevel = AccessLevel.Owner
-            });
-
-            Logger.LogInformation("Account created.");
+            Logger.LogError("Username for account is null!");
+            return;
         }
-        else
+
+        Data.Add(username, new Account(username, password, Data.Count, _hasher)
         {
-            Logger.LogError("Account not created.");
-        }
+            AccessLevel = AccessLevel.Owner
+        });
+
+        Logger.LogInformation("Account created.");
     }
 
     public AlrReason GetAccount(string username, string password, NetState netState)

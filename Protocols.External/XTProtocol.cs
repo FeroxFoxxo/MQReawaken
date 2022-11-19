@@ -1,8 +1,9 @@
-﻿using Server.Base.Core.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 
 namespace Protocols.External;
 
-public class XTProtocol : Module
+public class XtProtocol : Module
 {
     public override int Major => 1;
     public override int Minor => 0;
@@ -10,7 +11,7 @@ public class XTProtocol : Module
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public XTProtocol(Microsoft.Extensions.Logging.ILogger<XTProtocol> logger) : base(logger)
+    public XtProtocol(ILogger<XtProtocol> logger) : base(logger)
     {
     }
 }
