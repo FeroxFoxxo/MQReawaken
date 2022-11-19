@@ -39,7 +39,7 @@ public class ServerWorker : IHostedService
         _world = world;
         _sink = sink;
 
-        _modules = services.GetServices<Module>().ToArray();
+        _modules = services.GetRequiredServices<Module>().ToArray();
 
         MultiConsoleOut = new MultiTextWriter(Console.Out, new FileLogger("console.log"));
     }

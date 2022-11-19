@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Server.Base.Accounts.Helpers;
 using Server.Base.Core.Abstractions;
+using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
 using Server.Base.Core.Services;
@@ -21,7 +22,7 @@ public class ServerBase : Module
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public ServerBase(Logger logger) : base(logger)
+    public ServerBase(ILogger<ServerBase> logger) : base(logger)
     {
     }
 
@@ -33,19 +34,21 @@ public class ServerBase : Module
 
     public override void AddServices(IServiceCollection services)
     {
-        foreach (var service in AppDomain.CurrentDomain.GetAssemblies()
-                     .SelectMany(a =>
-                         a.GetTypes().Where(
-                             t => typeof(IService).IsAssignableFrom(t) &&
-                                  !t.IsInterface &&
-                                  !t.IsAbstract
-                         )
-                     )
-                )
+        Logger.LogDebug("Loading Services");
+        foreach (var service in RequiredServices.GetServices<IService>())
         {
             Logger.LogTrace("Loaded: {ServiceName}", service.Name);
             services.AddSingleton(service);
         }
+        Logger.LogDebug("Loaded Services");
+
+        Logger.LogDebug("Loading Modules");
+        foreach (var service in RequiredServices.GetServices<Module>())
+        {
+            Logger.LogTrace("Loaded: {ServiceName}", service.Name);
+            services.AddSingleton(service);
+        }
+        Logger.LogDebug("Loaded Modules");
 
         services
             .AddSingleton<Random>()
@@ -63,7 +66,7 @@ public class ServerBase : Module
 
     public override void PostBuild(IServiceProvider services)
     {
-        foreach (var service in services.GetServices<IService>())
+        foreach (var service in services.GetRequiredServices<IService>())
             service.Initialize();
     }
 }

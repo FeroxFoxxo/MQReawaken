@@ -23,7 +23,7 @@ public class NameGenSyllables : IService
     private void CreateSyllables()
     {
         var syllablesXml = new NamegenSyllablesXML();
-        syllablesXml.ReadDescriptionXml(File.ReadAllText("Data/NamegenSyllabes.xml"));
+        syllablesXml.ReadDescriptionXml(File.ReadAllText("XMLs/NamegenSyllabes.xml"));
 
         _syllables = new Dictionary<bool, List<List<string>>>
         {

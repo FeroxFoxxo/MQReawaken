@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
-using Server.Base.Logging;
 
 namespace Server.Web.Abstractions;
 
 public abstract class WebModule : Module
 {
-    protected WebModule(Logger logger) : base(logger)
+    protected WebModule(ILogger<WebModule> logger) : base(logger)
     {
     }
 

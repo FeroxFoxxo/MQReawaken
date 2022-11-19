@@ -1,5 +1,5 @@
-root = true
 # Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = true
 
 # C# files
 [*.cs]
@@ -12,12 +12,15 @@ indent_style = space
 tab_width = 4
 
 # New line preferences
+end_of_line = crlf
 insert_final_newline = true
 
 #### .NET Coding Conventions ####
 
 # Organize usings
 dotnet_separate_import_directive_groups = false
+dotnet_sort_system_directives_first = false
+file_header_template = unset
 
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false:suggestion
@@ -31,7 +34,7 @@ dotnet_style_predefined_type_for_member_access = true:suggestion
 
 # Parentheses preferences
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
-dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:none
+dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary:none
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary
 dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:none
 

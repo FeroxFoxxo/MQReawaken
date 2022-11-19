@@ -19,14 +19,14 @@ public class CrashGuard : IService
     private readonly World _world;
 
     public CrashGuard(NetStateHandler handler, ILogger<CrashGuard> logger, EventSink sink, World world,
-        IServiceProvider serviceProvider)
+        IServiceProvider services)
     {
         _handler = handler;
         _logger = logger;
         _sink = sink;
         _world = world;
 
-        _modules = serviceProvider.GetServices<Module>().ToArray();
+        _modules = services.GetServices<Module>().ToArray();
     }
 
     public void Initialize() => _sink.Crashed += OnCrash;

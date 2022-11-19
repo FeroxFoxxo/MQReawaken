@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,8 @@ public class Initialize
             logger.LogInformation("======== Running Application =======");
 
             logger.ShouldDebugWithName(true);
+            Console.WriteLine();
+
             await app.RunAsync();
         }
 
@@ -52,9 +55,9 @@ public class Initialize
         }
     }
 
-    private static List<Module> GetModules(Logger logger)
+    private static IEnumerable<Module> GetModules(Logger logger)
     {
-        var modules = ImportModules.GetModules(logger);
+        var modules = ImportModules.GetModules();
 
         foreach (var module in modules)
         {
@@ -67,28 +70,29 @@ public class Initialize
             logger.LogTrace("        {Contributors}", string.Join(", ", module.Contributors));
         }
 
-        logger.LogDebug("Fetched {ModuleCount} modules", modules.Count);
+        logger.LogDebug("Fetched {ModuleCount} modules", modules.Count());
 
         return modules;
     }
 
-    private static void InitializeModules(List<Module> modules, WebApplicationBuilder builder, ILogger logger)
+    private static void InitializeModules(IEnumerable<Module> modules, WebApplicationBuilder builder, ILogger logger)
     {
+        logger.LogInformation("Initializing Logging");
         foreach (var startup in modules)
             startup.AddLogging(builder.Logging);
-
         logger.LogDebug("Successfully initialized logging");
 
+        logger.LogInformation("Initializing Services");
         foreach (var startup in modules)
             startup.AddServices(builder.Services);
-
         logger.LogDebug("Successfully initialized services");
 
+        logger.LogInformation("Configuring Services");
         foreach (var startup in modules)
             startup.ConfigureServices(builder.Configuration, builder.Services);
-
         logger.LogDebug("Successfully configured services");
 
+        logger.LogInformation("Initializing Web Services");
         var controller = builder.Services.AddControllers()
             .AddNewtonsoftJson(x => { x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; });
 
@@ -99,11 +103,10 @@ public class Initialize
 
             controller.AddApplicationPart(module.GetType().Assembly);
         }
-
         logger.LogDebug("Successfully initialized web services");
     }
 
-    private static void ConfigureApp(List<Module> modules, WebApplication app, ILogger logger)
+    private static void ConfigureApp(IEnumerable<Module> modules, WebApplication app, ILogger logger)
     {
         foreach (var startup in modules)
         {

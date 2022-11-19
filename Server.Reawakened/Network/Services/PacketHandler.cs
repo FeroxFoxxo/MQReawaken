@@ -2,6 +2,7 @@
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using Server.Base.Core.Abstractions;
+using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Logging;
 using Server.Base.Network;
@@ -48,7 +49,7 @@ public class PacketHandler : IService
 
     private void AddProtocols()
     {
-        foreach (var type in _services.GetServices<Module>().Select(m => m.GetType().Assembly.GetTypes())
+        foreach (var type in _services.GetRequiredServices<Module>().Select(m => m.GetType().Assembly.GetTypes())
                      .SelectMany(sl => sl).Where(myType => myType.IsClass && !myType.IsAbstract))
         {
             if (type.IsSubclassOf(typeof(SystemProtocol)))

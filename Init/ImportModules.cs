@@ -1,23 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Protocols.External;
 using Protocols.System;
 using Server.Base;
 using Server.Base.Core.Abstractions;
+using Server.Base.Core.Extensions;
 using Server.Base.Logging;
 using Server.Reawakened;
 using Server.Web;
 
 namespace Init;
 
-public class ImportModules
+public static class ImportModules
 {
-    public static List<Module> GetModules(Logger logger) =>
-        new()
-        {
-            new XTProtocol(logger),
-            new SysProtocol(logger),
-            new ServerBase(logger),
-            new Reawakened(logger),
-            new Web(logger)
-        };
+    public static void AddModules(this IServiceCollection services) =>
+        services
+        .AddSingleton<Web>()
+        .AddSingleton<Reawakened>()
+        .AddSingleton<ServerBase>()
+        .AddSingleton<SysProtocol>()
+        .AddSingleton<XTProtocol>();
+
+    public static IEnumerable<Module> GetModules()
+    {
+        var services = new ServiceCollection();
+        services.AddModules();
+        services.AddLogging(l => l.AddProvider(new LoggerProvider()));
+        var provider = services.BuildServiceProvider();
+        return provider.GetRequiredServices<Module>();
+    }
 }

@@ -1,5 +1,4 @@
 ﻿using Server.Base.Core.Abstractions;
-using Server.Base.Logging;
 
 namespace Protocols.External;
 
@@ -11,7 +10,7 @@ public class XTProtocol : Module
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public XTProtocol(Logger logger) : base(logger)
+    public XTProtocol(Microsoft.Extensions.Logging.ILogger<XTProtocol> logger) : base(logger)
     {
     }
 }

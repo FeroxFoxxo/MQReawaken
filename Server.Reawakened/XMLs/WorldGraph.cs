@@ -19,6 +19,6 @@ public class WorldGraph : WorldGraphXML
         field = wGType.GetField("_levelInfos", BindingFlags.NonPublic | BindingFlags.Instance);
         field?.SetValue(this, new Dictionary<int, LevelInfo>());
 
-        ReadDescriptionXml(File.ReadAllText("Data/WorldGraph.xml"));
+        ReadDescriptionXml(File.ReadAllText("XMLs/WorldGraph.xml"));
     }
 }

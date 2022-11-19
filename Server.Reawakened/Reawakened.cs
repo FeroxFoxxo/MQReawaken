@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Server.Base.Core.Abstractions;
-using Server.Base.Logging;
 using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Network.Helpers;
 using SmartFoxClientAPI;
@@ -15,14 +14,15 @@ public class Reawakened : Module
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public Reawakened(Logger logger) : base(logger)
+    public Reawakened(Microsoft.Extensions.Logging.ILogger<Reawakened> logger) : base(logger)
     {
     }
 
     public override void AddServices(IServiceCollection services) =>
         services
             .AddSingleton<ReflectionUtils>()
-            .AddSingleton<ServerConfig>();
+            .AddSingleton<ServerConfig>()
+            .AddSingleton<SmartFoxClient>();
 
     public override string GetModuleInformation() =>
         $"{base.GetModuleInformation()} for API {new SmartFoxClient().GetVersion()}";

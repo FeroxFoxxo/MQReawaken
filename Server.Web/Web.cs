@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Server.Base.Logging;
+using Microsoft.Extensions.Logging;
 using Server.Web.Abstractions;
 using Server.Web.Middleware;
 
@@ -22,7 +22,7 @@ public class Web : WebModule
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public Web(Logger logger) : base(logger)
+    public Web(ILogger<Web> logger) : base(logger)
     {
     }
 
