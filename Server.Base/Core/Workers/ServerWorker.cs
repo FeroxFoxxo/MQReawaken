@@ -23,6 +23,7 @@ public class ServerWorker : IHostedService
     private readonly MessagePump _pump;
     private readonly ServerHandler _serverHandler;
     private readonly EventSink _sink;
+    private Thread _serverThread;
     private readonly TimerThread _timerThread;
     private readonly World _world;
 
@@ -47,6 +48,13 @@ public class ServerWorker : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _sink.InternalShutdown += OnClose;
+        _sink.ServerStarted += () => _serverThread.Start();
+        Thread.CurrentThread.Name = "Main Thread";
+
+        _serverThread = new Thread(ServerLoopThread)
+        {
+            Name = "Timer Thread"
+        };
 
         try
         {
@@ -59,8 +67,6 @@ public class ServerWorker : IHostedService
         {
             _logger.LogError(ex, "Could not get log directory!");
         }
-
-        Thread.CurrentThread.Name = "Server Thread";
 
         var baseDirectory = InternalDirectory.GetBaseDirectory();
 
@@ -85,6 +91,11 @@ public class ServerWorker : IHostedService
         _world.Load();
         _sink.InvokeServerStarted();
 
+        return Task.CompletedTask;
+    }
+
+    public void ServerLoopThread()
+    {
         try
         {
             while (!_serverHandler.IsClosing)
@@ -101,8 +112,6 @@ public class ServerWorker : IHostedService
         {
             _serverHandler.UnhandledException(null, new UnhandledExceptionEventArgs(ex, true));
         }
-
-        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

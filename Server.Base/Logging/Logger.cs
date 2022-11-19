@@ -7,12 +7,13 @@ namespace Server.Base.Logging;
 public class Logger : ILogger
 {
     private const LogLevel Level = LogLevel.Trace;
+
     private static readonly Stack<ConsoleColor> ConsoleColors = new();
+
+    private static int _offset;
     private static StreamWriter _output;
 
     private readonly string _categoryName;
-
-    private bool _shouldDebugName;
 
     private static StreamWriter Output
     {
@@ -38,7 +39,6 @@ public class Logger : ILogger
     public Logger(string categoryName)
     {
         _categoryName = categoryName;
-        _shouldDebugName = true;
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception ex,
@@ -86,17 +86,20 @@ public class Logger : ILogger
 
     public IDisposable BeginScope<TState>(TState state) => null;
 
-    public void ShouldDebugWithName(bool shouldDebugName) => _shouldDebugName = shouldDebugName;
-
     private void WriteLine(ConsoleColor color, string message, string shortLogLevel, int eventId)
     {
         var currentTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-        var prefix = $"[{currentTime}] [{shortLogLevel}]{(_shouldDebugName ? $" {_categoryName}[{eventId}]" : "")}: ";
+        var prefix = $"[{currentTime}] [{shortLogLevel}] {_categoryName.Split('.').Last()}[{eventId}]";
+
+        if (_offset < prefix.Length) _offset = prefix.Length;
+        var length = _offset - prefix.Length;
+        if (length < 0) length = 0;
+        var offsetSpaced = string.Concat(Enumerable.Repeat(" ", length));
 
         lock (((ICollection)ConsoleColors).SyncRoot)
         {
             PushColor(color);
-            Console.WriteLine($"{(_shouldDebugName ? $"{prefix}: " : "")}{message}");
+            Console.WriteLine($"{prefix}:{offsetSpaced} {message}");
             PopColor();
         }
     }

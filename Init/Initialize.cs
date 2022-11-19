@@ -18,7 +18,6 @@ public class Initialize
     public static async Task Main()
     {
         var logger = new Logger("Initialization");
-        logger.ShouldDebugWithName(false);
 
         try
         {
@@ -42,9 +41,6 @@ public class Initialize
             ConfigureApp(modules, app, logger);
 
             logger.LogInformation("======== Running Application =======");
-
-            logger.ShouldDebugWithName(true);
-            Console.WriteLine();
 
             await app.RunAsync();
         }
