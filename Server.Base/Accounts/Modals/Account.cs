@@ -26,6 +26,8 @@ public class Account
 
     public string Username { get; set; }
 
+    public Account() { }
+
     public Account(string username, string password, int userPlayerId, PasswordHasher hasher)
     {
         Username = username;

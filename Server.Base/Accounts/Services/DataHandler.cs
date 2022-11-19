@@ -30,32 +30,33 @@ public abstract class DataHandler<T> : IService
 
     public void Load()
     {
-        var filePath = GetFileName();
-
-        if (!File.Exists(filePath))
-            return;
-
-        using StreamReader streamReader = new(filePath, false);
-        var contents = streamReader.ReadToEnd();
-
         try
         {
-            Data = JsonConvert.DeserializeObject<Dictionary<string, T>>(contents) ??
-                   throw new InvalidOperationException();
+            var filePath = GetFileName();
 
-            var count = Data.Count;
+            if (File.Exists(filePath))
+            {
 
-            Logger.LogInformation("Loaded {Count} {Name}{Plural} to memory", count, typeof(T).Name,
-                count != 1 ? "s" : "");
+                using StreamReader streamReader = new(filePath, false);
+                var contents = streamReader.ReadToEnd();
+
+                Data = JsonConvert.DeserializeObject<Dictionary<string, T>>(contents) ??
+                       throw new InvalidOperationException();
+
+                var count = Data.Count;
+
+                Logger.LogInformation("Loaded {Count} {Name}{Plural} to memory", count, typeof(T).Name,
+                    count != 1 ? "s" : "");
+
+                streamReader.Close();
+            }
+
+            OnAfterLoad();
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Could not deserialize save for {Type}.", typeof(T).Name);
         }
-
-        streamReader.Close();
-
-        OnAfterLoad();
     }
 
     public virtual void OnAfterLoad()

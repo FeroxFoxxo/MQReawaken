@@ -45,7 +45,14 @@ public class World
 
         Loading = true;
 
-        _sink.InvokeWorldLoad();
+        try
+        {
+            _sink.InvokeWorldLoad();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("FATAL: Exception in EventSink.WorldLoad", ex);
+        }
 
         Loading = false;
 
@@ -85,7 +92,7 @@ public class World
         }
         catch (Exception ex)
         {
-            throw new Exception("FATAL: Exception in EventSink.WorldSave", ex);
+            _logger.LogError ("FATAL: Exception in EventSink.WorldSave", ex);
         }
 
         stopWatch.Stop();

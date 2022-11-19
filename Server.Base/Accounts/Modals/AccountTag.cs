@@ -6,6 +6,8 @@ public class AccountTag
 
     public string Value { get; set; }
 
+    public AccountTag() { }
+
     public AccountTag(string name, string value)
     {
         Name = name;
