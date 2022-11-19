@@ -12,48 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Assembly-CSharp">
-            <HintPath>Dependencies\Assembly-CSharp.dll</HintPath>
-        </Reference>
-        <Reference Include="Assembly-CSharp-firstpass">
-            <HintPath>Dependencies\Assembly-CSharp-firstpass.dll</HintPath>
-        </Reference>
-        <Reference Include="Boo.Lang">
-            <HintPath>Dependencies\Boo.Lang.dll</HintPath>
-        </Reference>
-        <Reference Include="Crisp.AutoSuggest">
-            <HintPath>Dependencies\Crisp.AutoSuggest.dll</HintPath>
-        </Reference>
-        <Reference Include="Crisp.AutoSuggest.Interfaces">
-            <HintPath>Dependencies\Crisp.AutoSuggest.Interfaces.dll</HintPath>
-        </Reference>
-        <Reference Include="ICSharpCode.SharpZipLib">
-            <HintPath>Dependencies\ICSharpCode.SharpZipLib.dll</HintPath>
-        </Reference>
-        <Reference Include="LitJson">
-            <HintPath>Dependencies\LitJson.dll</HintPath>
-        </Reference>
-        <Reference Include="MQXMPP">
-            <HintPath>Dependencies\MQXMPP.dll</HintPath>
-        </Reference>
-        <Reference Include="SmartFoxClient">
-            <HintPath>Dependencies\SmartFoxClient.dll</HintPath>
-        </Reference>
-        <Reference Include="Thrift">
-            <HintPath>Dependencies\Thrift.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine">
-            <HintPath>Dependencies\UnityEngine.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.Networking">
-            <HintPath>Dependencies\UnityEngine.Networking.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.UI">
-            <HintPath>Dependencies\UnityEngine.UI.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
         <None Update="XMLs\NamegenSyllabes.xml">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -64,6 +22,58 @@
 
     <ItemGroup>
       <Folder Include="Dependencies\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="A2mCore">
+        <HintPath>Dependencies\A2mCore.dll</HintPath>
+      </Reference>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>Dependencies\Assembly-CSharp.dll</HintPath>
+      </Reference>
+      <Reference Include="Assembly-CSharp-firstpass">
+        <HintPath>Dependencies\Assembly-CSharp-firstpass.dll</HintPath>
+      </Reference>
+      <Reference Include="Assembly-UnityScript">
+        <HintPath>Dependencies\Assembly-UnityScript.dll</HintPath>
+      </Reference>
+      <Reference Include="Assembly-UnityScript-firstpass">
+        <HintPath>Dependencies\Assembly-UnityScript-firstpass.dll</HintPath>
+      </Reference>
+      <Reference Include="Boo.Lang">
+        <HintPath>Dependencies\Boo.Lang.dll</HintPath>
+      </Reference>
+      <Reference Include="Crisp.AutoSuggest">
+        <HintPath>Dependencies\Crisp.AutoSuggest.dll</HintPath>
+      </Reference>
+      <Reference Include="Crisp.AutoSuggest.Interfaces">
+        <HintPath>Dependencies\Crisp.AutoSuggest.Interfaces.dll</HintPath>
+      </Reference>
+      <Reference Include="ICSharpCode.SharpZipLib">
+        <HintPath>Dependencies\ICSharpCode.SharpZipLib.dll</HintPath>
+      </Reference>
+      <Reference Include="LitJson">
+        <HintPath>Dependencies\LitJson.dll</HintPath>
+      </Reference>
+      <Reference Include="MQXMPP">
+        <HintPath>Dependencies\MQXMPP.dll</HintPath>
+      </Reference>
+      <Reference Include="NGGManager">
+        <HintPath>Dependencies\NGGManager.dll</HintPath>
+      </Reference>
+      <Reference Include="SmartFoxClient">
+        <HintPath>Dependencies\SmartFoxClient.dll</HintPath>
+      </Reference>
+      <Reference Include="Thrift">
+        <HintPath>Dependencies\Thrift.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine">
+        <HintPath>Dependencies\UnityEngine.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Dependencies\" />
     </ItemGroup>
 
 </Project>

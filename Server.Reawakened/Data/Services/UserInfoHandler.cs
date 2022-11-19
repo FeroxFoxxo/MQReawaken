@@ -14,8 +14,11 @@ public class UserInfoHandler : DataHandler<UserInfo>
 
     public void AddUserInfo(string username, UserInfo info)
     {
+        if (!_handler.Users.ContainsKey(username))
         _handler.AddUser(username, new User(info));
-        Data.Add(username, info);
+
+        if (!Data.ContainsKey(username))
+            Data.Add(username, info);
     }
 
     public void InitializeUser(string username) =>

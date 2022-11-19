@@ -20,11 +20,13 @@ public class Login : SystemProtocol
         var password = xmlDoc.SelectSingleNode("/msg/body/login/pword")?.FirstChild?.Value;
 
         var reason = AccountHandler.GetAccount(username, password, NetState);
-        UserInfoHandler.InitializeUser(username);
 
         if (reason == AlrReason.Accepted)
+        {
+            UserInfoHandler.InitializeUser(username);
             SendXml("logOK",
                 $"<login id='{NetState.Account.UserId}' mod='{NetState.Account.IsModerator()}' n='{username}' />");
+        }
         else
             SendXml("logKO", $"<login e='{reason.GetErrorValue()}' />");
     }

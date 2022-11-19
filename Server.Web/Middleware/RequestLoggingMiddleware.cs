@@ -32,8 +32,12 @@ public class RequestLoggingMiddleware
 
             await _next(context);
 
-            logger.LogTrace("{StatusCode} {Method} {Path}", context.Response.StatusCode, method,
-                context.Request.Path.Value);
+            if (context.Response.StatusCode != 404)
+                logger.LogTrace("{StatusCode} {Method} {Path}", context.Response.StatusCode, method,
+                    context.Request.Path.Value);
+            else
+                logger.LogWarning("{StatusCode} {Method} {Path}", context.Response.StatusCode, method,
+                    context.Request.Path.Value);
         }
         catch (Exception ex)
         {
