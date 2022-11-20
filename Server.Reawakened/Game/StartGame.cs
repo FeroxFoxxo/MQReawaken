@@ -10,14 +10,12 @@ public class StartGame : IService
 
     public StartGame(EventSink sink) => _sink = sink;
 
-    public void Initialize()
-    {
-        _sink.WorldLoad += GetGameInformation;
-    }
+    public void Initialize() => _sink.WorldLoad += GetGameInformation;
 
     private void GetGameInformation()
     {
-        //GetGameExecutable();
+        var gameFile = GetGameExecutable();
+
     }
 
     [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]

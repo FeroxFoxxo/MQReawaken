@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Server.Base.Core.Extensions;
+using System.Collections;
 
 namespace Server.Base.Logging;
 
@@ -36,10 +36,7 @@ public class Logger : ILogger
         }
     }
 
-    public Logger(string categoryName)
-    {
-        _categoryName = categoryName;
-    }
+    public Logger(string categoryName) => _categoryName = categoryName;
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception ex,
         Func<TState, Exception, string> formatter)
@@ -99,7 +96,10 @@ public class Logger : ILogger
         lock (((ICollection)ConsoleColors).SyncRoot)
         {
             PushColor(color);
-            Console.WriteLine($"{prefix}:{offsetSpaced} {message}");
+
+            foreach (var msg in message.Split('\n'))
+                Console.WriteLine($"{prefix}:{offsetSpaced} {msg}");
+
             PopColor();
         }
     }

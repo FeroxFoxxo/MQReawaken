@@ -16,7 +16,7 @@ public abstract class Module
 
     public abstract string[] Contributors { get; }
 
-    protected Module(ILogger<Module> logger) => Logger = logger;
+    protected Module(ILogger logger) => Logger = logger;
 
     public virtual string GetModuleInformation() =>
         $"{GetType().Namespace} v{Major}.{Minor}.{Patch}";

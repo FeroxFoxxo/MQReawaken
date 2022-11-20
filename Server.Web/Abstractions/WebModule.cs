@@ -6,7 +6,7 @@ namespace Server.Web.Abstractions;
 
 public abstract class WebModule : Module
 {
-    protected WebModule(ILogger<WebModule> logger) : base(logger)
+    protected WebModule(ILogger logger) : base(logger)
     {
     }
 
