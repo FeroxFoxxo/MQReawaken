@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Server.Base.Core.Abstractions;
 
 namespace Server.Base.Core.Extensions;
 
@@ -10,11 +9,11 @@ public static class RequiredServices
 
     public static IEnumerable<Type> GetServices<T>() =>
         AppDomain.CurrentDomain.GetAssemblies()
-                     .SelectMany(a =>
-                         a.GetTypes().Where(
-                             t => typeof(T).IsAssignableFrom(t) &&
-                                  !t.IsInterface &&
-                                  !t.IsAbstract
-                         )
-                     );
+            .SelectMany(a =>
+                a.GetTypes().Where(
+                    t => typeof(T).IsAssignableFrom(t) &&
+                         !t.IsInterface &&
+                         !t.IsAbstract
+                )
+            );
 }

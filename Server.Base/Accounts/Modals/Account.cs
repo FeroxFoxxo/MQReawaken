@@ -1,6 +1,6 @@
-﻿using System.Globalization;
-using Server.Base.Accounts.Enums;
+﻿using Server.Base.Accounts.Enums;
 using Server.Base.Accounts.Helpers;
+using System.Globalization;
 
 namespace Server.Base.Accounts.Modals;
 
@@ -26,7 +26,9 @@ public class Account
 
     public string Username { get; set; }
 
-    public Account() { }
+    public Account()
+    {
+    }
 
     public Account(string username, string password, int userPlayerId, PasswordHasher hasher)
     {

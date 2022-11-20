@@ -1,9 +1,9 @@
-﻿using System.Xml;
-using Server.Base.Accounts.Enums;
+﻿using Server.Base.Accounts.Enums;
 using Server.Base.Accounts.Extensions;
 using Server.Base.Accounts.Services;
 using Server.Reawakened.Data.Services;
 using Server.Reawakened.Network.Protocols;
+using System.Xml;
 
 namespace Protocols.System._xml__SysProtocols;
 
@@ -28,6 +28,8 @@ public class Login : SystemProtocol
                 $"<login id='{NetState.Account.UserId}' mod='{NetState.Account.IsModerator()}' n='{username}' />");
         }
         else
+        {
             SendXml("logKO", $"<login e='{reason.GetErrorValue()}' />");
+        }
     }
 }

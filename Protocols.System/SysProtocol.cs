@@ -1,4 +1,5 @@
-﻿using Server.Base.Core.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 
 namespace Protocols.System;
 
@@ -10,7 +11,7 @@ public class SysProtocol : Module
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public SysProtocol(Microsoft.Extensions.Logging.ILogger<SysProtocol> logger) : base(logger)
+    public SysProtocol(ILogger<SysProtocol> logger) : base(logger)
     {
     }
 }

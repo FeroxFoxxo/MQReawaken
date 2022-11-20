@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Network.Helpers;
@@ -14,7 +15,7 @@ public class Reawakened : Module
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public Reawakened(Microsoft.Extensions.Logging.ILogger<Reawakened> logger) : base(logger)
+    public Reawakened(ILogger<Reawakened> logger) : base(logger)
     {
     }
 

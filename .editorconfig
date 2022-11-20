@@ -106,7 +106,7 @@ csharp_prefer_static_local_function = true:warning
 csharp_preferred_modifier_order = public, private, protected, internal, new, static, abstract, virtual, sealed, readonly, override, extern, unsafe, volatile, async, required:warning
 
 # Code-block preferences
-csharp_prefer_braces = true:warning
+csharp_prefer_braces = false:warning
 csharp_prefer_simple_using_statement = true:warning
 csharp_style_prefer_method_group_conversion = true:warning
 csharp_style_prefer_top_level_statements = true:warning
@@ -124,7 +124,7 @@ csharp_style_prefer_tuple_swap = true:warning
 csharp_style_prefer_utf8_string_literals = true:warning
 csharp_style_throw_expression = true:warning
 csharp_style_unused_value_assignment_preference = discard_variable:warning
-csharp_style_unused_value_expression_statement_preference = discard_variable:warning
+csharp_style_unused_value_expression_statement_preference = discard_variable:none
 
 # 'using' directive preferences
 csharp_using_directive_placement = outside_namespace:warning

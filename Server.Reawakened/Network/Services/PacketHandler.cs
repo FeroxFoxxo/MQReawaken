@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using System.Xml;
-using Microsoft.Extensions.DependencyInjection;
-using Server.Base.Core.Abstractions;
+﻿using Server.Base.Core.Abstractions;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Logging;
@@ -10,6 +7,8 @@ using Server.Base.Network.Services;
 using Server.Reawakened.Data.Services;
 using Server.Reawakened.Network.Helpers;
 using Server.Reawakened.Network.Protocols;
+using System.Reflection;
+using System.Xml;
 using Module = Server.Base.Core.Abstractions.Module;
 
 namespace Server.Reawakened.Network.Services;

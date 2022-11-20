@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,6 +6,10 @@ using Server.Base.Core.Abstractions;
 using Server.Base.Core.Workers;
 using Server.Base.Logging;
 using Server.Web.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Init;
 
@@ -99,6 +99,7 @@ public class Initialize
 
             controller.AddApplicationPart(module.GetType().Assembly);
         }
+
         logger.LogDebug("Successfully initialized web services");
     }
 

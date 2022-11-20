@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Server.Base.Core.Helpers;
 using Server.Base.Network.Services;
 using Server.Base.Worlds.Events;
+using System.Diagnostics;
 
 namespace Server.Base.Worlds;
 
@@ -92,7 +91,7 @@ public class World
         }
         catch (Exception ex)
         {
-            _logger.LogError ("FATAL: Exception in EventSink.WorldSave", ex);
+            _logger.LogError("FATAL: Exception in EventSink.WorldSave", ex);
         }
 
         stopWatch.Stop();

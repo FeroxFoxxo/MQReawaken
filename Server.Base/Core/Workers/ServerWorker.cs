@@ -1,8 +1,4 @@
-﻿using System.Reflection;
-using System.Runtime;
-using System.Runtime.Versioning;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
@@ -11,6 +7,9 @@ using Server.Base.Logging.Internal;
 using Server.Base.Network.Services;
 using Server.Base.Timers.Services;
 using Server.Base.Worlds;
+using System.Reflection;
+using System.Runtime;
+using System.Runtime.Versioning;
 using Module = Server.Base.Core.Abstractions.Module;
 
 namespace Server.Base.Core.Workers;
@@ -23,11 +22,11 @@ public class ServerWorker : IHostedService
     private readonly MessagePump _pump;
     private readonly ServerHandler _serverHandler;
     private readonly EventSink _sink;
-    private Thread _serverThread;
     private readonly TimerThread _timerThread;
     private readonly World _world;
 
     public readonly MultiTextWriter MultiConsoleOut;
+    private Thread _serverThread;
 
     public ServerWorker(NetStateHandler handler, IServiceProvider services, ILogger<ServerWorker> logger,
         ServerHandler serverHandler, MessagePump pump, TimerThread timerThread, World world, EventSink sink)
@@ -94,6 +93,12 @@ public class ServerWorker : IHostedService
         return Task.CompletedTask;
     }
 
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _serverHandler.HandleClosed();
+        return Task.CompletedTask;
+    }
+
     public void ServerLoopThread()
     {
         try
@@ -112,12 +117,6 @@ public class ServerWorker : IHostedService
         {
             _serverHandler.UnhandledException(null, new UnhandledExceptionEventArgs(ex, true));
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _serverHandler.HandleClosed();
-        return Task.CompletedTask;
     }
 
     public void OnClose()

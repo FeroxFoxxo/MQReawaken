@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Events;
 using Server.Base.Core.Helpers;
@@ -8,6 +6,8 @@ using Server.Base.Core.Models;
 using Server.Base.Core.Services;
 using Server.Base.Logging;
 using Server.Base.Network.Helpers;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Server.Base.Network.Services;
 

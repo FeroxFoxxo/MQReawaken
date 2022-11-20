@@ -40,6 +40,7 @@ public class ServerBase : Module
             Logger.LogTrace("Loaded: {ServiceName}", service.Name);
             services.AddSingleton(service);
         }
+
         Logger.LogDebug("Loaded Services");
 
         Logger.LogDebug("Loading Modules");
@@ -48,6 +49,7 @@ public class ServerBase : Module
             Logger.LogTrace("Loaded: {ServiceName}", service.Name);
             services.AddSingleton(service);
         }
+
         Logger.LogDebug("Loaded Modules");
 
         services

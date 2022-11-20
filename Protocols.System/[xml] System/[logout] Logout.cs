@@ -1,5 +1,5 @@
-﻿using System.Xml;
-using Server.Reawakened.Network.Protocols;
+﻿using Server.Reawakened.Network.Protocols;
+using System.Xml;
 
 namespace Protocols.System._xml__SysProtocols;
 

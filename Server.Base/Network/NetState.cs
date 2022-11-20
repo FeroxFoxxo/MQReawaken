@@ -1,7 +1,4 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Server.Base.Accounts.Modals;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
@@ -11,6 +8,9 @@ using Server.Base.Network.Enums;
 using Server.Base.Network.Events;
 using Server.Base.Network.Helpers;
 using Server.Base.Network.Services;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 namespace Server.Base.Network;
 

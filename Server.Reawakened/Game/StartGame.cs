@@ -15,7 +15,6 @@ public class StartGame : IService
     private void GetGameInformation()
     {
         var gameFile = GetGameExecutable();
-
     }
 
     [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]

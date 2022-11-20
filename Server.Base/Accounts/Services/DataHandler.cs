@@ -36,7 +36,6 @@ public abstract class DataHandler<T> : IService
 
             if (File.Exists(filePath))
             {
-
                 using StreamReader streamReader = new(filePath, false);
                 var contents = streamReader.ReadToEnd();
 

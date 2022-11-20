@@ -1,6 +1,6 @@
-﻿using System.Net;
-using Server.Base.Core.Models;
+﻿using Server.Base.Core.Models;
 using Server.Base.Network.Services;
+using System.Net;
 
 namespace Server.Base.Network.Helpers;
 

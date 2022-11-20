@@ -1,5 +1,5 @@
-﻿using System.Text;
-using Server.Base.Core.Extensions;
+﻿using Server.Base.Core.Extensions;
+using System.Text;
 
 namespace Server.Base.Logging.Internal;
 

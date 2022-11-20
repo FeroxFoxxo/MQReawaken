@@ -1,6 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using Server.Base.Accounts.Modals;
+using System.Security.Cryptography;
 using System.Text;
-using Server.Base.Accounts.Modals;
 
 namespace Server.Base.Accounts.Helpers;
 
