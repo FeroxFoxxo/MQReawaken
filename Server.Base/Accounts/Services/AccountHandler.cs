@@ -5,6 +5,7 @@ using Server.Base.Accounts.Helpers;
 using Server.Base.Accounts.Modals;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
+using Server.Base.Core.Services;
 using Server.Base.Logging;
 using Server.Base.Network;
 using Server.Base.Network.Helpers;
@@ -36,7 +37,13 @@ public class AccountHandler : DataHandler<Account>
         IpTable = new Dictionary<IPAddress, int>();
     }
 
-    public override void OnAfterLoad()
+    public override void Initialize()
+    {
+        base.Initialize();
+        Sink.ServerStarted += OnAfterLoad;
+    }
+
+    public void OnAfterLoad()
     {
         if (Data.Count <= 0)
             CreateDefaultAccount();
@@ -145,7 +152,7 @@ public class AccountHandler : DataHandler<Account>
         else
             Logger.LogError("Login: {NetState}: {Reason} for '{Username}'", netState, errorReason, username);
 
-        if (rejectReason != AlrReason.Accepted && rejectReason != AlrReason.InUse)
+        if (rejectReason is not AlrReason.Accepted and not AlrReason.InUse)
             _attackLimiter.RegisterInvalidAccess(netState);
 
         return rejectReason;
@@ -172,13 +179,7 @@ public class AccountHandler : DataHandler<Account>
         }
     }
 
-    public bool CanCreate(IPAddress ipAddress)
-    {
-        if (!IpTable.ContainsKey(ipAddress))
-            return true;
-
-        return IpTable[ipAddress] < 1;
-    }
+    public bool CanCreate(IPAddress ipAddress) => !IpTable.ContainsKey(ipAddress) || IpTable[ipAddress] < 1;
 
     private Account CreateAccount(NetState netState, string username, string password)
     {
@@ -194,7 +195,7 @@ public class AccountHandler : DataHandler<Account>
         }
 
         for (var i = 0; isSafe && i < password.Length; ++i)
-            isSafe = password[i] >= 0x20 && password[i] < 0x7F;
+            isSafe = password[i] is >= (char)0x20 and < (char)0x7F;
 
         if (!isSafe)
             return null;

@@ -1,8 +1,9 @@
 ﻿using Server.Base.Accounts.Enums;
+using Server.Base.Core.Abstractions;
 
 namespace Server.Base.Core.Models;
 
-public class InternalServerConfig
+public class InternalServerConfig : Config
 {
     public int MaxAccountsPerIp { get; set; }
     public char[] ForbiddenChars { get; set; }

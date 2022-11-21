@@ -4,7 +4,7 @@ using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Base.Worlds.Events;
 
-namespace Server.Base.Accounts.Services;
+namespace Server.Base.Core.Services;
 
 public abstract class DataHandler<T> : IService
 {
@@ -20,7 +20,7 @@ public abstract class DataHandler<T> : IService
         Data = new Dictionary<string, T>();
     }
 
-    public void Initialize()
+    public virtual void Initialize()
     {
         Sink.WorldLoad += Load;
         Sink.WorldSave += Save;
@@ -49,17 +49,15 @@ public abstract class DataHandler<T> : IService
 
                 streamReader.Close();
             }
-
-            OnAfterLoad();
+            else
+            {
+                Logger.LogWarning("Could not find save file for {FileName}, generating default.", filePath);
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Could not deserialize save for {Type}.", typeof(T).Name);
         }
-    }
-
-    public virtual void OnAfterLoad()
-    {
     }
 
     public void Save(WorldSaveEventArgs worldSaveEventArgs)

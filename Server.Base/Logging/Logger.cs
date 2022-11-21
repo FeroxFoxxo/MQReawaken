@@ -23,10 +23,7 @@ public class Logger : ILogger
 
             var fileName = $"{DateTime.UtcNow.ToShortDateString().Replace('/', '_')}.log";
 
-            _output = new StreamWriter(GetLogFileStream.GetLogFile(fileName, "Exceptions"))
-            {
-                AutoFlush = true
-            };
+            _output = GetFile.GetStreamWriter(fileName, "Exceptions", FileMode.OpenOrCreate);
 
             _output.WriteLine("----------------------------");
             _output.WriteLine($"Exception log started on {DateTime.UtcNow}");
@@ -136,7 +133,7 @@ public class Logger : ILogger
 
     private void LogException(Exception ex)
     {
-        WriteLine(ConsoleColor.DarkRed, ex.ToString(), "C", ex.HResult);
+        WriteLine(ConsoleColor.DarkRed, $"{ex}", "C", ex.HResult);
 
         Output.WriteLine($"Exception Caught: {DateTime.UtcNow}");
         Output.WriteLine(ex);

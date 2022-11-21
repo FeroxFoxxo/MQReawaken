@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
-using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Network.Helpers;
 using SmartFoxClientAPI;
 
@@ -22,7 +21,6 @@ public class Reawakened : Module
     public override void AddServices(IServiceCollection services) =>
         services
             .AddSingleton<ReflectionUtils>()
-            .AddSingleton<ServerConfig>()
             .AddSingleton<SmartFoxClient>();
 
     public override string GetModuleInformation() =>

@@ -15,15 +15,14 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.11" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Protocols.External\Protocols.External.csproj" />
         <ProjectReference Include="..\Protocols.System\Protocols.System.csproj" />
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
+        <ProjectReference Include="..\Server.Launcher\Server.Launcher.csproj" />
         <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
-        <ProjectReference Include="..\Server.Web\Server.Web.csproj" />
     </ItemGroup>
 
 </Project>

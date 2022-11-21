@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Workers;
 using Server.Base.Logging;
@@ -51,7 +50,7 @@ public class Initialize
         }
     }
 
-    private static IEnumerable<Module> GetModules(Logger logger)
+    private static IEnumerable<Module> GetModules(ILogger logger)
     {
         var modules = ImportModules.GetModules();
 
@@ -89,8 +88,8 @@ public class Initialize
         logger.LogDebug("Successfully configured services");
 
         logger.LogInformation("Initializing Web Services");
-        var controller = builder.Services.AddControllers()
-            .AddNewtonsoftJson(x => { x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; });
+
+        var controller = builder.Services.AddControllers();
 
         foreach (var module in modules)
         {
