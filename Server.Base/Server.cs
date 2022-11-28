@@ -14,13 +14,13 @@ using Server.Base.Core.Abstractions;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Services;
+using Server.Base.Core.Workers;
 using Server.Base.Logging;
+using Server.Base.Middleware;
 using Server.Base.Network.Helpers;
 using Server.Base.Timers.Helpers;
 using Server.Base.Timers.Services;
 using Server.Base.Worlds;
-using Server.Web.Abstractions;
-using Server.Web.Middleware;
 
 namespace Server.Base;
 
@@ -42,10 +42,10 @@ public class Server : WebModule
         loggingBuilder.AddProvider(new LoggerProvider());
     }
 
-    public override void AddServices(IServiceCollection services)
+    public override void AddServices(IServiceCollection services, IEnumerable<Module> modules)
     {
         Logger.LogDebug("Loading Services");
-        foreach (var service in RequiredServices.GetServices<IService>())
+        foreach (var service in RequiredServices.GetServices<IService>(modules))
         {
             Logger.LogTrace("   Loaded: {ServiceName}", service.Name);
             services.AddSingleton(service);
@@ -54,7 +54,7 @@ public class Server : WebModule
         Logger.LogDebug("Loaded services");
 
         Logger.LogDebug("Loading Modules");
-        foreach (var service in RequiredServices.GetServices<Module>())
+        foreach (var service in RequiredServices.GetServices<Module>(modules))
         {
             Logger.LogTrace("   Loaded: {ServiceName}", service.Name);
             services.AddSingleton(service);
@@ -64,7 +64,7 @@ public class Server : WebModule
 
         Logger.LogDebug("Loading Configs");
 
-        foreach (var service in RequiredServices.GetServices<Config>())
+        foreach (var service in RequiredServices.GetServices<IConfig>(modules))
         {
             if (services.LoadConfigsWasFound(service))
                 Logger.LogTrace("   Config: Found {Name}", service.Name);
@@ -96,10 +96,12 @@ public class Server : WebModule
         services.AddSwaggerGen();
     }
 
-    public override void PostBuild(IServiceProvider services)
+    public override void PostBuild(IServiceProvider services, IEnumerable<Module> modules)
     {
-        foreach (var service in services.GetRequiredServices<IService>())
+        foreach (var service in services.GetRequiredServices<IService>(modules))
             service.Initialize();
+
+        services.GetRequiredService<ServerWorker>().SetModules(modules);
     }
 
     public override void ConfigureServices(ConfigurationManager configuration, IServiceCollection services)

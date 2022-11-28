@@ -40,7 +40,7 @@ public class AccountHandler : DataHandler<Account>
     public override void Initialize()
     {
         base.Initialize();
-        Sink.ServerStarted += OnAfterLoad;
+        Sink.ServerStarted += _ => OnAfterLoad();
     }
 
     public void OnAfterLoad()

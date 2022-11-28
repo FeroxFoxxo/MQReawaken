@@ -1,33 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
-    <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>Dependencies\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>Dependencies\ICSharpCode.SharpZipLib.CustomCodePageSettings.dll</HintPath>
-    </Reference>
-    <Reference Include="LitJson">
-      <HintPath>Dependencies\LitJson.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>Dependencies\UnityEngine.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Launcher\" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
+    </ItemGroup>
 
 </Project>

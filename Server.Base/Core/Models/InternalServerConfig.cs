@@ -3,7 +3,7 @@ using Server.Base.Core.Abstractions;
 
 namespace Server.Base.Core.Models;
 
-public class InternalServerConfig : Config
+public class InternalServerConfig : IConfig
 {
     public int MaxAccountsPerIp { get; set; }
     public char[] ForbiddenChars { get; set; }

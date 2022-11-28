@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols.System", "Protoco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Reawakened", "Server.Reawakened\Server.Reawakened.csproj", "{21AFFAA5-897C-4330-9F57-A86E95368F99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.Launcher", "Server.Launcher\Server.Launcher.csproj", "{83B4F7D5-44F0-4906-89C4-AE9E535F0B4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Launcher", "Server.Launcher\Server.Launcher.csproj", "{83B4F7D5-44F0-4906-89C4-AE9E535F0B4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Server.Base.Core.Events;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Services;
@@ -18,18 +19,20 @@ public class ServerWorker : IHostedService
 {
     private readonly NetStateHandler _handler;
     private readonly ILogger<ServerWorker> _logger;
-    private readonly Module[] _modules;
     private readonly MessagePump _pump;
     private readonly ServerHandler _serverHandler;
+    private readonly IServiceProvider _services;
     private readonly EventSink _sink;
     private readonly TimerThread _timerThread;
     private readonly World _world;
 
     public readonly MultiTextWriter MultiConsoleOut;
+    private IEnumerable<Module> _modules;
     private Thread _serverThread;
 
-    public ServerWorker(NetStateHandler handler, IServiceProvider services, ILogger<ServerWorker> logger,
-        ServerHandler serverHandler, MessagePump pump, TimerThread timerThread, World world, EventSink sink)
+    public ServerWorker(NetStateHandler handler, ILogger<ServerWorker> logger,
+        ServerHandler serverHandler, MessagePump pump, TimerThread timerThread, World world, EventSink sink,
+        IServiceProvider services)
     {
         _handler = handler;
         _logger = logger;
@@ -38,8 +41,7 @@ public class ServerWorker : IHostedService
         _timerThread = timerThread;
         _world = world;
         _sink = sink;
-
-        _modules = services.GetRequiredServices<Module>().ToArray();
+        _services = services;
 
         MultiConsoleOut = new MultiTextWriter(Console.Out, new FileLogger("console.log"));
     }
@@ -47,7 +49,7 @@ public class ServerWorker : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _sink.InternalShutdown += OnClose;
-        _sink.ServerStarted += () => _serverThread.Start();
+        _sink.ServerStarted += _ => _serverThread.Start();
         Thread.CurrentThread.Name = "Main Thread";
 
         _serverThread = new Thread(ServerLoopThread)
@@ -88,7 +90,7 @@ public class ServerWorker : IHostedService
             _logger.LogDebug("Server garbage collection mode enabled");
 
         _world.Load();
-        _sink.InvokeServerStarted();
+        _sink.InvokeServerStarted(new ServerStartedEventArgs(_modules));
 
         return Task.CompletedTask;
     }
@@ -98,6 +100,8 @@ public class ServerWorker : IHostedService
         _serverHandler.HandleClosed();
         return Task.CompletedTask;
     }
+
+    public void SetModules(IEnumerable<Module> modules) => _modules = modules;
 
     public void ServerLoopThread()
     {
@@ -122,6 +126,8 @@ public class ServerWorker : IHostedService
     public void OnClose()
     {
         _world.Save(false, true);
+
+        _services.SaveConfigs(_modules);
 
         try
         {

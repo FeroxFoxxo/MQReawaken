@@ -50,7 +50,7 @@ public class AutoRestart : Timer, IService
         RestartTime = force;
     }
 
-    public void Initialize() => _sink.ServerStarted += ServerStarted;
+    public void Initialize() => _sink.ServerStarted += _ => ServerStarted();
 
     private void ServerStarted()
     {

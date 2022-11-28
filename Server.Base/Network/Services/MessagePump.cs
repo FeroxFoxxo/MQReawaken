@@ -47,7 +47,7 @@ public class MessagePump : IService
     public void Initialize()
     {
         _sink.SocketConnect += SocketConnect;
-        _sink.ServerStarted += ServerStarted;
+        _sink.ServerStarted += _ => ServerStarted();
     }
 
     private void ServerStarted()

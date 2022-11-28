@@ -50,7 +50,7 @@ public class ServerConsole : IService
         ));
     }
 
-    public void Initialize() => _sink.ServerStarted += PollCommands;
+    public void Initialize() => _sink.ServerStarted += _ => PollCommands();
 
     public void AddCommand(Command command) => _commands.Add(command.Name, command);
 

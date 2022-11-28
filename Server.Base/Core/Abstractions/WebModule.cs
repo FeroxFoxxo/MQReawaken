@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
-using Server.Base.Core.Abstractions;
 
-namespace Server.Web.Abstractions;
+namespace Server.Base.Core.Abstractions;
 
 public abstract class WebModule : Module
 {

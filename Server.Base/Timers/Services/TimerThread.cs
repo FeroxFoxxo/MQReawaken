@@ -39,7 +39,7 @@ public class TimerThread : IService
         };
     }
 
-    public void Initialize() => _sink.ServerStarted += () => _timerThread.Start();
+    public void Initialize() => _sink.ServerStarted += _ => _timerThread.Start();
 
     public void AddTimer(Timer timer) => Change(timer, (int)timer.Priority, true);
 

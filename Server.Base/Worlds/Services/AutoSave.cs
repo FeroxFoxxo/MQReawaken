@@ -39,7 +39,7 @@ public class AutoSave : IService
         _backups = config.Backups;
     }
 
-    public void Initialize() => _sink.ServerStarted += RunAutoSaveTimer;
+    public void Initialize() => _sink.ServerStarted += _ => RunAutoSaveTimer();
 
     private void RunAutoSaveTimer()
     {

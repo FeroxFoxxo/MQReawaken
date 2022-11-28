@@ -10,6 +10,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="A2mCore">
+        <HintPath>..\Server.Reawakened\Dependencies\A2mCore.dll</HintPath>
+      </Reference>
       <Reference Include="Assembly-CSharp">
         <HintPath>..\Server.Reawakened\Dependencies\Assembly-CSharp.dll</HintPath>
       </Reference>

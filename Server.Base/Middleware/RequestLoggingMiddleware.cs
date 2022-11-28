@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Server.Web.Middleware;
+namespace Server.Base.Middleware;
 
 public class RequestLoggingMiddleware
 {

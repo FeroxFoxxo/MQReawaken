@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Workers;
 using Server.Base.Logging;
-using Server.Web.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,7 +78,7 @@ public class Initialize
 
         logger.LogInformation("Initializing Services");
         foreach (var startup in modules)
-            startup.AddServices(builder.Services);
+            startup.AddServices(builder.Services, modules);
         logger.LogDebug("Successfully initialized services");
 
         logger.LogInformation("Configuring Services");
@@ -106,7 +105,7 @@ public class Initialize
     {
         foreach (var startup in modules)
         {
-            startup.PostBuild(app.Services);
+            startup.PostBuild(app.Services, modules);
 
             if (startup is WebModule module)
                 module.PostWebBuild(app);

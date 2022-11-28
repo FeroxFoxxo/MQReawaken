@@ -1,5 +1,5 @@
 ﻿using Server.Base.Core.Abstractions;
-using Server.Base.Core.Extensions;
+using Server.Base.Core.Events;
 using Server.Base.Core.Helpers;
 using Server.Base.Logging;
 using Server.Base.Network;
@@ -9,7 +9,6 @@ using Server.Reawakened.Network.Helpers;
 using Server.Reawakened.Network.Protocols;
 using System.Reflection;
 using System.Xml;
-using Module = Server.Base.Core.Abstractions.Module;
 
 namespace Server.Reawakened.Network.Services;
 
@@ -46,9 +45,9 @@ public class PacketHandler : IService
 
     public void Initialize() => _sink.ServerStarted += AddProtocols;
 
-    private void AddProtocols()
+    private void AddProtocols(ServerStartedEventArgs e)
     {
-        foreach (var type in _services.GetRequiredServices<Module>().Select(m => m.GetType().Assembly.GetTypes())
+        foreach (var type in e.Modules.Select(m => m.GetType().Assembly.GetTypes())
                      .SelectMany(sl => sl).Where(myType => myType.IsClass && !myType.IsAbstract))
         {
             if (type.IsSubclassOf(typeof(SystemProtocol)))

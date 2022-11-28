@@ -41,7 +41,7 @@ public class NetStateHandler : IService
     }
 
     public void Initialize() =>
-        _sink.ServerStarted += () =>
+        _sink.ServerStarted += _ =>
             _thread.DelayCall(CheckAllAlive, TimeSpan.FromMinutes(1.0), TimeSpan.FromMinutes(1.5), 0);
 
     public void ProcessDisposedQueue()

@@ -25,9 +25,9 @@ public static class GetConfigs
         }
     }
 
-    public static void SaveConfigs(this IServiceProvider services)
+    public static void SaveConfigs(this IServiceProvider services, IEnumerable<Module> modules)
     {
-        foreach (var config in services.GetRequiredServices<Config>())
+        foreach (var config in services.GetRequiredServices<IConfig>(modules))
         {
             using var stream = GetFile.GetFileStream($"{config.GetType().Name}.json", ConfigDir, FileMode.Create);
             JsonSerializer.Serialize(stream, config, config.GetType(),
