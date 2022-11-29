@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Events;
 using Server.Base.Core.Extensions;
@@ -10,19 +11,22 @@ namespace Server.Base.Core.Services;
 public class ServerHandler : IService
 {
     private readonly ILogger<ServerHandler> _logger;
+    private readonly IHostApplicationLifetime _appLifetime;
     private readonly EventSink _sink;
 
     public readonly AutoResetEvent Signal;
+    public IEnumerable<Module> Modules;
 
     public bool HasCrashed;
     public bool IsClosing;
     public bool Restarting;
     public bool Saving;
 
-    public ServerHandler(EventSink sink, ILogger<ServerHandler> logger)
+    public ServerHandler(EventSink sink, ILogger<ServerHandler> logger, IHostApplicationLifetime appLifetime)
     {
         _sink = sink;
         _logger = logger;
+        _appLifetime = appLifetime;
 
         IsClosing = false;
         HasCrashed = false;
@@ -32,7 +36,15 @@ public class ServerHandler : IService
         Signal = new AutoResetEvent(true);
     }
 
-    public void Initialize() => AppDomain.CurrentDomain.UnhandledException += UnhandledException;
+    public void Initialize()
+    {
+        AppDomain.CurrentDomain.UnhandledException += UnhandledException;
+        _appLifetime.ApplicationStopped.Register(StopServer);
+    }
+
+    private void StopServer() => KillServer(false);
+
+    public void SetModules(IEnumerable<Module> modules) => Modules = modules;
 
     public void UnhandledException(object sender, UnhandledExceptionEventArgs ex)
     {

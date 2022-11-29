@@ -58,6 +58,12 @@ public abstract class DataHandler<T> : IService
         {
             Logger.LogError(ex, "Could not deserialize save for {Type}.", typeof(T).Name);
         }
+
+        OnAfterLoad();
+    }
+
+    public virtual void OnAfterLoad()
+    {
     }
 
     public void Save(WorldSaveEventArgs worldSaveEventArgs)

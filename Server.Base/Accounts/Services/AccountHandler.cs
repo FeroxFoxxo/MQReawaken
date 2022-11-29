@@ -37,13 +37,7 @@ public class AccountHandler : DataHandler<Account>
         IpTable = new Dictionary<IPAddress, int>();
     }
 
-    public override void Initialize()
-    {
-        base.Initialize();
-        Sink.ServerStarted += _ => OnAfterLoad();
-    }
-
-    public void OnAfterLoad()
+    public override void OnAfterLoad()
     {
         if (Data.Count <= 0)
             CreateDefaultAccount();

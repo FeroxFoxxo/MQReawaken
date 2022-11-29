@@ -30,7 +30,7 @@ public class Server : WebModule
     public override int Minor => 1;
     public override int Patch => 1;
 
-    public override string[] Contributors { get; } = { "Ferox" };
+    public override string[] Contributors { get; } = { "Ferox", "ServUO" };
 
     public Server(ILogger<Server> logger) : base(logger)
     {
@@ -44,7 +44,14 @@ public class Server : WebModule
 
     public override void AddServices(IServiceCollection services, IEnumerable<Module> modules)
     {
+        Logger.LogDebug("Loading Hosted Services");
+
+        services.AddHostedService<ServerWorker>();
+
+        Logger.LogDebug("Loaded hosted services");
+
         Logger.LogDebug("Loading Services");
+
         foreach (var service in RequiredServices.GetServices<IService>(modules))
         {
             Logger.LogTrace("   Loaded: {ServiceName}", service.Name);
@@ -101,7 +108,7 @@ public class Server : WebModule
         foreach (var service in services.GetRequiredServices<IService>(modules))
             service.Initialize();
 
-        services.GetRequiredService<ServerWorker>().SetModules(modules);
+        services.GetRequiredService<ServerHandler>().SetModules(modules);
     }
 
     public override void ConfigureServices(ConfigurationManager configuration, IServiceCollection services)

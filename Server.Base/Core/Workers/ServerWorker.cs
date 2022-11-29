@@ -11,7 +11,6 @@ using Server.Base.Worlds;
 using System.Reflection;
 using System.Runtime;
 using System.Runtime.Versioning;
-using Module = Server.Base.Core.Abstractions.Module;
 
 namespace Server.Base.Core.Workers;
 
@@ -27,12 +26,11 @@ public class ServerWorker : IHostedService
     private readonly World _world;
 
     public readonly MultiTextWriter MultiConsoleOut;
-    private IEnumerable<Module> _modules;
-    private Thread _serverThread;
+    private readonly Thread _serverThread;
 
     public ServerWorker(NetStateHandler handler, ILogger<ServerWorker> logger,
-        ServerHandler serverHandler, MessagePump pump, TimerThread timerThread, World world, EventSink sink,
-        IServiceProvider services)
+        ServerHandler serverHandler, MessagePump pump, TimerThread timerThread, World world,
+        EventSink sink, IServiceProvider services)
     {
         _handler = handler;
         _logger = logger;
@@ -44,18 +42,19 @@ public class ServerWorker : IHostedService
         _services = services;
 
         MultiConsoleOut = new MultiTextWriter(Console.Out, new FileLogger("console.log"));
+
+        _serverThread = new Thread(ServerLoopThread)
+        {
+            Name = "Server Thread"
+        };
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _sink.InternalShutdown += OnClose;
         _sink.ServerStarted += _ => _serverThread.Start();
-        Thread.CurrentThread.Name = "Main Thread";
 
-        _serverThread = new Thread(ServerLoopThread)
-        {
-            Name = "Timer Thread"
-        };
+        Thread.CurrentThread.Name = "Main Thread";
 
         try
         {
@@ -74,7 +73,7 @@ public class ServerWorker : IHostedService
         if (baseDirectory.Length > 0)
             Directory.SetCurrentDirectory(baseDirectory);
 
-        foreach (var module in _modules)
+        foreach (var module in _serverHandler.Modules)
             _logger.LogDebug("{ModuleInfo}", module.GetModuleInformation());
 
         if (GetOsType.IsUnix())
@@ -83,14 +82,14 @@ public class ServerWorker : IHostedService
         var frameworkName = Assembly.GetEntryAssembly()?
             .GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName;
 
-        _logger.LogDebug("Compiled for {OS} and running on {NETVersion}", GetOsType.IsUnix() ? "UNIX " : "WINDOWS",
+        _logger.LogDebug("Compiled for {OS} and running on {NetVersion}", GetOsType.IsUnix() ? "UNIX " : "WINDOWS",
             string.IsNullOrEmpty(frameworkName) ? "UNKNOWN" : frameworkName);
 
         if (GCSettings.IsServerGC)
             _logger.LogDebug("Server garbage collection mode enabled");
 
         _world.Load();
-        _sink.InvokeServerStarted(new ServerStartedEventArgs(_modules));
+        _sink.InvokeServerStarted(new ServerStartedEventArgs(_serverHandler.Modules));
 
         return Task.CompletedTask;
     }
@@ -100,8 +99,6 @@ public class ServerWorker : IHostedService
         _serverHandler.HandleClosed();
         return Task.CompletedTask;
     }
-
-    public void SetModules(IEnumerable<Module> modules) => _modules = modules;
 
     public void ServerLoopThread()
     {
@@ -127,7 +124,7 @@ public class ServerWorker : IHostedService
     {
         _world.Save(false, true);
 
-        _services.SaveConfigs(_modules);
+        _services.SaveConfigs(_serverHandler.Modules);
 
         try
         {

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
@@ -12,23 +13,43 @@ public class ServerConsole : IService
 {
     private readonly Dictionary<string, Command> _commands;
     private readonly ServerHandler _handler;
-    private readonly ILogger<ServerConsole> _logger;
     private readonly EventSink _sink;
+    private readonly ILogger<ServerConsole> _logger;
+    private readonly IHostApplicationLifetime _appLifetime;
     private readonly TimerThread _timerThread;
 
     private string _command;
 
     public Timer PollTimer;
+    private readonly Thread _consoleThread;
 
-    public ServerConsole(EventSink sink, TimerThread timerThread, ServerHandler handler, ILogger<ServerConsole> logger)
+    public ServerConsole(TimerThread timerThread, ServerHandler handler, EventSink sink, ILogger<ServerConsole> logger,
+        IHostApplicationLifetime appLifetime)
     {
-        _sink = sink;
         _timerThread = timerThread;
         _handler = handler;
+        _sink = sink;
         _logger = logger;
+        _appLifetime = appLifetime;
 
         _commands = new Dictionary<string, Command>();
 
+        _consoleThread = new Thread(ConsoleLoopThread)
+        {
+            Name = "Console Thread"
+        };
+    }
+
+    public void AddCommand(Command command) => _commands.Add(command.Name, command);
+
+    public void Initialize()
+    {
+        _appLifetime.ApplicationStarted.Register(DisplayHelp);
+        _sink.ServerStarted += _ => RunConsoleListener();
+    }
+
+    public void RunConsoleListener()
+    {
         AddCommand(new Command(
             "restart",
             "Sends a message to players informing them that the server is\n" +
@@ -48,37 +69,27 @@ public class ServerConsole : IService
             "Forces an exception to be thrown.",
             _ => _timerThread.DelayCall(() => throw new Exception("Forced Crash"))
         ));
-    }
 
-    public void Initialize() => _sink.ServerStarted += _ => PollCommands();
-
-    public void AddCommand(Command command) => _commands.Add(command.Name, command);
-
-    private void PollCommands()
-    {
         PollTimer = _timerThread.DelayCall(ProcessCommand, TimeSpan.Zero, TimeSpan.FromMilliseconds(100), 0);
 
-        Task.Run(() =>
-        {
-            try
-            {
-                ProcessInput(Console.ReadLine());
-            }
-            catch (IOException)
-            {
-                // ignored
-            }
-        });
+        _consoleThread.Start();
     }
 
-    private void ProcessInput(string input)
+    public void ConsoleLoopThread()
     {
-        if (_handler.IsClosing || _handler.HasCrashed)
-            return;
+        try
+        {
+            while (!_handler.IsClosing && !_handler.HasCrashed)
+            {
+                var input = Console.ReadLine();
 
-        Interlocked.Exchange(ref _command, input);
-
-        Task.Run(() => ProcessInput(Console.ReadLine()));
+                Interlocked.Exchange(ref _command, input);
+            }
+        }
+        catch (IOException)
+        {
+            // ignored
+        }
     }
 
     private void ProcessCommand()
@@ -106,7 +117,7 @@ public class ServerConsole : IService
 
     private void DisplayHelp()
     {
-        _logger.LogInformation("Commands:");
+        _logger.LogDebug("Commands:");
 
         foreach (var command in _commands.Values)
         {

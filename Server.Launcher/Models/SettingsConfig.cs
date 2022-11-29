@@ -16,7 +16,7 @@ public class SettingsConfig : IConfig
         BaseUrl = "http://localhost";
         Fullscreen = false;
         OnGameClosePopup = false;
-        DefaultNews = "You expected there to be news here? This far after closing?";
+        DefaultNews = $"You expected there to be news here? It's {DateTime.Now.Year}!";
     }
 
     public void WriteToSettings(LauncherConfig config)
@@ -24,11 +24,12 @@ public class SettingsConfig : IConfig
         if (config.GameSettingsFile == null)
             return;
 
-        dynamic settings = JsonConvert.DeserializeObject<ExpandoObject>(config.GameSettingsFile)!;
+        dynamic settings = JsonConvert.DeserializeObject<ExpandoObject>(File.ReadAllText(config.GameSettingsFile))!;
         settings.launcher.baseUrl = BaseUrl;
-        settings.launcher.fullscreen = Fullscreen;
+        settings.launcher.fullscreen = Fullscreen ? "true" : "false";
         settings.launcher.defaultNews = DefaultNews;
-        settings.launcher.onGameClosePopup = OnGameClosePopup;
+        settings.launcher.onGameClosePopup = OnGameClosePopup ? "true" : "false";
         settings.patcher.baseUrl = BaseUrl;
+        File.WriteAllText(config.GameSettingsFile, JsonConvert.SerializeObject(settings));
     }
 }

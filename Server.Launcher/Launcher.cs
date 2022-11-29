@@ -3,7 +3,7 @@ using Server.Base.Core.Abstractions;
 
 namespace Server.Launcher;
 
-public class Launcher : Module
+public class Launcher : WebModule
 {
     public override int Major => 1;
     public override int Minor => 0;

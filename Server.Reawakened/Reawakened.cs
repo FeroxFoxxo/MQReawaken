@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Reawakened.Network.Helpers;
 using SmartFoxClientAPI;
-using Thrift.Protocol;
 
 namespace Server.Reawakened;
 
@@ -15,7 +14,9 @@ public class Reawakened : Module
 
     public override string[] Contributors { get; } = { "Ferox" };
 
-    public Reawakened(ILogger<Reawakened> logger) : base(logger) => new TBinaryProtocol(null);
+    public Reawakened(ILogger<Reawakened> logger) : base(logger)
+    {
+    }
 
     public override void AddServices(IServiceCollection services, IEnumerable<Module> modules) =>
         services

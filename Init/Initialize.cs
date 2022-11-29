@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
-using Server.Base.Core.Workers;
 using Server.Base.Logging;
 using System;
 using System.Collections.Generic;
@@ -22,8 +21,6 @@ public class Initialize
             logger.LogInformation("============ Launching =============");
 
             var builder = WebApplication.CreateBuilder();
-
-            builder.Services.AddHostedService<ServerWorker>();
 
             logger.LogInformation("Getting Modules");
             var modules = GetModules(logger);
