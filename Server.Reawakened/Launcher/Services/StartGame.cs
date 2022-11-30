@@ -34,8 +34,12 @@ public class StartGame : IService
 
     private void StopGame() => _game.CloseMainWindow();
 
-    public void RunGame() =>
-        _game = Process.Start(Path.Join(Path.GetDirectoryName(_lConfig.GameSettingsFile), "launcher", "launcher.exe"));
+    public void RunGame()
+    {
+        if (!string.IsNullOrEmpty(_lConfig.GameSettingsFile))
+            _game = Process.Start(Path.Join(Path.GetDirectoryName(_lConfig.GameSettingsFile), "launcher",
+                "launcher.exe"));
+    }
 
     private void GetGameInformation()
     {
