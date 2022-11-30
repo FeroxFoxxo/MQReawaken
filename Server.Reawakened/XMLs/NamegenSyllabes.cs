@@ -1,4 +1,5 @@
-﻿using Server.Base.Core.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Reawakened.Data.Services;
 
@@ -8,13 +9,15 @@ public class NameGenSyllables : IService
 {
     private readonly Random _random;
     private readonly EventSink _sink;
+    private readonly ILogger<NameGenSyllables> _logger;
 
     private Dictionary<bool, List<List<string>>> _syllables;
 
-    public NameGenSyllables(Random random, EventSink sink)
+    public NameGenSyllables(Random random, EventSink sink, ILogger<NameGenSyllables> logger)
     {
         _random = random;
         _sink = sink;
+        _logger = logger;
         _syllables = new Dictionary<bool, List<List<string>>>();
     }
 
@@ -23,7 +26,15 @@ public class NameGenSyllables : IService
     private void CreateSyllables()
     {
         var syllablesXml = new NamegenSyllablesXML();
-        syllablesXml.ReadDescriptionXml(File.ReadAllText("XMLs/NamegenSyllabes.xml"));
+
+        try
+        {
+            syllablesXml.ReadDescriptionXml(File.ReadAllText("XMLs/NamegenSyllabes.xml"));
+        }
+        catch
+        {
+            _logger.LogWarning("{Name} could not load! Skipping...", GetType().Name);
+        }
 
         _syllables = new Dictionary<bool, List<List<string>>>
         {

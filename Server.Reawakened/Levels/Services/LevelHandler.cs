@@ -13,12 +13,14 @@ public class LevelHandler : IService
     private readonly ServerConfig _config;
     private readonly UserHandler _handler;
     private readonly Dictionary<int, Level> _levels;
+    private readonly ILogger<LevelHandler> _logger;
     private readonly EventSink _sink;
     private readonly WorldGraph _worldGraph;
 
     public LevelHandler(ILogger<LevelHandler> logger, EventSink sink, ServerConfig config,
         UserHandler handler)
     {
+        _logger = logger;
         _sink = sink;
         _config = config;
         _handler = handler;
@@ -37,6 +39,7 @@ public class LevelHandler : IService
             level.DumpPlayersToLobby();
 
         _levels.Clear();
+        _worldGraph?.SetLogger(_logger);
         _worldGraph?.Load();
     }
 
