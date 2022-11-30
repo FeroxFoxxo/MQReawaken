@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
+using Server.Base.Core.Extensions;
 using Server.Web.Abstractions;
 using Server.Web.Middleware;
 
@@ -79,6 +81,12 @@ public class Web : WebModule
         app.UseIpRateLimiting();
 
         app.UseMiddleware<RequestLoggingMiddleware>();
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(InternalDirectory.GetBaseDirectory(), @"Static"))
+        });
 
         app.UseRouting();
 

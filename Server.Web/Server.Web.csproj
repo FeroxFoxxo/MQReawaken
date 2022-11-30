@@ -16,4 +16,14 @@
       <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Static\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Static\favicon.ico">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
