@@ -41,20 +41,22 @@ public class StartGame : IService
 
     public void RunGame()
     {
-        if (string.IsNullOrEmpty(_lConfig.GameSettingsFile))
+        if (string.IsNullOrEmpty(_lConfig.GameSettingsFile) || !_lConfig.GameSettingsFile.EndsWith("settings.txt"))
         {
             _logger.LogInformation("Please enter the absolute file path for your game's 'settings.txt' file.");
             _lConfig.GameSettingsFile = Console.ReadLine();
+            return;
         }
 
         var directory = Path.GetDirectoryName(_lConfig.GameSettingsFile);
         _game = Process.Start(Path.Join(directory, "launcher", "launcher.exe"));
         CurrentVersion = File.ReadAllText(Path.Join(directory, "current.txt"));
 
-        if (string.IsNullOrEmpty(_lConfig.CacheInfoFile))
+        if (string.IsNullOrEmpty(_lConfig.CacheInfoFile) || !_lConfig.CacheInfoFile.EndsWith("__info"))
         {
             _logger.LogInformation("Please enter the absolute file path for your cache's ROOT '__info' file.");
             _lConfig.CacheInfoFile = Console.ReadLine();
+            return;
         }
 
         _logger.LogInformation("Run game for process: {GamePath}", _game?.ProcessName);
