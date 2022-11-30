@@ -18,6 +18,7 @@ public class StartGame : IService
     private readonly EventSink _sink;
     private Process _game;
     private string _directory;
+    private bool _dirSet, _appStart;
 
     public string CurrentVersion { get; private set; }
 
@@ -29,17 +30,29 @@ public class StartGame : IService
         _sConfig = sConfig;
         _appLifetime = appLifetime;
         _logger = logger;
+
+        _dirSet = false;
+        _appStart = false;
     }
 
     public void Initialize()
     {
-        _appLifetime.ApplicationStarted.Register(RunGame);
+        _appLifetime.ApplicationStarted.Register(AppStarted);
         _sink.WorldLoad += GetGameInformation;
         _sink.Shutdown += StopGame;
     }
 
+    private void AppStarted()
+    {
+        _appStart = true;
+        RunGame();
+    }
+
     private void RunGame()
     {
+        if (!_appStart || !_dirSet)
+            return;
+
         _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
         _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
     }
@@ -61,6 +74,9 @@ public class StartGame : IService
 
             _directory = Path.GetDirectoryName(_lConfig.GameSettingsFile);
 
+            if (string.IsNullOrEmpty(_directory))
+                continue;
+
             CurrentVersion = File.ReadAllText(Path.Join(_directory, "current.txt"));
 
             _logger.LogDebug("Got launcher directory: {Directory}", Path.GetDirectoryName(_lConfig.GameSettingsFile));
@@ -81,6 +97,9 @@ public class StartGame : IService
             _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(_lConfig.CacheInfoFile));
             break;
         }
+
+        _dirSet = true;
+        RunGame();
     }
 
     private void GetGameInformation()
