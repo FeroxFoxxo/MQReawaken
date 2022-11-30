@@ -41,25 +41,39 @@ public class StartGame : IService
 
     public void RunGame()
     {
-        if (string.IsNullOrEmpty(_lConfig.GameSettingsFile) || !_lConfig.GameSettingsFile.EndsWith("settings.txt"))
+        while (true)
         {
-            _logger.LogInformation("Please enter the absolute file path for your game's 'settings.txt' file.");
-            _lConfig.GameSettingsFile = Console.ReadLine();
-            return;
+            _logger.LogInformation("Getting Game Executable");
+
+            if (string.IsNullOrEmpty(_lConfig.GameSettingsFile) || !_lConfig.GameSettingsFile.EndsWith("settings.txt"))
+            {
+                _logger.LogError("Please enter the absolute file path for your game's 'settings.txt' file.");
+                _lConfig.GameSettingsFile = Console.ReadLine();
+                continue;
+            }
+
+            var directory = Path.GetDirectoryName(_lConfig.GameSettingsFile);
+            _game = Process.Start(Path.Join(directory, "launcher", "launcher.exe"));
+            CurrentVersion = File.ReadAllText(Path.Join(directory, "current.txt"));
+
+            _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
+            break;
         }
 
-        var directory = Path.GetDirectoryName(_lConfig.GameSettingsFile);
-        _game = Process.Start(Path.Join(directory, "launcher", "launcher.exe"));
-        CurrentVersion = File.ReadAllText(Path.Join(directory, "current.txt"));
-
-        if (string.IsNullOrEmpty(_lConfig.CacheInfoFile) || !_lConfig.CacheInfoFile.EndsWith("__info"))
+        while (true)
         {
-            _logger.LogInformation("Please enter the absolute file path for your cache's ROOT '__info' file.");
-            _lConfig.CacheInfoFile = Console.ReadLine();
-            return;
-        }
+            _logger.LogInformation("Getting Cache Directory");
 
-        _logger.LogInformation("Run game for process: {GamePath}", _game?.ProcessName);
+            if (string.IsNullOrEmpty(_lConfig.CacheInfoFile) || !_lConfig.CacheInfoFile.EndsWith("__info"))
+            {
+                _logger.LogError("Please enter the absolute file path for your cache's ROOT '__info' file.");
+                _lConfig.CacheInfoFile = Console.ReadLine();
+                continue;
+            }
+
+            _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(_lConfig.CacheInfoFile));
+            break;
+        }
     }
 
     private void GetGameInformation()
