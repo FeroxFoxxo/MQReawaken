@@ -27,8 +27,12 @@ public class RequestLoggingMiddleware
 
         try
         {
-            logger.LogTrace("INC {Method} {Path}{Query} | {IP}", method,
-                context.Request.Path.Value, context.Request.QueryString, GetIp(context, logger));
+            logger.LogTrace("INC {Method} {Path}{Query}{Post} | {IP}", method,
+                context.Request.Path.Value, context.Request.QueryString,
+                context.Request.HasFormContentType
+                    ? $" | Post Data: {string.Join(", ", context.Request.Form.Select(x => $"{x.Key}:{x.Value}"))}"
+                    : "",
+                GetIp(context, logger));
 
             await _next(context);
 
