@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
 using Server.Web.Abstractions;
 using Server.Web.Middleware;
 
@@ -26,7 +27,7 @@ public class Web : WebModule
     {
     }
 
-    public override void AddServices(IServiceCollection services)
+    public override void AddServices(IServiceCollection services, IEnumerable<Module> modules)
     {
         services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
         services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
@@ -84,6 +85,6 @@ public class Web : WebModule
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+        app.UseEndpoints(endpoints => endpoints.MapControllers());
     }
 }

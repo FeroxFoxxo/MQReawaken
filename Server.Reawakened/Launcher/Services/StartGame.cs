@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
-using Server.Launcher.Internal;
-using Server.Launcher.Models;
+using Server.Reawakened.Launcher.Internal;
+using Server.Reawakened.Launcher.Models;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Server.Launcher.Services;
+namespace Server.Reawakened.Launcher.Services;
 
 public class StartGame : IService
 {
@@ -48,7 +48,7 @@ public class StartGame : IService
         _sConfig.WriteToSettings(_lConfig);
     }
 
-    private static string? SetIfNotNull(string? setting, string title, string filter)
+    private static string SetIfNotNull(string setting, string title, string filter)
     {
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 

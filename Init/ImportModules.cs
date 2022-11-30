@@ -4,8 +4,8 @@ using Protocols.External;
 using Protocols.System;
 using Server.Base.Core.Abstractions;
 using Server.Base.Logging;
-using Server.Launcher;
 using Server.Reawakened;
+using Server.Web;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,7 +18,7 @@ public static class ImportModules
         var modules = new[]
         {
             typeof(Reawakened),
-            typeof(Launcher),
+            typeof(Web),
             typeof(Server.Base.Server),
             typeof(SysProtocol),
             typeof(XtProtocol)

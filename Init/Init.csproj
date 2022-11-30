@@ -21,8 +21,8 @@
         <ProjectReference Include="..\Protocols.External\Protocols.External.csproj" />
         <ProjectReference Include="..\Protocols.System\Protocols.System.csproj" />
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
-        <ProjectReference Include="..\Server.Launcher\Server.Launcher.csproj" />
         <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
+        <ProjectReference Include="..\Server.Web\Server.Web.csproj" />
     </ItemGroup>
 
 </Project>

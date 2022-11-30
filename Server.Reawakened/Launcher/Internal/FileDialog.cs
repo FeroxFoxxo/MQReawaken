@@ -1,13 +1,13 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Server.Launcher.Internal;
+namespace Server.Reawakened.Launcher.Internal;
 
 internal class FileDialog
 {
     [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     private static extern bool GetOpenFileName(ref OpenFileName ofn);
 
-    public static string? GetFile(string title, string filter)
+    public static string GetFile(string title, string filter)
     {
         var ofn = new OpenFileName
         {

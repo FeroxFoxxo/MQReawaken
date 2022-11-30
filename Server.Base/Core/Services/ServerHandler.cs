@@ -39,10 +39,9 @@ public class ServerHandler : IService
     public void Initialize()
     {
         AppDomain.CurrentDomain.UnhandledException += UnhandledException;
-        _appLifetime.ApplicationStopped.Register(StopServer);
+        _appLifetime.ApplicationStopped.Register(HandleClosed);
     }
 
-    private void StopServer() => KillServer(false);
 
     public void SetModules(IEnumerable<Module> modules) => Modules = modules;
 

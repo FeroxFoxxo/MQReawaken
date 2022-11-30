@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Server.Launcher.Internal;
+namespace Server.Reawakened.Launcher.Internal;
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 public struct OpenFileName
@@ -12,7 +12,7 @@ public struct OpenFileName
     public string lpstrCustomFilter;
     public int nMaxCustFilter;
     public int nFilterIndex;
-    public string? lpstrFile;
+    public string lpstrFile;
     public int nMaxFile;
     public string lpstrFileTitle;
     public int nMaxFileTitle;
