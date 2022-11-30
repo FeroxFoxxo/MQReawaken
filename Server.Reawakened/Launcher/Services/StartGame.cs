@@ -104,13 +104,20 @@ public class StartGame : IService
 
     private void GetGameInformation()
     {
-        _lConfig.GameSettingsFile = SetIfNotNull(_lConfig.GameSettingsFile, "Get Settings File",
-            "Settings File (*.txt)\0*.txt\0");
+        try
+        {
+            _lConfig.GameSettingsFile = SetIfNotNull(_lConfig.GameSettingsFile, "Get Settings File",
+                "Settings File (*.txt)\0*.txt\0");
 
-        _lConfig.CacheInfoFile = SetIfNotNull(_lConfig.CacheInfoFile, "Get Root Cache Info",
-            "Root Info File (__info)\0__info\0");
+            _lConfig.CacheInfoFile = SetIfNotNull(_lConfig.CacheInfoFile, "Get Root Cache Info",
+                "Root Info File (__info)\0__info\0");
 
-        _sConfig.WriteToSettings(_lConfig);
+            _sConfig.WriteToSettings(_lConfig);
+        }
+        catch
+        {
+            // ignored
+        }
 
         EnsureSet();
     }
