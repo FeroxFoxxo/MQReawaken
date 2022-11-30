@@ -17,6 +17,7 @@ public class StartGame : IService
     private readonly ILogger<StartGame> _logger;
     private readonly EventSink _sink;
     private Process _game;
+    private string _directory;
 
     public string CurrentVersion { get; private set; }
 
@@ -37,9 +38,15 @@ public class StartGame : IService
         _sink.Shutdown += StopGame;
     }
 
+    private void RunGame()
+    {
+        _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
+        _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
+    }
+
     private void StopGame() => _game.CloseMainWindow();
 
-    public void RunGame()
+    public void EnsureSet()
     {
         while (true)
         {
@@ -52,11 +59,11 @@ public class StartGame : IService
                 continue;
             }
 
-            var directory = Path.GetDirectoryName(_lConfig.GameSettingsFile);
-            _game = Process.Start(Path.Join(directory, "launcher", "launcher.exe"));
-            CurrentVersion = File.ReadAllText(Path.Join(directory, "current.txt"));
+            _directory = Path.GetDirectoryName(_lConfig.GameSettingsFile);
 
-            _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
+            CurrentVersion = File.ReadAllText(Path.Join(_directory, "current.txt"));
+
+            _logger.LogDebug("Got launcher directory: {Directory}", Path.GetDirectoryName(_lConfig.GameSettingsFile));
             break;
         }
 
@@ -85,6 +92,8 @@ public class StartGame : IService
             "Root Info File (__info)\0__info\0");
 
         _sConfig.WriteToSettings(_lConfig);
+
+        EnsureSet();
     }
 
     private static string SetIfNotNull(string setting, string title, string filter)
