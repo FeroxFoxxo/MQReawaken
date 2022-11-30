@@ -1,4 +1,6 @@
-﻿using Server.Reawakened.Data.Extensions;
+﻿using Server.Base.Accounts.Modals;
+using Server.Reawakened.Data;
+using Server.Reawakened.Data.Extensions;
 using Server.Reawakened.Levels.Services;
 using Server.Reawakened.Network.Protocols;
 using System.Xml;
@@ -13,9 +15,10 @@ public class AutoJoin : SystemProtocol
 
     public override void Run(XmlDocument xmlDoc)
     {
-        var user = GetUser();
+        var user = NetState.Get<Player>();
+        var account = NetState.Get<Account>();
         user.JoinLevel(NetState, LevelHandler.GetLevelFromId(0));
-        SendXt("cx", user.UserInfo.GetPropertyValues());
+        SendXt("cx", user.UserInfo.GetPropertyValues(account));
         SendXt("cl", $"{user.UserInfo.LastCharacterSelected}{(user.UserInfo.Characters.Count > 0 ? "%" : "")}" +
                      string.Join('%', user.UserInfo.Characters.Select(c => c.ToServerString()))
         );

@@ -37,40 +37,24 @@ public class AccountHandler : DataHandler<Account>
         IpTable = new Dictionary<IPAddress, int>();
     }
 
-    public override void OnAfterLoad()
+    public override void OnAfterLoad() => CreateIpTables();
+
+    public override Account CreateDefault()
     {
-        if (Data.Count <= 0)
-            CreateDefaultAccount();
-
-        CreateIpTables();
-    }
-
-    public void CreateDefaultAccount()
-    {
-        if (Data.Count != 0)
-            return;
-
-        Logger.LogInformation("This server has no accounts.");
-        Logger.LogInformation("Please create an owner account now");
-
         Logger.LogDebug("Username: ");
         var username = Console.ReadLine();
 
         Logger.LogDebug("Password: ");
         var password = Console.ReadLine();
 
-        if (username == null)
-        {
-            Logger.LogError("Username for account is null!");
-            return;
-        }
+        if (username != null)
+            return new Account(username, password, Data.Count, _hasher)
+            {
+                AccessLevel = AccessLevel.Owner
+            };
 
-        Data.Add(username, new Account(username, password, Data.Count, _hasher)
-        {
-            AccessLevel = AccessLevel.Owner
-        });
-
-        Logger.LogInformation("Account created.");
+        Logger.LogError("Username for account is null!");
+        return null;
     }
 
     public AlrReason GetAccount(string username, string password, NetState netState)
@@ -84,13 +68,13 @@ public class AccountHandler : DataHandler<Account>
         }
         else
         {
-            var account = Get(username);
+            var account = Data.FirstOrDefault(a => a.Value.Username == username).Value;
 
             if (account == null)
             {
                 if (username.Trim().Length > 0)
                 {
-                    netState.Account = account = CreateAccount(netState, username, password);
+                    netState.Set(account = CreateAccount(netState, username, password));
 
                     if (account == null || !account.CheckAccess(netState, this, _config))
                     {
@@ -123,7 +107,7 @@ public class AccountHandler : DataHandler<Account>
             }
             else
             {
-                netState.Account = account;
+                netState.Set(account);
                 rejectReason = AlrReason.Accepted;
 
                 account.LogAccess(netState, this, _config);

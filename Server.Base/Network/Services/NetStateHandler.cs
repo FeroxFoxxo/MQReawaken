@@ -56,11 +56,7 @@ public class NetStateHandler : IService
 
                 Instances.Remove(netState);
 
-                var username = netState.Account != null
-                    ? $"[{netState.Account.Username}]"
-                    : "UNKNOWN";
-
-                _logger.LogError("Disconnected. [{Count} Online] {Username}", Instances.Count, username);
+                netState.RemoveAllData();
             }
         }
     }

@@ -4,7 +4,6 @@ using Server.Base.Core.Helpers;
 using Server.Base.Logging;
 using Server.Base.Network;
 using Server.Base.Network.Services;
-using Server.Reawakened.Data.Services;
 using Server.Reawakened.Network.Helpers;
 using Server.Reawakened.Network.Protocols;
 using System.Reflection;
@@ -28,16 +27,14 @@ public class PacketHandler : IService
     private readonly ReflectionUtils _reflectionUtils;
     private readonly IServiceProvider _services;
     private readonly EventSink _sink;
-    private readonly UserHandler _userHandler;
 
     public PacketHandler(IServiceProvider services, ReflectionUtils reflectionUtils, NetworkLogger logger,
-        NetStateHandler handler, UserHandler userHandler, EventSink sink)
+        NetStateHandler handler, EventSink sink)
     {
         _services = services;
         _reflectionUtils = reflectionUtils;
         _logger = logger;
         _handler = handler;
-        _userHandler = userHandler;
         _sink = sink;
         _protocolsXt = new Dictionary<string, ExternalCallback>();
         _protocolsSystem = new Dictionary<string, SystemCallback>();
@@ -59,7 +56,7 @@ public class PacketHandler : IService
                 {
                     var instance = createInstance(services);
 
-                    instance.InitializeProtocol(state, _userHandler);
+                    instance.InitializeProtocol(state);
                     instance.Run(document);
                 }
 
@@ -74,7 +71,7 @@ public class PacketHandler : IService
                 {
                     var instance = createInstance(services);
 
-                    instance.InitializeProtocol(state, _userHandler);
+                    instance.InitializeProtocol(state);
                     instance.Run(msg);
                 }
 

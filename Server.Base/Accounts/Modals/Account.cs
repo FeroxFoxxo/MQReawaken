@@ -1,10 +1,14 @@
-﻿using Server.Base.Accounts.Enums;
+﻿using Microsoft.Extensions.Logging;
+using Server.Base.Accounts.Enums;
 using Server.Base.Accounts.Helpers;
+using Server.Base.Core.Models;
+using Server.Base.Network;
+using Server.Base.Network.Services;
 using System.Globalization;
 
 namespace Server.Base.Accounts.Modals;
 
-public class Account
+public class Account : JsonData, INetStateData
 {
     public AccessLevel AccessLevel { get; set; }
 
@@ -22,15 +26,13 @@ public class Account
 
     public List<AccountTag> Tags { get; set; }
 
-    public int UserId { get; set; }
-
     public string Username { get; set; }
 
     public Account()
     {
     }
 
-    public Account(string username, string password, int userPlayerId, PasswordHasher hasher)
+    public Account(string username, string password, int userId, PasswordHasher hasher)
     {
         Username = username;
         Password = hasher.GetPassword(username, password);
@@ -40,6 +42,9 @@ public class Account
         IpRestrictions = Array.Empty<string>();
         LoginIPs = Array.Empty<string>();
         Tags = new List<AccountTag>();
-        UserId = userPlayerId;
+        UserId = userId;
     }
+
+    public void RemovedState(NetState state, NetStateHandler handler, ILogger logger) =>
+        logger.LogError("Disconnected. [{Count} Online] [{Username}]", handler.Instances.Count, Username);
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Server.Base.Accounts.Modals;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
@@ -24,22 +23,21 @@ public class NetState
     private readonly EventSink _sink;
 
     private readonly string _toString;
-
     public readonly IPAddress Address;
     public readonly object AsyncLock;
     public readonly byte[] Buffer;
     public readonly DateTime ConnectedOn;
     public readonly int UpdateRange;
 
+    private readonly Dictionary<Type, INetStateData> _data;
     private bool _disposing;
     private double _nextCheckActivity;
 
     private AsyncCallback _onReceiveCallback, _onSendCallback;
 
-    public Account Account;
-
     public AsyncStates AsyncState;
     public ThrottlePacketCallback Throttler;
+
     public Socket Socket { get; private set; }
     public bool Running { get; private set; }
 
@@ -59,6 +57,7 @@ public class NetState
         _nextCheckActivity = GetTicks.Ticks + 30000000;
 
         _handler.Instances.Add(this);
+        _data = new Dictionary<Type, INetStateData>();
 
         try
         {
@@ -280,4 +279,14 @@ public class NetState
     }
 
     public override string ToString() => _toString;
+
+    public T Get<T>() where T : class => _data[typeof(T)] as T;
+
+    public void Set<T>(T data) where T : INetStateData => _data.Add(typeof(T), data);
+
+    public void RemoveAllData()
+    {
+        foreach (var data in _data)
+            data.Value.RemovedState(this, _handler, _logger);
+    }
 }

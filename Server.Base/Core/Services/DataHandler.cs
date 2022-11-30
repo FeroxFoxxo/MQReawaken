@@ -1,23 +1,25 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Server.Base.Core.Abstractions;
+using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
+using Server.Base.Core.Models;
 using Server.Base.Worlds.Events;
 
 namespace Server.Base.Core.Services;
 
-public abstract class DataHandler<T> : IService
+public abstract class DataHandler<T> : IService where T : JsonData
 {
     public readonly ILogger<T> Logger;
     public readonly EventSink Sink;
 
-    public Dictionary<string, T> Data;
+    public Dictionary<int, T> Data;
 
     protected DataHandler(EventSink sink, ILogger<T> logger)
     {
         Sink = sink;
         Logger = logger;
-        Data = new Dictionary<string, T>();
+        Data = new Dictionary<int, T>();
     }
 
     public virtual void Initialize()
@@ -26,7 +28,11 @@ public abstract class DataHandler<T> : IService
         Sink.WorldSave += Save;
     }
 
-    public string GetFileName() => Path.Combine("Saves", $"{typeof(T).Name.ToLower()}.json");
+    public string GetDirectory() =>
+        Path.Combine(InternalDirectory.GetBaseDirectory(), "Saves");
+
+    public string GetFileName() =>
+        Path.Combine(GetDirectory(), $"{typeof(T).Name.ToLower()}.json");
 
     public void Load()
     {
@@ -39,7 +45,7 @@ public abstract class DataHandler<T> : IService
                 using StreamReader streamReader = new(filePath, false);
                 var contents = streamReader.ReadToEnd();
 
-                Data = JsonConvert.DeserializeObject<Dictionary<string, T>>(contents) ??
+                Data = JsonConvert.DeserializeObject<Dictionary<int, T>>(contents) ??
                        throw new InvalidOperationException();
 
                 var count = Data.Count;
@@ -48,6 +54,9 @@ public abstract class DataHandler<T> : IService
                     count != 1 ? "s" : "");
 
                 streamReader.Close();
+
+                if (Data.Count <= 0)
+                    CreateDefaultInternal();
             }
             else
             {
@@ -62,14 +71,36 @@ public abstract class DataHandler<T> : IService
         OnAfterLoad();
     }
 
+    private void CreateDefaultInternal()
+    {
+        var name = typeof(T).Name.ToLower();
+
+        Logger.LogInformation("This server does not have a(n) {Type}.", name);
+        Logger.LogInformation("Please create a(n) {Type} for the server owner now", name);
+
+        var t = CreateDefault();
+
+        if (t == null)
+        {
+            Logger.LogError("Failed to create {Type}.", name);
+        }
+        else
+        {
+            Data.Add(Data.Count, t);
+            Logger.LogInformation("Created {Name}.", name);
+        }
+    }
+
+    public abstract T CreateDefault();
+
     public virtual void OnAfterLoad()
     {
     }
 
     public void Save(WorldSaveEventArgs worldSaveEventArgs)
     {
-        if (!Directory.Exists("Saves"))
-            Directory.CreateDirectory("Saves");
+        if (!Directory.Exists(GetDirectory()))
+            Directory.CreateDirectory(GetDirectory());
 
         var filePath = GetFileName();
 
@@ -80,9 +111,9 @@ public abstract class DataHandler<T> : IService
         streamWriter.Close();
     }
 
-    public T Get(string username)
+    public T Get(int userId)
     {
-        Data.TryGetValue(username, out var type);
+        Data.TryGetValue(userId, out var type);
 
         return type;
     }

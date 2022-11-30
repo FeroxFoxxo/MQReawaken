@@ -1,7 +1,6 @@
 ﻿using Server.Base.Network;
-using Server.Reawakened.Data.Extensions;
+using Server.Reawakened.Data;
 using Server.Reawakened.Data.Modals;
-using Server.Reawakened.Data.Services;
 using Server.Reawakened.Levels.Enums;
 using Server.Reawakened.Levels.Extensions;
 using Server.Reawakened.Levels.Services;
@@ -16,17 +15,14 @@ public class Level
     private readonly Dictionary<int, NetState> _clients;
     private readonly LevelHandler _handler;
     private readonly ServerConfig _serverConfig;
-    private readonly UserHandler _userHandler;
 
     public readonly LevelInfo LevelData;
 
-    public Level(LevelInfo levelData, ServerConfig serverConfig, LevelHandler handler,
-        UserHandler userHandler)
+    public Level(LevelInfo levelData, ServerConfig serverConfig, LevelHandler handler)
     {
         LevelData = levelData;
         _serverConfig = serverConfig;
         _handler = handler;
-        _userHandler = userHandler;
         _clients = new Dictionary<int, NetState>();
         _clientIds = new HashSet<int>();
     }
@@ -53,9 +49,9 @@ public class Level
         }
 
         if (reason == JoinReason.Accepted)
-            state.SendXml(_userHandler, "joinOK", $"<pid id='{playerId}' /><uLs />");
+            state.SendXml("joinOK", $"<pid id='{playerId}' /><uLs />");
         else
-            state.SendXml(_userHandler, "joinKO", $"<error>{reason.GetErrorValue()}</error>");
+            state.SendXml("joinKO", $"<error>{reason.GetErrorValue()}</error>");
         return playerId;
     }
 
@@ -69,7 +65,7 @@ public class Level
     {
         var client = _clients[playerId];
 
-        client.GetUser(_userHandler).JoinLevel(client, _handler.GetLevelFromId(-1));
+        client.Get<Player>().JoinLevel(client, _handler.GetLevelFromId(-1));
 
         RemoveClient(playerId);
     }

@@ -9,7 +9,7 @@ namespace Server.Reawakened.Network.Services;
 public class RandomKeyGenerator : IService
 {
     private readonly ServerConfig _config;
-    private readonly Dictionary<string, string> _keys;
+    private readonly Dictionary<Type, Dictionary<string, string>> _keys;
     private readonly Random _random;
     private readonly EventSink _sink;
 
@@ -19,7 +19,7 @@ public class RandomKeyGenerator : IService
         _sink = sink;
         _config = config;
 
-        _keys = new Dictionary<string, string>();
+        _keys = new Dictionary<Type, Dictionary<string, string>>();
     }
 
     public void Initialize()
@@ -28,27 +28,49 @@ public class RandomKeyGenerator : IService
         _sink.NetStateRemoved += RemovedNetState;
     }
 
+    private Dictionary<string, string> CheckIfExists<T>()
+    {
+        if (!_keys.ContainsKey(typeof(T)))
+            _keys.Add(typeof(T), new Dictionary<string, string>());
+        return _keys[typeof(T)];
+    }
+
     private void RemovedNetState(NetStateRemovedEventArgs @event)
     {
         var id = @event.State.ToString();
 
-        if (_keys.ContainsKey(id))
-            _keys.Remove(id);
+        var rKeys = CheckIfExists<NetState>();
+
+        if (rKeys.ContainsKey(id))
+            rKeys.Remove(id);
     }
 
     private void AddedNetState(NetStateAddedEventArgs @event)
     {
         var id = @event.State.ToString();
 
-        if (!_keys.ContainsKey(id))
-            _keys.Add(id, GetRandomKey(_config.RandomKeyLength));
+        var rKeys = CheckIfExists<NetState>();
+
+        if (!rKeys.ContainsKey(id))
+            rKeys.Add(id, GetRandomKey(_config.RandomKeyLength));
     }
 
-    public string GetRandomKey(NetState state)
+    public string GetRandomKey<T>(string id)
     {
-        var id = state.ToString();
+        var rKeys = CheckIfExists<T>();
 
-        return _keys.ContainsKey(id) ? _keys[id] : GetRandomKey(_config.RandomKeyLength);
+        if (rKeys.ContainsKey(id))
+            return rKeys[id];
+
+        while (true)
+        {
+            var rKey = GetRandomKey(_config.RandomKeyLength);
+
+            if (rKeys.ContainsValue(rKey))
+                continue;
+
+            return rKey;
+        }
     }
 
     private string GetRandomKey(int length)

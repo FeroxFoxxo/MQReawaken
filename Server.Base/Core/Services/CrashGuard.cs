@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Server.Base.Accounts.Modals;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Events;
 using Server.Base.Core.Extensions;
@@ -72,9 +73,8 @@ public class CrashGuard : IService
             var rootOrigin = InternalDirectory.Combine(root, "Saves/");
 
             InternalDirectory.CreateDirectory(rootBackup);
-            InternalDirectory.CreateDirectory(rootBackup, "Accounts/");
 
-            CopyFile(rootOrigin, rootBackup, "Accounts/Accounts.xml");
+            CopyFiles(rootOrigin, rootBackup);
 
             _logger.LogDebug("Backed up!");
         }
@@ -84,15 +84,12 @@ public class CrashGuard : IService
         }
     }
 
-    private void CopyFile(string rootOrigin, string rootBackup, string path)
+    private void CopyFiles(string originPath, string backupPath)
     {
-        var originPath = InternalDirectory.Combine(rootOrigin, path);
-        var backupPath = InternalDirectory.Combine(rootBackup, path);
-
         try
         {
-            if (File.Exists(originPath))
-                File.Copy(originPath, backupPath);
+            foreach (var file in Directory.GetFiles(originPath))
+                File.Copy(Path.Combine(originPath, file), Path.Combine(backupPath, file));
         }
         catch (Exception ex)
         {
@@ -154,7 +151,7 @@ public class CrashGuard : IService
                     {
                         streamWriter.Write("+ {0}:", netState);
 
-                        var account = netState.Account;
+                        var account = netState.Get<Account>();
 
                         if (account != null)
                             streamWriter.Write(" (Account = {0})", account.Username);

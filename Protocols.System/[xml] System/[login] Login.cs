@@ -1,5 +1,6 @@
 ﻿using Server.Base.Accounts.Enums;
 using Server.Base.Accounts.Extensions;
+using Server.Base.Accounts.Modals;
 using Server.Base.Accounts.Services;
 using Server.Reawakened.Data.Services;
 using Server.Reawakened.Network.Protocols;
@@ -23,9 +24,9 @@ public class Login : SystemProtocol
 
         if (reason == AlrReason.Accepted)
         {
-            UserInfoHandler.InitializeUser(username);
+            UserInfoHandler.InitializeUser(NetState);
             SendXml("logOK",
-                $"<login id='{NetState.Account.UserId}' mod='{NetState.Account.IsModerator()}' n='{username}' />");
+                $"<login id='{NetState.Get<Account>().UserId}' mod='{NetState.Get<Account>().IsModerator()}' n='{username}' />");
         }
         else
         {
