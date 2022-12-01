@@ -19,10 +19,6 @@ namespace Server.Web;
 
 public class Web : WebModule
 {
-    public override int Major => 1;
-    public override int Minor => 0;
-    public override int Patch => 1;
-
     public override string[] Contributors { get; } = { "Ferox" };
 
     public Web(ILogger<Web> logger) : base(logger)

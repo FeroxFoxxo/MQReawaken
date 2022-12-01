@@ -16,10 +16,6 @@ namespace Server.Base;
 
 public class Server : Module
 {
-    public override int Major => 1;
-    public override int Minor => 1;
-    public override int Patch => 1;
-
     public override string[] Contributors { get; } = { "Ferox", "ServUO" };
 
     public Server(ILogger<Server> logger) : base(logger)

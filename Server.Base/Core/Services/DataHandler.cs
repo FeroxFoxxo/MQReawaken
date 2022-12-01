@@ -8,7 +8,7 @@ using Server.Base.Worlds.Events;
 
 namespace Server.Base.Core.Services;
 
-public abstract class DataHandler<T> : IService where T : JsonData
+public abstract class DataHandler<T> : IService where T : PersistantData
 {
     public readonly ILogger<T> Logger;
     public readonly EventSink Sink;

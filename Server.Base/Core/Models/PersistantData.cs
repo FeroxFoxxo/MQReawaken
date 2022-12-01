@@ -2,7 +2,7 @@
 
 namespace Server.Base.Core.Models;
 
-public abstract class JsonData
+public abstract class PersistantData
 {
     [Key] public int UserId { get; set; }
 }

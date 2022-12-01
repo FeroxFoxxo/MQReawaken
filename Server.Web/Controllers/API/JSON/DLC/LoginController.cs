@@ -68,7 +68,7 @@ public class LoginController : Controller
         analytics.enabled = _config.AnalyticsEnabled;
         analytics.firstTimeLogin = account.Created == account.LastLogin ? "true" : "false";
         analytics.firstLoginToday = (DateTime.UtcNow - DateTime.Parse(account.LastLogin)).TotalDays >= 1;
-        analytics.baseUrl = _config.AnalyticsBaseUrl;
+        analytics.baseUrl = $"{_config.BaseUrl}/Analytics";
         analytics.apiKey = _config.AnalyticsApiKey;
         resp.analytics = analytics;
 

@@ -8,18 +8,11 @@ public abstract class Module
 {
     public readonly ILogger Logger;
 
-    public abstract int Major { get; }
-
-    public abstract int Minor { get; }
-
-    public abstract int Patch { get; }
-
     public abstract string[] Contributors { get; }
 
     protected Module(ILogger logger) => Logger = logger;
 
-    public virtual string GetModuleInformation() =>
-        $"{GetType().Namespace} v{Major}.{Minor}.{Patch}";
+    public virtual string GetModuleInformation() => GetType().Namespace;
 
     public virtual void AddLogging(ILoggingBuilder loggingBuilder)
     {

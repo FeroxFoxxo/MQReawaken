@@ -8,10 +8,6 @@ namespace Server.Reawakened;
 
 public class Reawakened : Module
 {
-    public override int Major => 1;
-    public override int Minor => 0;
-    public override int Patch => 1;
-
     public override string[] Contributors { get; } = { "Ferox" };
 
     public Reawakened(ILogger<Reawakened> logger) : base(logger)

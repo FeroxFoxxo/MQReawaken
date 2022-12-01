@@ -6,6 +6,7 @@ using Server.Reawakened.Launcher.Internal;
 using Server.Reawakened.Launcher.Models;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Server.Reawakened.Launcher.Services;
 
@@ -53,6 +54,7 @@ public class StartGame : IService
         if (!_appStart || !_dirSet)
             return;
 
+        WriteConfig();
         _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
         _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
     }
@@ -101,6 +103,50 @@ public class StartGame : IService
         _dirSet = true;
         RunGame();
     }
+
+    private void WriteConfig()
+    {
+        var config = Path.Join(_directory, "game", "LocalBuildConfig.xml");
+
+        var oldDoc = XDocument.Load(config);
+        var newDoc = new XDocument();
+
+        var root = oldDoc.Elements().FirstOrDefault(x => x.Name == "MQBuildConfg") ??
+                   new XElement("MQBuildConfg");
+
+        foreach (var item in GetConfigValues())
+        {
+            var xmlItem = root.Elements().FirstOrDefault(x => x.Attributes().Any(a =>
+                a.Name == "name" && a.Value == item.Value
+            ));
+
+            if (xmlItem == null)
+            {
+                xmlItem = new XElement("item");
+                xmlItem.Add(new XAttribute("name", item.Key));
+                xmlItem.Add(new XAttribute("value", item.Value));
+                root.Add(xmlItem);
+            }
+            else
+            {
+                xmlItem.Attributes().First(a => a.Name == "value").Value = item.Value;
+            }
+        }
+
+        newDoc.Add(root);
+        newDoc.Save(config);
+    }
+
+    private Dictionary<string, string> GetConfigValues() =>
+        new()
+        {
+            { "asset.bundle", $"{_lConfig.BaseUrl}/Client/Bundles" },
+            { "asset.audio", $"{_lConfig.BaseUrl}/Client/Audio" },
+            { "logout.url", $"{_lConfig.BaseUrl}/Logout" },
+            { "contactus.url", $"{_lConfig.BaseUrl}/Contact" },
+            { "tools.urlbase", $"{_lConfig.BaseUrl}/Tools" },
+            { "asset.jboss", $"{_lConfig.BaseUrl}/Apps" }
+        };
 
     private void GetGameInformation()
     {

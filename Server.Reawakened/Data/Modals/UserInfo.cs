@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Server.Reawakened.Data.Modals;
 
-public class UserInfo : JsonData
+public class UserInfo : PersistantData
 {
     public string LastCharacterSelected { get; set; }
 

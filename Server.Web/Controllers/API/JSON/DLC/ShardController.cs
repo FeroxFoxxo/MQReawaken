@@ -52,7 +52,7 @@ public class ShardController : Controller
                 "sharder", new JObject
                 {
                     { "unity.login.sid", sId },
-                    { "unity.login.host", $"{_config.GetHostName()}:" }
+                    { "unity.login.host", _config.GetHostName() }
                 }
             }
         };

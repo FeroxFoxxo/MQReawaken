@@ -10,10 +10,9 @@ public class LauncherConfig : IConfig
 
     public ulong AnalyticsId { get; set; }
     public bool AnalyticsEnabled { get; set; }
-    public string AnalyticsBaseUrl { get; set; }
     public string AnalyticsApiKey { get; set; }
 
-    public string LoginHost { get; set; }
+    public string BaseUrl { get; set; }
 
     public LauncherConfig()
     {
@@ -21,8 +20,7 @@ public class LauncherConfig : IConfig
 
         AnalyticsId = 0;
         AnalyticsEnabled = false;
-        AnalyticsBaseUrl = "http://localhost/analytics";
         AnalyticsApiKey = "ANALYTICS_KEY";
-        LoginHost = "localhost:2332";
+        BaseUrl = "http://localhost";
     }
 }

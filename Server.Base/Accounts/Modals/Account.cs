@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace Server.Base.Accounts.Modals;
 
-public class Account : JsonData, INetStateData
+public class Account : PersistantData, INetStateData
 {
     public AccessLevel AccessLevel { get; set; }
 

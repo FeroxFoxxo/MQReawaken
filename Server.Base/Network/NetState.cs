@@ -280,13 +280,16 @@ public class NetState
 
     public override string ToString() => _toString;
 
-    public T Get<T>() where T : class => _data[typeof(T)] as T;
+    public T Get<T>() where T : class => !_data.ContainsKey(typeof(T)) ? null : _data[typeof(T)] as T;
 
     public void Set<T>(T data) where T : INetStateData => _data.Add(typeof(T), data);
 
     public void RemoveAllData()
     {
         foreach (var data in _data)
-            data.Value.RemovedState(this, _handler, _logger);
+        {
+            lock (_handler.Disposed)
+                data.Value?.RemovedState(this, _handler, _logger);
+        }
     }
 }
