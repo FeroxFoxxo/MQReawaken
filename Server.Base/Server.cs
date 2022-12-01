@@ -58,12 +58,7 @@ public class Server : Module
         Logger.LogDebug("Loading Configs");
 
         foreach (var service in RequiredServices.GetServices<IConfig>(modules))
-        {
-            if (services.LoadConfigsWasFound(service))
-                Logger.LogTrace("   Config: Found {Name}", service.Name);
-            else
-                Logger.LogTrace("   Config: {Name} was not found, creating!", service.Name);
-        }
+            services.LoadConfigs(service, Logger);
 
         Logger.LogDebug("Loaded configs");
 

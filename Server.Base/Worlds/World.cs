@@ -57,7 +57,7 @@ public class World
 
         stopWatch.Stop();
 
-        _logger.LogDebug("Finished loading in {SECONDS} seconds.", stopWatch.Elapsed.TotalSeconds);
+        _logger.LogInformation("Finished loading in {SECONDS} seconds.", stopWatch.Elapsed.TotalSeconds);
     }
 
     public void WaitForWriteCompletion() => _diskWriteHandle.WaitOne();
