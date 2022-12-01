@@ -61,4 +61,6 @@ public class UserInfoHandler : DataHandler<UserInfo>
 
         return new UserInfo(Data.Count, gender, dob, RegionInfo.CurrentRegion.Name, _randomKeyGenerator);
     }
+
+    public override UserInfo Create(NetState netState, params string[] obj) => throw new NotImplementedException();
 }

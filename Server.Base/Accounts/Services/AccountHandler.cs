@@ -21,12 +21,14 @@ public class AccountHandler : DataHandler<Account>
     private readonly InternalServerConfig _internalServerConfig;
     private readonly IpLimiter _ipLimiter;
     private readonly NetworkLogger _networkLogger;
+    private readonly TemporaryDataStorage _temporaryDataStorage;
 
     public Dictionary<IPAddress, int> IpTable;
 
     public AccountHandler(EventSink sink, ILogger<Account> logger, InternalServerConfig internalServerConfig,
         PasswordHasher hasher, AccountAttackLimiter attackLimiter, IpLimiter ipLimiter,
-        NetworkLogger networkLogger, InternalServerConfig config) : base(sink, logger)
+        NetworkLogger networkLogger, InternalServerConfig config, TemporaryDataStorage temporaryDataStorage) : base(
+        sink, logger)
     {
         _internalServerConfig = internalServerConfig;
         _hasher = hasher;
@@ -34,6 +36,7 @@ public class AccountHandler : DataHandler<Account>
         _ipLimiter = ipLimiter;
         _networkLogger = networkLogger;
         _config = config;
+        _temporaryDataStorage = temporaryDataStorage;
         IpTable = new Dictionary<IPAddress, int>();
     }
 
@@ -59,7 +62,7 @@ public class AccountHandler : DataHandler<Account>
 
     public AlrReason GetAccount(string username, string password, NetState netState)
     {
-        AlrReason rejectReason;
+        var rejectReason = AlrReason.Invalid;
 
         if (!_internalServerConfig.SocketBlock && !_ipLimiter.Verify(netState.Address))
         {
@@ -68,49 +71,44 @@ public class AccountHandler : DataHandler<Account>
         }
         else
         {
-            var account = Data.FirstOrDefault(a => a.Value.Username == username).Value;
+            Account account;
 
-            if (account == null)
+            if (username == ".")
             {
-                if (username.Trim().Length > 0)
-                {
-                    netState.Set(account = CreateAccount(netState, username, password));
-
-                    if (account == null || !account.CheckAccess(netState, this, _config))
-                    {
-                        rejectReason = AlrReason.BadComm;
-                    }
-                    else
-                    {
-                        rejectReason = AlrReason.Accepted;
-                        account.LogAccess(netState, this, _config);
-                    }
-                }
+                account = _temporaryDataStorage.GetData<Account>(password);
+                if (account == null)
+                    rejectReason = AlrReason.BadComm;
                 else
-                {
-                    rejectReason = AlrReason.Invalid;
-                }
-            }
-            else if (!account.HasAccess(netState, this, _config))
-            {
-                rejectReason = _internalServerConfig.LockDownLevel > AccessLevel.Vip
-                    ? AlrReason.BadComm
-                    : AlrReason.BadPass;
-            }
-            else if (!_hasher.CheckPassword(account, password))
-            {
-                rejectReason = AlrReason.BadPass;
-            }
-            else if (account.IsBanned())
-            {
-                rejectReason = AlrReason.Blocked;
+                    username = account.Username;
             }
             else
             {
-                netState.Set(account);
-                rejectReason = AlrReason.Accepted;
+                account = Data.Values.FirstOrDefault(a => a.Username == username);
 
-                account.LogAccess(netState, this, _config);
+                if (account != null)
+                    if (!_hasher.CheckPassword(account, password))
+                        rejectReason = AlrReason.BadPass;
+            }
+
+            if (account != null)
+            {
+                if (!account.HasAccess(netState, this, _config))
+                {
+                    rejectReason = _internalServerConfig.LockDownLevel > AccessLevel.Vip
+                        ? AlrReason.BadComm
+                        : AlrReason.BadPass;
+                }
+                else if (account.IsBanned())
+                {
+                    rejectReason = AlrReason.Blocked;
+                }
+                else if (rejectReason != AlrReason.BadPass && rejectReason != AlrReason.BadComm)
+                {
+                    netState.Set(account);
+                    rejectReason = AlrReason.Accepted;
+
+                    account.LogAccess(netState, this, _config);
+                }
             }
         }
 
@@ -159,8 +157,14 @@ public class AccountHandler : DataHandler<Account>
 
     public bool CanCreate(IPAddress ipAddress) => !IpTable.ContainsKey(ipAddress) || IpTable[ipAddress] < 1;
 
-    private Account CreateAccount(NetState netState, string username, string password)
+    public override Account Create(NetState netState, params string[] obj)
     {
+        var username = obj[0] ?? string.Empty;
+        var password = obj[1] ?? string.Empty;
+
+        if (username.Trim().Length <= 0 || password.Trim().Length <= 0)
+            throw new InvalidOperationException();
+
         if (username.Length == 0)
             return null;
 

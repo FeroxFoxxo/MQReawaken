@@ -4,6 +4,7 @@ using Server.Base.Core.Abstractions;
 using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Models;
+using Server.Base.Network;
 using Server.Base.Worlds.Events;
 
 namespace Server.Base.Core.Services;
@@ -117,4 +118,6 @@ public abstract class DataHandler<T> : IService where T : PersistantData
 
         return type;
     }
+
+    public abstract T Create(NetState netState, params string[] obj);
 }
