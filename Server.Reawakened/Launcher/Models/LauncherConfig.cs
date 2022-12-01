@@ -14,6 +14,10 @@ public class LauncherConfig : IConfig
 
     public string BaseUrl { get; set; }
 
+    public bool LogAssets { get; set; }
+    public bool DisableVersions { get; set; }
+    public string CacheLicense { get; set; }
+
     public LauncherConfig()
     {
         News = $"You expected there to be news here? It's {DateTime.Now.Year}!";
@@ -22,5 +26,9 @@ public class LauncherConfig : IConfig
         AnalyticsEnabled = false;
         AnalyticsApiKey = "ANALYTICS_KEY";
         BaseUrl = "http://localhost";
+
+        LogAssets = true;
+        DisableVersions = true;
+        CacheLicense = "UNKNOWN";
     }
 }

@@ -29,7 +29,14 @@ public class Player : INetStateData
         Microsoft.Extensions.Logging.ILogger logger)
     {
         if (_currentLevel != null)
-            logger.LogDebug("Dumped player {User} from {Level}", _playerId, _currentLevel.LevelData.Name);
+        {
+            var levelName = _currentLevel.LevelData.Name;
+
+            if (string.IsNullOrEmpty(levelName))
+                levelName = "UNKNOWN";
+
+            logger.LogDebug("Dumped player with ID '{User}' from level '{Level}'", _playerId, levelName);
+        }
 
         _currentLevel?.DumpPlayerToLobby(_playerId);
     }

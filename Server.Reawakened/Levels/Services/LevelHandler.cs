@@ -46,8 +46,7 @@ public class LevelHandler : IService
 
         var level = new Level(_worldGraph?.GetInfoLevel(levelId), _config, this);
 
-        if (_worldGraph != null)
-            _levels.Add(levelId, level);
+        _levels.Add(levelId, level);
 
         return level;
     }

@@ -117,7 +117,7 @@ public class StartGame : IService
         foreach (var item in GetConfigValues())
         {
             var xmlItem = root.Elements().FirstOrDefault(x => x.Attributes().Any(a =>
-                a.Name == "name" && a.Value == item.Value
+                a.Name == "name" && a.Value == item.Key
             ));
 
             if (xmlItem == null)
@@ -140,12 +140,22 @@ public class StartGame : IService
     private Dictionary<string, string> GetConfigValues() =>
         new()
         {
+            { "monkeyquest.unity.cache.domain", $"{_lConfig.BaseUrl}/Cache" },
+            { "monkeyquest.unity.cache.license", $"{_lConfig.CacheLicense}" },
+            { "monkeyquest.unity.cache.size", "0" },
+            { "monkeyquest.unity.cache.expiration", "0" },
+            { "asset.log", _lConfig.LogAssets ? "true" : "false" },
+            { "asset.disableversioning", _lConfig.DisableVersions ? "true" : "false" },
+            { "asset.jboss", $"{_lConfig.BaseUrl}/Apps" },
             { "asset.bundle", $"{_lConfig.BaseUrl}/Client/Bundles" },
             { "asset.audio", $"{_lConfig.BaseUrl}/Client/Audio" },
             { "logout.url", $"{_lConfig.BaseUrl}/Logout" },
             { "contactus.url", $"{_lConfig.BaseUrl}/Contact" },
             { "tools.urlbase", $"{_lConfig.BaseUrl}/Tools" },
-            { "asset.jboss", $"{_lConfig.BaseUrl}/Apps" }
+            { "leaderboard.domain", $"{_lConfig.BaseUrl}/Leaderboard" },
+            { "analytics.baseurl", $"{_lConfig.BaseUrl}/Analytics" },
+            { "analytics.enabled", _lConfig.AnalyticsEnabled ? "true" : "false" },
+            { "analytics.apikey", _lConfig.AnalyticsApiKey }
         };
 
     private void GetGameInformation()
