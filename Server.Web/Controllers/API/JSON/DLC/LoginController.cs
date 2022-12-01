@@ -29,8 +29,7 @@ public class LoginController : Controller
     {
         var hashedPw = _passwordHasher.GetPassword(username, password);
 
-        var account = _accHandler.Data.Values
-            .FirstOrDefault(x => x.Username == username && x.Password == hashedPw);
+        var account = _accHandler.Data.Values.FirstOrDefault(x => x.Username == username);
 
         if (account == null)
             return Unauthorized();
@@ -38,6 +37,9 @@ public class LoginController : Controller
         var userInfo = _userInfoHandler.Data.Values.FirstOrDefault(x => x.UserId == account.UserId);
 
         if (userInfo == null)
+            return Unauthorized();
+
+        if (account.Password != hashedPw && userInfo.AuthToken != password)
             return Unauthorized();
 
         dynamic resp = new ExpandoObject();
@@ -49,7 +51,7 @@ public class LoginController : Controller
         dynamic local = new ExpandoObject();
         local.uuid = account.UserId.ToString();
         local.username = account.Username;
-        local.createdTime = account.Created;
+        local.createdTime = ((DateTimeOffset)DateTime.Parse(account.Created)).ToUnixTimeSeconds();
         user.local = local;
 
         dynamic sso = new ExpandoObject();

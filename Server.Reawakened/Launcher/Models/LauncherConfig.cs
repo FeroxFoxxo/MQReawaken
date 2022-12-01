@@ -13,6 +13,8 @@ public class LauncherConfig : IConfig
     public string AnalyticsBaseUrl { get; set; }
     public string AnalyticsApiKey { get; set; }
 
+    public string LoginHost { get; set; }
+
     public LauncherConfig()
     {
         News = $"You expected there to be news here? It's {DateTime.Now.Year}!";
@@ -21,5 +23,6 @@ public class LauncherConfig : IConfig
         AnalyticsEnabled = false;
         AnalyticsBaseUrl = "http://localhost/analytics";
         AnalyticsApiKey = "ANALYTICS_KEY";
+        LoginHost = "localhost:2332";
     }
 }

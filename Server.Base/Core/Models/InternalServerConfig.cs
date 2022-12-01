@@ -5,6 +5,8 @@ namespace Server.Base.Core.Models;
 
 public class InternalServerConfig : IConfig
 {
+    public string Host { get; set; }
+    public int Port { get; set; }
     public int MaxAccountsPerIp { get; set; }
     public char[] ForbiddenChars { get; set; }
     public AccessLevel LockDownLevel { get; set; }
@@ -48,5 +50,9 @@ public class InternalServerConfig : IConfig
             "Second Backup",
             "Most Recent"
         };
+        Port = 9339;
+        Host = "localhost";
     }
+
+    public string GetHostName() => $"{Host}:{Port}";
 }

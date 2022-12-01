@@ -38,7 +38,7 @@ public class MessagePump : IService
 
         _ipEndPoints = new IPEndPoint[]
         {
-            new(IPAddress.Any, 9339)
+            new(IPAddress.Any, config.Port)
         };
 
         Listeners = new Listener[_ipEndPoints.Length];

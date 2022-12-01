@@ -9,7 +9,7 @@ public class ServerConfig : IConfig
 
     public ServerConfig()
     {
-        RandomKeyLength = 16;
+        RandomKeyLength = 24;
         PlayerCap = 20;
     }
 }
