@@ -1,8 +1,8 @@
-﻿using AssetStudio;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
+using Server.Reawakened.Launcher.Helpers;
 using Server.Reawakened.Launcher.Internal;
 using Server.Reawakened.Launcher.Models;
 using System.Diagnostics;
@@ -14,6 +14,7 @@ namespace Server.Reawakened.Launcher.Services;
 public class StartGame : IService
 {
     private readonly IHostApplicationLifetime _appLifetime;
+    private readonly LauncherSink _launcherSink;
     private readonly LauncherConfig _lConfig;
     private readonly ILogger<StartGame> _logger;
     private readonly SettingsConfig _sConfig;
@@ -25,13 +26,14 @@ public class StartGame : IService
     public string CurrentVersion { get; private set; }
 
     public StartGame(EventSink sink, LauncherConfig lConfig, SettingsConfig sConfig,
-        IHostApplicationLifetime appLifetime, ILogger<StartGame> logger)
+        IHostApplicationLifetime appLifetime, ILogger<StartGame> logger, LauncherSink launcherSink)
     {
         _sink = sink;
         _lConfig = lConfig;
         _sConfig = sConfig;
         _appLifetime = appLifetime;
         _logger = logger;
+        _launcherSink = launcherSink;
 
         _dirSet = false;
         _appStart = false;
@@ -56,10 +58,7 @@ public class StartGame : IService
             return;
 
         WriteConfig();
-
-        var man = new AssetsManager();
-        man.LoadFolder(Path.GetDirectoryName(_lConfig.CacheInfoFile));
-
+        _launcherSink.InvokeGameLaunch();
         _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
         _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
     }
