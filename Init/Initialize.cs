@@ -17,6 +17,8 @@ public class Initialize
     {
         var logger = new Logger("Initialization");
 
+        AssetStudio.Logger.Default = new Logger("AssetStudio");
+
         try
         {
             logger.LogInformation("============ Launching =============");

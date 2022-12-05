@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using AssetStudio;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
@@ -12,14 +13,14 @@ namespace Server.Reawakened.Launcher.Services;
 
 public class StartGame : IService
 {
-    private readonly LauncherConfig _lConfig;
-    private readonly SettingsConfig _sConfig;
     private readonly IHostApplicationLifetime _appLifetime;
+    private readonly LauncherConfig _lConfig;
     private readonly ILogger<StartGame> _logger;
+    private readonly SettingsConfig _sConfig;
     private readonly EventSink _sink;
-    private Process _game;
     private string _directory;
     private bool _dirSet, _appStart;
+    private Process _game;
 
     public string CurrentVersion { get; private set; }
 
@@ -55,6 +56,10 @@ public class StartGame : IService
             return;
 
         WriteConfig();
+
+        var man = new AssetsManager();
+        man.LoadFolder(Path.GetDirectoryName(_lConfig.CacheInfoFile));
+
         _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
         _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
     }
@@ -137,13 +142,16 @@ public class StartGame : IService
         newDoc.Save(config);
     }
 
-    private Dictionary<string, string> GetConfigValues() =>
-        new()
+    private Dictionary<string, string> GetConfigValues()
+    {
+        const string name = "monkeyquest";
+
+        return new Dictionary<string, string>
         {
-            { "monkeyquest.unity.cache.domain", $"{_lConfig.BaseUrl}/Cache" },
-            { "monkeyquest.unity.cache.license", $"{_lConfig.CacheLicense}" },
-            { "monkeyquest.unity.cache.size", "0" },
-            { "monkeyquest.unity.cache.expiration", "0" },
+            { $"{name}.unity.cache.domain", $"{_lConfig.BaseUrl}/Cache" },
+            { $"{name}.unity.cache.license", $"{_lConfig.CacheLicense}" },
+            { $"{name}.unity.cache.size", "0" },
+            { $"{name}.unity.cache.expiration", "0" },
             { "asset.log", _lConfig.LogAssets ? "true" : "false" },
             { "asset.disableversioning", _lConfig.DisableVersions ? "true" : "false" },
             { "asset.jboss", $"{_lConfig.BaseUrl}/Apps" },
@@ -157,6 +165,7 @@ public class StartGame : IService
             { "analytics.enabled", _lConfig.AnalyticsEnabled ? "true" : "false" },
             { "analytics.apikey", _lConfig.AnalyticsApiKey }
         };
+    }
 
     private void GetGameInformation()
     {

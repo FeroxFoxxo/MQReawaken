@@ -2,7 +2,7 @@
 using Server.Base.Core.Helpers;
 using Server.Base.Network;
 using Server.Base.Network.Events;
-using Server.Reawakened.Data.Modals;
+using Server.Reawakened.Data;
 
 namespace Server.Reawakened.Network.Services;
 

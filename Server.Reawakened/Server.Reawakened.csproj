@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\AssetStudio\AssetStudio.csproj" />
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
         
         <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
@@ -21,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Dependencies\" />
+      <Folder Include="AssetBundler\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -52,6 +53,9 @@
       <Reference Include="ICSharpCode.SharpZipLib">
         <HintPath>Dependencies\ICSharpCode.SharpZipLib.dll</HintPath>
       </Reference>
+      <Reference Include="K4os.Compression.LZ4">
+        <HintPath>Dependencies\K4os.Compression.LZ4.dll</HintPath>
+      </Reference>
       <Reference Include="LitJson">
         <HintPath>Dependencies\LitJson.dll</HintPath>
       </Reference>
@@ -70,10 +74,6 @@
       <Reference Include="UnityEngine">
         <HintPath>Dependencies\UnityEngine.dll</HintPath>
       </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Dependencies\" />
     </ItemGroup>
 
 </Project>

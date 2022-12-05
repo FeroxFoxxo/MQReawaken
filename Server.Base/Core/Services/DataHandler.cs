@@ -55,9 +55,6 @@ public abstract class DataHandler<T> : IService where T : PersistantData
                     typeof(T).Name.ToLower(), count != 1 ? "s" : "", filePath);
 
                 streamReader.Close();
-
-                if (Data.Count <= 0)
-                    CreateDefaultInternal();
             }
             else
             {
@@ -68,6 +65,9 @@ public abstract class DataHandler<T> : IService where T : PersistantData
         {
             Logger.LogError(ex, "Could not deserialize save for {Type}.", typeof(T).Name);
         }
+
+        if (Data.Count <= 0)
+            CreateDefaultInternal();
 
         OnAfterLoad();
     }

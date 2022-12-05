@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocols.System", "Protoco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Reawakened", "Server.Reawakened\Server.Reawakened.csproj", "{21AFFAA5-897C-4330-9F57-A86E95368F99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.Web", "Server.Web\Server.Web.csproj", "{C5C93D17-D5B7-4D95-897D-9ED15105AF12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Web", "Server.Web\Server.Web.csproj", "{C5C93D17-D5B7-4D95-897D-9ED15105AF12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio", "AssetStudio\AssetStudio.csproj", "{BEC5EE59-E0B1-45F2-9775-E8501644BCE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{C5C93D17-D5B7-4D95-897D-9ED15105AF12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5C93D17-D5B7-4D95-897D-9ED15105AF12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5C93D17-D5B7-4D95-897D-9ED15105AF12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEC5EE59-E0B1-45F2-9775-E8501644BCE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEC5EE59-E0B1-45F2-9775-E8501644BCE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEC5EE59-E0B1-45F2-9775-E8501644BCE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEC5EE59-E0B1-45F2-9775-E8501644BCE4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

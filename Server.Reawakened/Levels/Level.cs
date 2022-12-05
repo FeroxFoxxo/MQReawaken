@@ -1,6 +1,5 @@
 ﻿using Server.Base.Network;
 using Server.Reawakened.Data;
-using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Levels.Enums;
 using Server.Reawakened.Levels.Extensions;
 using Server.Reawakened.Levels.Services;

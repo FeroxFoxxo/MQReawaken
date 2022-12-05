@@ -1,6 +1,6 @@
 ﻿using Server.Base.Core.Abstractions;
 
-namespace Server.Reawakened.Data.Modals;
+namespace Server.Reawakened.Data;
 
 public class ServerConfig : IConfig
 {

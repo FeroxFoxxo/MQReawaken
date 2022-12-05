@@ -10,7 +10,7 @@ The logo above was made by Z6mbie through vector art. Big thanks to him for the 
 
 #### None of the repo, the tool, nor the repo owner is affiliated with, or sponsored or authorized by any affiliates of the original game.
 
-MQReawaken is a private server meant for educational use only. It's built off the Ultima server emulator, written by the guys at [ServUO](https://github.com/ServUO/ServUO/), and heavily modified.
+MQReawaken is a private server meant for educational use only. It's built off the Ultima server emulator, written by the guys at [ServUO](https://github.com/ServUO/ServUO/), as well as [Asset Studio] (https://github.com/Perfare/AssetStudio), by Perfare, and heavily modified.
 
 **This project is for non-commercial, educational use only.**
 
@@ -38,9 +38,11 @@ Automatic versioning is planned for the future, but at the moment the version nu
 
 #### Credits
 
+- <a href="https://github.com/Perfare/AssetStudio/">AssetStudio</a>
 - <a href="https://github.com/ServUO/ServUO/">ServUO</a>
 - <a href="https://github.com/victti/">Victti</a>
 
 #### License
 
-GPL v2
+GPL v2 (Code license in Server.Base)
+MIT (Code license in Server.Reawakened)
