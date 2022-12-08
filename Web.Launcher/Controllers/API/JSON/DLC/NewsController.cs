@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Server.Reawakened.Launcher.Models;
+using Web.Launcher.Models;
 
-namespace Server.Web.Controllers.API.JSON.DLC;
+namespace Web.Launcher.Controllers.API.JSON.DLC;
 
 [Route("api/json/dlc/news")]
 public class NewsController : Controller

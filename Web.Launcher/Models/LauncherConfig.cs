@@ -1,6 +1,6 @@
 ﻿using Server.Base.Core.Abstractions;
 
-namespace Server.Reawakened.Launcher.Models;
+namespace Web.Launcher.Models;
 
 public class LauncherConfig : IConfig
 {

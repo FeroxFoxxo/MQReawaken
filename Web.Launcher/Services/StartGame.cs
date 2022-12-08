@@ -2,14 +2,14 @@
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
-using Server.Reawakened.Launcher.Helpers;
-using Server.Reawakened.Launcher.Internal;
-using Server.Reawakened.Launcher.Models;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using Web.Launcher.Helpers;
+using Web.Launcher.Internal;
+using Web.Launcher.Models;
 
-namespace Server.Reawakened.Launcher.Services;
+namespace Web.Launcher.Services;
 
 public class StartGame : IService
 {
@@ -96,7 +96,7 @@ public class StartGame : IService
             if (string.IsNullOrEmpty(_lConfig.CacheInfoFile) || !_lConfig.CacheInfoFile.EndsWith("__info"))
             {
                 _logger.LogError("Please enter the absolute file path for your cache's ROOT '__info' file.");
-                _lConfig.CacheInfoFile = Console.ReadLine();
+                _lConfig.CacheInfoFile = Console.ReadLine() ?? string.Empty;
                 continue;
             }
 
@@ -143,7 +143,11 @@ public class StartGame : IService
 
     private Dictionary<string, string> GetConfigValues()
     {
-        const string name = "monkeyquest";
+        // Split to avoid search engine indexing, I don't
+        // believe we're doing anything wrong, but I'd
+        // rather not chance it. Trademark ran out in 2018.
+
+        const string name = "mon" + "key" + "que" + "st";
 
         return new Dictionary<string, string>
         {

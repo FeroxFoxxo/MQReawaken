@@ -1,4 +1,4 @@
-﻿namespace Server.Reawakened.Data.Enums;
+﻿namespace Server.Reawakened.Players.Enums;
 
 public enum Gender
 {

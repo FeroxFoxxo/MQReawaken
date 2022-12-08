@@ -3,12 +3,12 @@ using Server.Base.Accounts.Modals;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Services;
 using Server.Base.Network;
-using Server.Reawakened.Data.Enums;
-using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Network.Services;
+using Server.Reawakened.Players.Enums;
+using Server.Reawakened.Players.Modals;
 using System.Globalization;
 
-namespace Server.Reawakened.Data.Services;
+namespace Server.Reawakened.Players.Services;
 
 public class UserInfoHandler : DataHandler<UserInfo>
 {

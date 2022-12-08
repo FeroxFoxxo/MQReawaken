@@ -1,10 +1,10 @@
-﻿namespace Server.Reawakened.Launcher.Helpers;
+﻿namespace Web.Launcher.Helpers;
 
 public class LauncherSink
 {
-    public delegate void GameLaunchEventHandler();
-
     public void InvokeGameLaunch() => GameLaunching?.Invoke();
 
     public event GameLaunchEventHandler GameLaunching;
+
+    public delegate void GameLaunchEventHandler();
 }

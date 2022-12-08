@@ -1,8 +1,8 @@
 ﻿using A2m.Server;
 using Server.Base.Accounts.Modals;
-using Server.Reawakened.Data.Modals;
+using Server.Reawakened.Players.Modals;
 
-namespace Server.Reawakened.Data.Extensions;
+namespace Server.Reawakened.Players.Extensions;
 
 public static class GetProperties
 {

@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Server.Base.Accounts.Helpers;
 using Server.Base.Accounts.Services;
-using Server.Reawakened.Data.Services;
-using Server.Reawakened.Launcher.Models;
+using Server.Reawakened.Players.Services;
 using System.Dynamic;
+using Web.Launcher.Models;
 
-namespace Server.Web.Controllers.API.JSON.DLC;
+namespace Web.Launcher.Controllers.API.JSON.DLC;
 
 [Route("api/json/dlc/login")]
 public class LoginController : Controller
 {
     private readonly AccountHandler _accHandler;
-    private readonly UserInfoHandler _userInfoHandler;
     private readonly LauncherConfig _config;
     private readonly PasswordHasher _passwordHasher;
+    private readonly UserInfoHandler _userInfoHandler;
 
     public LoginController(AccountHandler accHandler, UserInfoHandler userInfoHandler,
         LauncherConfig config, PasswordHasher passwordHasher)

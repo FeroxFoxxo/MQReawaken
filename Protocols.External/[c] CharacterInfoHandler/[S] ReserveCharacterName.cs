@@ -1,5 +1,5 @@
-﻿using Server.Reawakened.Data.Services;
-using Server.Reawakened.Network.Protocols;
+﻿using Server.Reawakened.Network.Protocols;
+using Server.Reawakened.Players.Services;
 using Server.Reawakened.XMLs;
 
 namespace Protocols.External._c__CharacterInfoHandler;

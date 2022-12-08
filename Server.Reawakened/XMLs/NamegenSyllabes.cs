@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
-using Server.Reawakened.Data.Services;
+using Server.Reawakened.Players.Services;
 
 namespace Server.Reawakened.XMLs;
 

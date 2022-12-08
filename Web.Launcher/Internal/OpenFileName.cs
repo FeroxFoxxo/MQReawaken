@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Server.Reawakened.Launcher.Internal;
+namespace Web.Launcher.Internal;
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 public struct OpenFileName

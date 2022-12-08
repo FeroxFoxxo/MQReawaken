@@ -5,9 +5,10 @@ using Protocols.System;
 using Server.Base.Core.Abstractions;
 using Server.Base.Logging;
 using Server.Reawakened;
-using Server.Web;
 using System.Collections.Generic;
 using System.Linq;
+using Web.AssetBundles;
+using Web.Launcher;
 
 namespace Init;
 
@@ -18,10 +19,12 @@ public static class ImportModules
         var modules = new[]
         {
             typeof(Reawakened),
-            typeof(Web),
+            typeof(Server.Web.Web),
             typeof(Server.Base.Server),
             typeof(SysProtocol),
-            typeof(XtProtocol)
+            typeof(XtProtocol),
+            typeof(Launcher),
+            typeof(AssetBundles)
         };
 
         var services = new ServiceCollection();

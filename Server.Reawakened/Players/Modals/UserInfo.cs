@@ -1,10 +1,10 @@
 ﻿using A2m.Server;
 using Server.Base.Core.Models;
-using Server.Reawakened.Data.Enums;
 using Server.Reawakened.Network.Services;
+using Server.Reawakened.Players.Enums;
 using System.Globalization;
 
-namespace Server.Reawakened.Data.Modals;
+namespace Server.Reawakened.Players.Modals;
 
 public class UserInfo : PersistantData
 {

@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Reawakened", "Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Web", "Server.Web\Server.Web.csproj", "{C5C93D17-D5B7-4D95-897D-9ED15105AF12}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Launcher", "Web.Launcher\Web.Launcher.csproj", "{2C65DAF5-B760-4C69-89B6-1522FC3EE6BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.AssetBundles", "Web.AssetBundles\Web.AssetBundles.csproj", "{308F3542-2AE1-4F89-96C5-EAA8883EBF25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{C5C93D17-D5B7-4D95-897D-9ED15105AF12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5C93D17-D5B7-4D95-897D-9ED15105AF12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5C93D17-D5B7-4D95-897D-9ED15105AF12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C65DAF5-B760-4C69-89B6-1522FC3EE6BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C65DAF5-B760-4C69-89B6-1522FC3EE6BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C65DAF5-B760-4C69-89B6-1522FC3EE6BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C65DAF5-B760-4C69-89B6-1522FC3EE6BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{308F3542-2AE1-4F89-96C5-EAA8883EBF25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{308F3542-2AE1-4F89-96C5-EAA8883EBF25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{308F3542-2AE1-4F89-96C5-EAA8883EBF25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{308F3542-2AE1-4F89-96C5-EAA8883EBF25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

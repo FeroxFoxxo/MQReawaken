@@ -1,6 +1,7 @@
 ﻿using Server.Reawakened.Data;
-using Server.Reawakened.Data.Extensions;
 using Server.Reawakened.Network.Protocols;
+using Server.Reawakened.Players;
+using Server.Reawakened.Players.Extensions;
 
 namespace Protocols.External._D__DebugHandler;
 

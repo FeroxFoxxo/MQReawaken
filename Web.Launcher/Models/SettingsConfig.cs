@@ -2,7 +2,7 @@
 using Server.Base.Core.Abstractions;
 using System.Dynamic;
 
-namespace Server.Reawakened.Launcher.Models;
+namespace Web.Launcher.Models;
 
 public class SettingsConfig : IConfig
 {

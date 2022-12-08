@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Server.Reawakened.Launcher.Services;
+using Web.Launcher.Services;
 
-namespace Server.Web.Controllers.Live;
+namespace Web.Launcher.Controllers.Live;
 
 [Route("live/current.txt")]
 public class CurrentController : Controller

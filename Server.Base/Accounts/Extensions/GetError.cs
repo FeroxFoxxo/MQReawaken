@@ -12,9 +12,9 @@ public static class GetError
             AlrReason.BadComm =>
                 "It seems like you've been denied access from this account. Please contact a server administrator if you believe this to be an error!",
             AlrReason.BadPass => "It seems like you've entered an invalid password! Please retry...",
-            AlrReason.Blocked => "Your account has been banned from MQReawaken. We apologize for the inconvenience.",
+            AlrReason.Blocked => "Your account has been banned. We apologize for the inconvenience.",
             AlrReason.InUse =>
-                "It seems like we've reached our thresh-hold for monkeys! This could be due to a lot of people playing right now. Please try again in an hour.",
+                "It seems like we've reached our thresh-hold for users! This could be due to a lot of people playing right now. Please try again in an hour.",
             _ =>
                 "You seem to have reached an error that shouldn't have happened! Please report this error to the developers."
         };

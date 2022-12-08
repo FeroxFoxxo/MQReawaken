@@ -7,17 +7,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
-        
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    </ItemGroup>
 
-    <ItemGroup>
-        <None Update="XMLs\NamegenSyllabes.xml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="XMLs\WorldGraph.xml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -36,6 +27,9 @@
       <Reference Include="Assembly-UnityScript-firstpass">
         <HintPath>Dependencies\Assembly-UnityScript-firstpass.dll</HintPath>
       </Reference>
+      <Reference Include="AssetStudio">
+        <HintPath>Dependencies\AssetStudio.dll</HintPath>
+      </Reference>
       <Reference Include="Boo.Lang">
         <HintPath>Dependencies\Boo.Lang.dll</HintPath>
       </Reference>
@@ -48,11 +42,11 @@
       <Reference Include="ICSharpCode.SharpZipLib">
         <HintPath>Dependencies\ICSharpCode.SharpZipLib.dll</HintPath>
       </Reference>
-      <Reference Include="K4os.Compression.LZ4">
-        <HintPath>Dependencies\K4os.Compression.LZ4.dll</HintPath>
-      </Reference>
       <Reference Include="LitJson">
         <HintPath>Dependencies\LitJson.dll</HintPath>
+      </Reference>
+      <Reference Include="Mono.Security">
+        <HintPath>Dependencies\Mono.Security.dll</HintPath>
       </Reference>
       <Reference Include="MQXMPP">
         <HintPath>Dependencies\MQXMPP.dll</HintPath>
@@ -69,6 +63,15 @@
       <Reference Include="UnityEngine">
         <HintPath>Dependencies\UnityEngine.dll</HintPath>
       </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="XMLs\NamegenSyllabes.xml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="XMLs\WorldGraph.xml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

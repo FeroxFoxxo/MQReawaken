@@ -4,19 +4,19 @@ using Newtonsoft.Json.Linq;
 using Server.Base.Accounts.Services;
 using Server.Base.Core.Models;
 using Server.Base.Core.Services;
-using Server.Reawakened.Data.Services;
 using Server.Reawakened.Network.Services;
+using Server.Reawakened.Players.Services;
 
-namespace Server.Web.Controllers.API.JSON.DLC;
+namespace Web.Launcher.Controllers.API.JSON.DLC;
 
 [Route("api/json/dlc/shard")]
 public class ShardController : Controller
 {
     private readonly AccountHandler _accHandler;
-    private readonly UserInfoHandler _userInfoHandler;
-    private readonly TemporaryDataStorage _temporaryDataStorage;
-    private readonly RandomKeyGenerator _keyGenerator;
     private readonly InternalServerConfig _config;
+    private readonly RandomKeyGenerator _keyGenerator;
+    private readonly TemporaryDataStorage _temporaryDataStorage;
+    private readonly UserInfoHandler _userInfoHandler;
 
     public ShardController(AccountHandler accHandler, UserInfoHandler userInfoHandler,
         TemporaryDataStorage temporaryDataStorage,

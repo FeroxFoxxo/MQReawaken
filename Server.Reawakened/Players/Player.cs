@@ -2,10 +2,10 @@
 using Server.Base.Core.Models;
 using Server.Base.Network;
 using Server.Base.Network.Services;
-using Server.Reawakened.Data.Modals;
 using Server.Reawakened.Levels;
+using Server.Reawakened.Players.Modals;
 
-namespace Server.Reawakened.Data;
+namespace Server.Reawakened.Players;
 
 public class Player : INetStateData
 {
