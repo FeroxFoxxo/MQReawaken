@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Server.Base.Network;
 
-public class NetState
+public class NetState : IDisposable
 {
     public delegate bool ThrottlePacketCallback(NetState state);
 
@@ -94,7 +94,7 @@ public class NetState
 
         _logger.LogError("{NetState}: Disconnecting due to inactivity...", this);
 
-        Dispose(true);
+        Dispose();
     }
 
     public void Start()
@@ -123,7 +123,7 @@ public class NetState
         catch (Exception ex)
         {
             _networkLogger.TraceNetworkError(ex, this);
-            Dispose(false);
+            Dispose();
         }
     }
 
@@ -162,7 +162,7 @@ public class NetState
 
             if (bytes <= 0)
             {
-                Dispose(false);
+                Dispose();
                 return;
             }
 
@@ -170,7 +170,7 @@ public class NetState
         }
         catch (Exception)
         {
-            Dispose(false);
+            Dispose();
         }
     }
 
@@ -222,23 +222,23 @@ public class NetState
                     catch (Exception ex)
                     {
                         _networkLogger.TraceNetworkError(ex, this);
-                        Dispose(false);
+                        Dispose();
                     }
                 }
             }
             else
             {
-                Dispose(false);
+                Dispose();
             }
         }
         catch (Exception ex)
         {
             _networkLogger.TraceNetworkError(ex, this);
-            Dispose(false);
+            Dispose();
         }
     }
 
-    public virtual void Dispose(bool hasFlush)
+    public virtual void Dispose()
     {
         if (Socket == null || _disposing)
             return;

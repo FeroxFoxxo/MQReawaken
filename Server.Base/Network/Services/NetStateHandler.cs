@@ -90,7 +90,7 @@ public class NetStateHandler : IService
                 catch (Exception ex)
                 {
                     _networkLogger.TraceNetworkError(ex, ns);
-                    ns.Dispose(false);
+                    ns.Dispose();
                 }
             }
         }

@@ -1,10 +1,9 @@
 ﻿using AssetStudio;
 using Microsoft.Extensions.Logging;
-using ILogger = AssetStudio.ILogger;
 
 namespace Web.AssetBundles.Helpers;
 
-public class AssetBundleLogger : ILogger
+public class AssetBundleLogger : AssetStudio.ILogger
 {
     private readonly Microsoft.Extensions.Logging.ILogger _logger;
 

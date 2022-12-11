@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
@@ -9,14 +9,17 @@
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
         <ProjectReference Include="..\Server.Web\Server.Web.csproj" />
         <ProjectReference Include="..\Web.Launcher\Web.Launcher.csproj" />
-        
+
         <PackageReference Include="K4os.Compression.LZ4" Version="1.2.16" />
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="AssetStudio">
-        <HintPath>Dependencies\AssetStudio.dll</HintPath>
-      </Reference>
+        <Reference Include="AssetStudio">
+            <HintPath>Dependencies\AssetStudio.dll</HintPath>
+        </Reference>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>..\Server.Reawakened\Dependencies\Assembly-CSharp.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>
