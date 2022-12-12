@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
+        <ProjectReference Include="..\Web.AssetBundles\Web.AssetBundles.csproj" />
 
         <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     </ItemGroup>
@@ -63,15 +64,6 @@
       <Reference Include="UnityEngine">
         <HintPath>Dependencies\UnityEngine.dll</HintPath>
       </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="XMLs\NamegenSyllabes.xml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="XMLs\WorldGraph.xml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 
 </Project>

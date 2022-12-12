@@ -36,6 +36,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
+        <ProjectReference Include="..\Web.AssetBundles\Web.AssetBundles.csproj" />
     </ItemGroup>
 
     <ItemGroup>

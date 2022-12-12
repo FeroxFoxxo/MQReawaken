@@ -1,5 +1,4 @@
 ﻿using Server.Base.Network;
-using Server.Reawakened.Data;
 using Server.Reawakened.Players;
 
 namespace Server.Reawakened.Network.Extensions;

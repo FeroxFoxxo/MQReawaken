@@ -26,7 +26,7 @@ public static class GetConfigs
         }
     }
 
-    public static void SaveConfigs(this IServiceProvider services, IEnumerable<Module> modules, ILogger logger)
+    public static void SaveConfigs(this IServiceProvider services, IEnumerable<Module> modules)
     {
         foreach (var config in services.GetRequiredServices<IConfig>(modules))
         {
@@ -34,7 +34,6 @@ public static class GetConfigs
             using var stream = GetFile.GetFileStream($"{config.GetType().Name}.json", ConfigDir, FileMode.Create);
             JsonSerializer.Serialize(stream, config, config.GetType(),
                 new JsonSerializerOptions { WriteIndented = true });
-            logger.LogTrace("   Config: {Name} was not found, creating!", configName);
         }
     }
 }

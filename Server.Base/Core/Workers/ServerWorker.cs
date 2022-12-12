@@ -124,7 +124,7 @@ public class ServerWorker : IHostedService
     {
         _world.Save(false, true);
 
-        _services.SaveConfigs(_serverHandler.Modules, _logger);
+        _services.SaveConfigs(_serverHandler.Modules);
 
         try
         {

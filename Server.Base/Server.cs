@@ -30,13 +30,16 @@ public class Server : Module
 
     public override void AddServices(IServiceCollection services, IEnumerable<Module> modules)
     {
-        Logger.LogDebug("Loading Hosted Services");
+        Logger.LogInformation("Loading Hosted Services");
 
-        services.AddHostedService<ServerWorker>();
+        {
+            services.AddHostedService<ServerWorker>();
+            Logger.LogTrace("    Loaded: Service Worker");
+        }
 
         Logger.LogDebug("Loaded hosted services");
 
-        Logger.LogDebug("Loading Services");
+        Logger.LogInformation("Loading Services");
 
         foreach (var service in RequiredServices.GetServices<IService>(modules))
         {
@@ -46,7 +49,7 @@ public class Server : Module
 
         Logger.LogDebug("Loaded services");
 
-        Logger.LogDebug("Loading Modules");
+        Logger.LogInformation("Loading Modules");
         foreach (var service in RequiredServices.GetServices<Module>(modules))
         {
             Logger.LogTrace("   Loaded: {ServiceName}", service.Name);
@@ -55,7 +58,7 @@ public class Server : Module
 
         Logger.LogDebug("Loaded modules");
 
-        Logger.LogDebug("Loading Configs");
+        Logger.LogInformation("Loading Configs");
 
         foreach (var service in RequiredServices.GetServices<IConfig>(modules))
             services.LoadConfigs(service, Logger);

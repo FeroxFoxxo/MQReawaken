@@ -1,106 +1,142 @@
 ﻿using AssetStudio;
 using Microsoft.Extensions.Logging;
-using Server.Base.Core.Abstractions;
-using Server.Base.Core.Extensions;
+using ShellProgressBar;
 using System.Xml;
-using Web.AssetBundles.Helpers;
 using Web.AssetBundles.Models;
-using Web.Launcher.Helpers;
-using Web.Launcher.Models;
+using Object = AssetStudio.Object;
 
-namespace Web.AssetBundles.Services;
+namespace Web.AssetBundles.Helpers;
 
-public class BuildAssetBundles : IService
+public class BuildAssetBundles
 {
-    private readonly LauncherConfig _lConfig;
     private readonly ILogger<BuildAssetBundles> _logger;
-    private readonly string _pubConfigFile;
-    private readonly bool _shouldLogAssets;
-    private readonly LauncherSink _sink;
+    private readonly AssetBundleConfig _config;
 
     private List<InternalAssetInfo> _internalAssets;
 
-    public BuildAssetBundles(LauncherSink sink, LauncherConfig lConfig, ILogger<BuildAssetBundles> logger)
+    public BuildAssetBundles(ILogger<BuildAssetBundles> logger, AssetBundleConfig config)
     {
-        _sink = sink;
-        _lConfig = lConfig;
         _logger = logger;
-        _pubConfigFile = Path.Combine(InternalDirectory.GetBaseDirectory(), "Configs/PublishConfig.xml");
-        _shouldLogAssets = false;
+        _config = config;
     }
 
-    public void Initialize() => _sink.GameLaunching += GameLaunching;
+    public string PublishConfiguration { get; private set; }
 
-    private void GameLaunching() => GenerateAssetBundles();
-
-    private void GenerateAssetBundles()
+    public void GenerateAssetBundles()
     {
         _logger.LogInformation("Getting Publish Configuration");
-        var bundlesExist = File.Exists(_pubConfigFile);
+        var bundlesExist = File.Exists(_config.PubConfigFile);
 
         if (!bundlesExist)
         {
-            if (_shouldLogAssets)
+            if (_config.ShouldLogAssets)
                 Logger.Default = new AssetBundleLogger(_logger);
 
             _logger.LogInformation("Generating Publish Configuration");
             _internalAssets = new List<InternalAssetInfo>();
 
-            var directories = Directory.GetDirectories(Path.GetDirectoryName(_lConfig.CacheInfoFile)!);
+            var directories = Directory.GetDirectories(Path.GetDirectoryName(_config.CacheInfoFile)!);
 
-            var numberLoaded = 0;
-            var total = directories.Length;
-
-            foreach (var directory in directories)
+            var options = new ProgressBarOptions
             {
-                _internalAssets.Add(GetAssetBundle(directory));
-                _logger.LogTrace("Loaded {Current}/{Total} bundles, {Percentage}%", numberLoaded, total,
-                    Math.Floor(numberLoaded * 100.0 / total));
+                ForegroundColor = ConsoleColor.Yellow,
+                ForegroundColorDone = ConsoleColor.DarkGreen
+            };
 
-                numberLoaded++;
+            using (var progressBar = new ProgressBar(directories.Length, _config.Message, options))
+            {
+                foreach (var directory in directories)
+                {
+                    _internalAssets.Add(GetAssetBundle(directory, progressBar));
+                    progressBar.Tick();
+                }
+
+                progressBar.Message = "Finished " + _config.Message;
             }
 
-            File.WriteAllText(_pubConfigFile, GetPublishConfiguration(_internalAssets, true));
+            File.WriteAllText(_config.PubConfigFile, GetPublishConfiguration(_internalAssets, true));
         }
         else
         {
-            _internalAssets = GetPublishConfiguration(File.ReadAllText(_pubConfigFile));
+            _internalAssets = GetPublishConfiguration(File.ReadAllText(_config.PubConfigFile));
         }
 
         _logger.LogDebug("Publish configuration {Type} with {BundleNum} bundles.",
             bundlesExist ? "loaded" : "generated", _internalAssets.Count);
+
+        PublishConfiguration = GetPublishConfiguration(_internalAssets, false);
     }
 
-    private InternalAssetInfo GetAssetBundle(string folderName)
+    private InternalAssetInfo GetAssetBundle(string folderName, ProgressBarBase bar)
     {
         var manager = new AssetsManager();
         manager.LoadFolder(folderName);
+
         var assetFile = manager.assetsFileList.First();
 
-        var assetName = GetMainAssetName(assetFile);
-
-        var gameObj = assetFile.ObjectsDic.Values.OfType<GameObject>()
-            .FirstOrDefault(x => x.m_Name.Equals(assetName, StringComparison.OrdinalIgnoreCase));
-
-        if (gameObj is null)
-            throw new InvalidDataException();
-
-        assetName = gameObj.m_Name;
-
-        _logger.LogDebug("Found main asset: {AssetName} in {FileName}", assetName,
-            assetFile.fileName.Split('/').Last());
-
-        return new InternalAssetInfo
+        var asset = new InternalAssetInfo
         {
-            Name = assetName,
+            Name = GetMainAssetName(assetFile),
             Path = assetFile.fullName,
 
             Version = 0,
-            Type = AssetInfo.TypeAsset.Prefab,
+            Type = AssetInfo.TypeAsset.Unknown,
             BundleSize = Convert.ToInt32(new FileInfo(assetFile.fullName).Length / 1024),
             Locale = RFC1766Locales.LanguageCodes.en_us
         };
+
+        var gameObj = GetNameOfGameObject(assetFile.ObjectsDic.Values, asset.Name);
+        var musicObj = GetNameOfMusic(assetFile.ObjectsDic.Values, asset.Name);
+        var textObj = GetNameOfText(assetFile.ObjectsDic.Values, asset.Name);
+
+        if (!string.IsNullOrEmpty(gameObj))
+        {
+            asset.Name = gameObj;
+            asset.Type = AssetInfo.TypeAsset.Prefab;
+        }
+        else if (!string.IsNullOrEmpty(musicObj))
+        {
+            asset.Name = musicObj;
+            asset.Type = AssetInfo.TypeAsset.Audio;
+        }
+        else if (!string.IsNullOrEmpty(textObj))
+        {
+            asset.Name = textObj;
+
+            if (asset.Name.StartsWith("NavMesh"))
+            {
+                asset.Type = AssetInfo.TypeAsset.NavMesh;
+            }
+            else
+            {
+                bar.Message = _config.Message +
+                              $" - found possible XML '{asset.Name}' in {assetFile.fileName.Split('/').Last()}";
+
+                if (Enum.TryParse<RFC1766Locales.LanguageCodes>(
+                        asset.Name.Split('_').Last().Replace('-', '_'),
+                        true,
+                        out var type)
+                   )
+                    asset.Locale = type;
+
+                asset.Type = AssetInfo.TypeAsset.XML;
+            }
+        }
+
+        return asset.Type == AssetInfo.TypeAsset.Unknown ? throw new InvalidDataException() : asset;
     }
+
+    private static string GetNameOfGameObject(IEnumerable<Object> objects, string assetName) =>
+        objects.OfType<GameObject>()
+            .FirstOrDefault(x => x.m_Name.Equals(assetName, StringComparison.OrdinalIgnoreCase))?.m_Name;
+
+    private static string GetNameOfMusic(IEnumerable<Object> objects, string assetName) =>
+        objects.OfType<AudioClip>()
+            .FirstOrDefault(x => x.m_Name.Equals(assetName, StringComparison.OrdinalIgnoreCase))?.m_Name;
+
+    private static string GetNameOfText(IEnumerable<Object> objects, string assetName) =>
+        objects.OfType<TextAsset>()
+            .FirstOrDefault(x => x.m_Name.Equals(assetName, StringComparison.OrdinalIgnoreCase))?.m_Name;
 
     private static string GetMainAssetName(SerializedFile assetFile)
     {
@@ -151,10 +187,9 @@ public class BuildAssetBundles : IService
                 Name = assetElement.GetAttribute("name"),
                 Version = Convert.ToInt32(assetElement.GetAttribute("version")),
                 Type = Enum.Parse<AssetInfo.TypeAsset>(assetElement.GetAttribute("type")),
-                Locale = Enum.Parse<RFC1766Locales.LanguageCodes>(assetElement.GetAttribute("language")
-                    .Replace("-", "_")),
+                Locale = Enum.Parse<RFC1766Locales.LanguageCodes>(assetElement.GetAttribute("language")),
                 BundleSize = Convert.ToInt32(assetElement.GetAttribute("size")),
-                Path = assetElement.GetAttribute("path")
+                Path = assetElement.InnerText
             };
 
             configuration.Add(asset);
@@ -163,20 +198,26 @@ public class BuildAssetBundles : IService
         return configuration;
     }
 
-    private static string GetPublishConfiguration(List<InternalAssetInfo> assets, bool includePath)
+    private static string GetPublishConfiguration(IEnumerable<InternalAssetInfo> assets, bool includePath)
     {
         var document = new XmlDocument();
         var root = document.CreateElement("assets");
-        foreach (var asset in assets)
+
+        foreach (var asset in assets.GroupBy(x => x.Type).SelectMany(g => g.ToList()))
         {
             var assetXml = document.CreateElement("asset");
             assetXml.SetAttribute("name", asset.Name);
             assetXml.SetAttribute("version", asset.Version.ToString());
             assetXml.SetAttribute("type", Enum.GetName(asset.Type));
             assetXml.SetAttribute("language", Enum.GetName(asset.Locale));
+            assetXml.SetAttribute("size", asset.BundleSize.ToString());
 
             if (includePath)
-                assetXml.SetAttribute("path", asset.Path);
+            {
+                var pathXml = document.CreateElement("path");
+                pathXml.InnerText = asset.Path;
+                assetXml.AppendChild(pathXml);
+            }
 
             root.AppendChild(assetXml);
         }
@@ -211,10 +252,9 @@ public class BuildAssetBundles : IService
                 if (pair.Key != default)
                     info.Add(pair);
             }
-            else
+            else if (pair.Key != default)
             {
-                if (pair.Key != default)
-                    pair.Value.Add(treeTxt[1..]);
+                pair.Value.Add(treeTxt[1..]);
             }
         }
 

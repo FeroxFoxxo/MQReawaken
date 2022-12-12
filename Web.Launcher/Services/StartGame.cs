@@ -5,7 +5,8 @@ using Server.Base.Core.Helpers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using Web.Launcher.Helpers;
+using Web.AssetBundles.Helpers;
+using Web.AssetBundles.Models;
 using Web.Launcher.Internal;
 using Web.Launcher.Models;
 
@@ -14,10 +15,11 @@ namespace Web.Launcher.Services;
 public class StartGame : IService
 {
     private readonly IHostApplicationLifetime _appLifetime;
-    private readonly LauncherSink _launcherSink;
     private readonly LauncherConfig _lConfig;
     private readonly ILogger<StartGame> _logger;
+    private readonly BuildAssetBundles _buildBundles;
     private readonly SettingsConfig _sConfig;
+    private readonly AssetBundleConfig _aBConfig;
     private readonly EventSink _sink;
     private string _directory;
     private bool _dirSet, _appStart;
@@ -26,14 +28,16 @@ public class StartGame : IService
     public string CurrentVersion { get; private set; }
 
     public StartGame(EventSink sink, LauncherConfig lConfig, SettingsConfig sConfig,
-        IHostApplicationLifetime appLifetime, ILogger<StartGame> logger, LauncherSink launcherSink)
+        IHostApplicationLifetime appLifetime, ILogger<StartGame> logger, BuildAssetBundles buildBundles,
+        AssetBundleConfig aBConfig)
     {
         _sink = sink;
         _lConfig = lConfig;
         _sConfig = sConfig;
         _appLifetime = appLifetime;
         _logger = logger;
-        _launcherSink = launcherSink;
+        _buildBundles = buildBundles;
+        _aBConfig = aBConfig;
 
         _dirSet = false;
         _appStart = false;
@@ -58,7 +62,9 @@ public class StartGame : IService
             return;
 
         WriteConfig();
-        _launcherSink.InvokeGameLaunch();
+
+        _buildBundles.GenerateAssetBundles();
+
         _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
         _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
     }
@@ -93,14 +99,14 @@ public class StartGame : IService
         {
             _logger.LogInformation("Getting Cache Directory");
 
-            if (string.IsNullOrEmpty(_lConfig.CacheInfoFile) || !_lConfig.CacheInfoFile.EndsWith("__info"))
+            if (string.IsNullOrEmpty(_aBConfig.CacheInfoFile) || !_aBConfig.CacheInfoFile.EndsWith("__info"))
             {
                 _logger.LogError("Please enter the absolute file path for your cache's ROOT '__info' file.");
-                _lConfig.CacheInfoFile = Console.ReadLine() ?? string.Empty;
+                _aBConfig.CacheInfoFile = Console.ReadLine() ?? string.Empty;
                 continue;
             }
 
-            _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(_lConfig.CacheInfoFile));
+            _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(_aBConfig.CacheInfoFile));
             break;
         }
 
@@ -177,7 +183,7 @@ public class StartGame : IService
             _lConfig.GameSettingsFile = SetIfNotNull(_lConfig.GameSettingsFile, "Get Settings File",
                 "Settings File (*.txt)\0*.txt\0");
 
-            _lConfig.CacheInfoFile = SetIfNotNull(_lConfig.CacheInfoFile, "Get Root Cache Info",
+            _aBConfig.CacheInfoFile = SetIfNotNull(_aBConfig.CacheInfoFile, "Get Root Cache Info",
                 "Root Info File (__info)\0__info\0");
 
             _sConfig.WriteToSettings(_lConfig);

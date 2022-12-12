@@ -1,5 +1,4 @@
 ﻿using Server.Base.Accounts.Modals;
-using Server.Reawakened.Data;
 using Server.Reawakened.Levels.Services;
 using Server.Reawakened.Network.Protocols;
 using Server.Reawakened.Players;

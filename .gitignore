@@ -362,6 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-/Server.Launcher/Dependencies/*.dll
 /Server.Reawakened/Dependencies/*.dll
-/Server.Reawakened/XMLs/*.xml

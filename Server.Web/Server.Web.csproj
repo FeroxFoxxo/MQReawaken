@@ -12,7 +12,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Server.Base\Server.Base.csproj" />
-      <ProjectReference Include="..\Server.Reawakened\Server.Reawakened.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,5 +1,4 @@
-﻿using Server.Reawakened.Data;
-using Server.Reawakened.Network.Protocols;
+﻿using Server.Reawakened.Network.Protocols;
 using Server.Reawakened.Players;
 using Server.Reawakened.Players.Extensions;
 

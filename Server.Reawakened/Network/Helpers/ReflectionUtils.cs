@@ -80,10 +80,7 @@ public class ReflectionUtils
 
         var service = services.GetService(memberType);
 
-        if (service != null)
-            return service;
-
-        throw new InvalidOperationException(
+        return service ?? throw new InvalidOperationException(
             $"Failed to create \"{ownerType.FullName}\", dependency \"{memberType.Name}\" was not found.");
     }
 }

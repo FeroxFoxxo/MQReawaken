@@ -4,7 +4,6 @@ namespace Web.Launcher.Models;
 
 public class LauncherConfig : IConfig
 {
-    public string CacheInfoFile { get; set; }
     public string GameSettingsFile { get; set; }
     public string News { get; set; }
 
