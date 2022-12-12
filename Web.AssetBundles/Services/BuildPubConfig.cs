@@ -83,21 +83,67 @@ public class BuildPubConfig : IService
             var options = new ProgressBarOptions
             {
                 ForegroundColor = ConsoleColor.Yellow,
-                ForegroundColorDone = ConsoleColor.DarkGreen
+                BackgroundColor = ConsoleColor.DarkYellow,
+                ForegroundColorDone = ConsoleColor.DarkGreen,
+                ProgressCharacter = '─',
+                ProgressBarOnBottom = true
             };
 
-            using (var progressBar = new ProgressBar(directories.Length, _config.Message, options))
+            var opt2 = options.DeepCopy();
+            opt2.DisableBottomPercentage = true;
+
+            using (var progressBar = new ProgressBar(2, "", opt2))
             {
-                foreach (var directory in directories)
+                using (var child = progressBar.Spawn(directories.Length, _config.Message, options))
                 {
-                    assets.Add(GetAssetBundle(directory, progressBar));
-                    progressBar.Tick();
+                    foreach (var directory in directories)
+                    {
+                        assets.Add(GetAssetBundle(directory, child));
+                        child.Tick();
+                    }
+
+                    child.Message = "Finished " + _config.Message;
                 }
 
-                progressBar.Message = "Finished " + _config.Message;
+                var progress = progressBar.AsProgress<float>();
+
+                progress.Report(.5f);
+
+                using (var child = progressBar.Spawn(assets.Count, "Removing Duplicates", options))
+                {
+                    var singleAssets = new Dictionary<string, InternalAssetInfo>();
+
+                    foreach (var asset in assets)
+                    {
+                        if (singleAssets.ContainsKey(asset.Name))
+                        {
+                            var testAsset = singleAssets[asset.Name];
+
+                            if (testAsset.Type == asset.Type)
+                            {
+                                if (testAsset.BundleSize < asset.BundleSize)
+                                    singleAssets[asset.Name] = asset;
+                            }
+                            else
+                            {
+                                throw new InvalidDataException();
+                            }
+                        }
+                        else
+                        {
+                            singleAssets.Add(asset.Name, asset);
+                        }
+
+                        child.Tick();
+                    }
+
+                    _internalAssets = singleAssets.Values.ToArray();
+                }
+
+                progress.Report(1f);
             }
 
-            _internalAssets = assets.ToArray();
+            Console.WriteLine();
             File.WriteAllText(_config.PubConfigFile, GetPublishConfiguration(_internalAssets, true));
         }
         else
@@ -109,6 +155,7 @@ public class BuildPubConfig : IService
             bundlesExist ? "loaded" : "generated", _internalAssets.Length);
 
         PublishConfiguration = GetPublishConfiguration(_internalAssets, false);
+        File.WriteAllText(_config.GlobalPubConfigFile, PublishConfiguration);
 
         _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(_internalAssets));
     }
@@ -131,14 +178,24 @@ public class BuildPubConfig : IService
             Locale = RFC1766Locales.LanguageCodes.en_us
         };
 
-        var gameObj = assetFile.ObjectsDic.Values.GetGameObject(asset.Name).m_Name;
-        var musicObj = assetFile.ObjectsDic.Values.GetMusic(asset.Name).m_Name;
-        var textObj = assetFile.ObjectsDic.Values.GetText(asset.Name).m_Name;
+        var gameObj = assetFile.ObjectsDic.Values.GetGameObject(asset.Name)?.m_Name;
+        var musicObj = assetFile.ObjectsDic.Values.GetMusic(asset.Name)?.m_Name;
+        var textObj = assetFile.ObjectsDic.Values.GetText(asset.Name)?.m_Name;
 
         if (!string.IsNullOrEmpty(gameObj))
         {
             asset.Name = gameObj;
-            asset.Type = AssetInfo.TypeAsset.Prefab;
+
+            if (asset.Name.StartsWith("LV"))
+                if (!asset.Name.Contains("mesh") && !asset.Name.Contains("plane"))
+                {
+                    asset.Type = AssetInfo.TypeAsset.Level;
+                    bar.Message = _config.Message +
+                                  $" - found possible level '{asset.Name}' in {assetFile.fileName.Split('/').Last()}";
+                }
+
+            if (asset.Type == AssetInfo.TypeAsset.Unknown)
+                asset.Type = AssetInfo.TypeAsset.Prefab;
         }
         else if (!string.IsNullOrEmpty(musicObj))
         {
@@ -232,12 +289,15 @@ public class BuildPubConfig : IService
         return configuration;
     }
 
+    private static List<InternalAssetInfo> OrderAssets(IEnumerable<InternalAssetInfo> assets) =>
+        assets.GroupBy(x => x.Type).SelectMany(g => g.OrderBy(x => x.Name).ToList()).ToList();
+
     private static string GetPublishConfiguration(IEnumerable<InternalAssetInfo> assets, bool includePath)
     {
         var document = new XmlDocument();
         var root = document.CreateElement("assets");
 
-        foreach (var asset in assets.GroupBy(x => x.Type).SelectMany(g => g.OrderBy(x => x.Name).ToList()))
+        foreach (var asset in OrderAssets(assets))
         {
             var assetXml = document.CreateElement("asset");
             assetXml.SetAttribute("name", asset.Name);
@@ -259,7 +319,8 @@ public class BuildPubConfig : IService
         document.AppendChild(root);
 
         using var stringWriter = new StringWriter();
-        using var xmlTextWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings { Indent = true });
+        using var xmlTextWriter = XmlWriter.Create(stringWriter,
+            new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true });
 
         document.WriteTo(xmlTextWriter);
         xmlTextWriter.Flush();

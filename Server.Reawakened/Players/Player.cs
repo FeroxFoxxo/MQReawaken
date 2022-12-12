@@ -32,10 +32,8 @@ public class Player : INetStateData
         {
             var levelName = _currentLevel.LevelData.Name;
 
-            if (string.IsNullOrEmpty(levelName))
-                levelName = "UNKNOWN";
-
-            logger.LogDebug("Dumped player with ID '{User}' from level '{Level}'", _playerId, levelName);
+            if (!string.IsNullOrEmpty(levelName))
+                logger.LogDebug("Dumped player with ID '{User}' from level '{Level}'", _playerId, levelName);
         }
 
         _currentLevel?.DumpPlayerToLobby(_playerId);
