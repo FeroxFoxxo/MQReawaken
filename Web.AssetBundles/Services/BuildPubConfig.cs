@@ -21,6 +21,9 @@ public class BuildPubConfig : IService
 
     private InternalAssetInfo[] _internalAssets;
 
+    public string AssetDictionary { get; private set; }
+    public string PublishConfiguration { get; private set; }
+
     public BuildPubConfig(ILogger<BuildPubConfig> logger, AssetBundleConfig config,
         EventSink sink,
         AssetEventSink assetSink)
@@ -30,8 +33,6 @@ public class BuildPubConfig : IService
         _sink = sink;
         _assetSink = assetSink;
     }
-
-    public string PublishConfiguration { get; private set; }
 
     public void Initialize() => _sink.WorldLoad += SetAssetBundles;
 
@@ -68,7 +69,7 @@ public class BuildPubConfig : IService
     public void GenerateAssetBundles()
     {
         _logger.LogInformation("Getting Publish Configuration");
-        var bundlesExist = File.Exists(_config.PubConfigFile);
+        var bundlesExist = File.Exists(_config.AssetDictionaryConfig);
 
         if (!bundlesExist)
         {
@@ -105,9 +106,7 @@ public class BuildPubConfig : IService
                     child.Message = "Finished " + _config.Message;
                 }
 
-                var progress = progressBar.AsProgress<float>();
-
-                progress.Report(.5f);
+                progressBar.Tick();
 
                 using (var child = progressBar.Spawn(assets.Count, "Removing Duplicates", options))
                 {
@@ -137,27 +136,99 @@ public class BuildPubConfig : IService
                         child.Tick();
                     }
 
-                    _internalAssets = singleAssets.Values.ToArray();
+                    _internalAssets = OrderAssets(singleAssets.Values);
                 }
 
-                progress.Report(1f);
+                progressBar.Tick();
             }
 
             Console.WriteLine();
-            File.WriteAllText(_config.PubConfigFile, GetPublishConfiguration(_internalAssets, true));
+            File.WriteAllText(_config.AssetDictionaryConfig, GetAssetDictionary(_internalAssets, true));
         }
         else
         {
-            _internalAssets = GetPublishConfiguration(File.ReadAllText(_config.PubConfigFile)).ToArray();
+            _internalAssets = OrderAssets(GetAssetDictionary(File.ReadAllText(_config.AssetDictionaryConfig)));
         }
 
         _logger.LogDebug("Publish configuration {Type} with {BundleNum} bundles.",
             bundlesExist ? "loaded" : "generated", _internalAssets.Length);
 
-        PublishConfiguration = GetPublishConfiguration(_internalAssets, false);
-        File.WriteAllText(_config.GlobalPubConfigFile, PublishConfiguration);
+        PublishConfiguration = GetPublishConfiguration(_internalAssets);
+        File.WriteAllText(_config.GlobalPublishConfig, PublishConfiguration);
+
+        AssetDictionary = GetAssetDictionary(_internalAssets, false);
+        File.WriteAllText(_config.GlobalAssetDictionary, AssetDictionary);
 
         _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(_internalAssets));
+    }
+
+    private static string GetPublishConfiguration(IEnumerable<InternalAssetInfo> assets)
+    {
+        var document = new XmlDocument();
+        var root = document.CreateElement("PublishConfiguration");
+
+        var xmlElements = document.CreateElement("xml_version");
+        foreach (var asset in assets.Where(x => x.Type == AssetInfo.TypeAsset.XML))
+            xmlElements.AppendChild(asset.ToXml("item", document));
+        root.AppendChild(xmlElements);
+
+        var dict = document.CreateElement("item");
+        dict.SetAttribute("name", "publish.asset_dictionary");
+        dict.SetAttribute("value", "assetDictionary.xml");
+        root.AppendChild(dict);
+
+        document.AppendChild(root);
+
+        return document.WriteToString(false);
+    }
+
+    private static string GetAssetDictionary(IEnumerable<InternalAssetInfo> assets, bool includePath)
+    {
+        var document = new XmlDocument();
+        var root = document.CreateElement("assets");
+
+        foreach (var asset in assets)
+        {
+            root.AppendChild(includePath
+                ? asset.ToXmlWithTypePath("asset", document)
+                : asset.ToXmlWithType("asset", document));
+        }
+
+        document.AppendChild(root);
+
+        return document.WriteToString(false);
+    }
+
+    private static IEnumerable<InternalAssetInfo> GetAssetDictionary(string xml)
+    {
+        var configuration = new List<InternalAssetInfo>();
+
+        var document = new XmlDocument();
+        document.LoadXml(xml);
+
+        if (document.DocumentElement == null)
+            return configuration;
+
+        foreach (XmlNode node in document.DocumentElement.ChildNodes)
+        {
+            if (node is not XmlElement assetElement)
+                continue;
+
+            var asset = new InternalAssetInfo
+            {
+                Name = assetElement.GetAttribute("name"),
+                Version = Convert.ToInt32(assetElement.GetAttribute("version")),
+                Type = Enum.Parse<AssetInfo.TypeAsset>(assetElement.GetAttribute("type")),
+                Locale = Enum.Parse<RFC1766Locales.LanguageCodes>(assetElement.GetAttribute("language")
+                    .Replace('-', '_')),
+                BundleSize = Convert.ToInt32(assetElement.GetAttribute("size")),
+                Path = assetElement.InnerText
+            };
+
+            configuration.Add(asset);
+        }
+
+        return configuration;
     }
 
     private InternalAssetInfo GetAssetBundle(string folderName, ProgressBarBase bar)
@@ -258,75 +329,8 @@ public class BuildPubConfig : IService
         throw new InvalidDataException();
     }
 
-    private static List<InternalAssetInfo> GetPublishConfiguration(string xml)
-    {
-        var configuration = new List<InternalAssetInfo>();
-
-        var document = new XmlDocument();
-        document.LoadXml(xml);
-
-        if (document.DocumentElement == null)
-            return configuration;
-
-        foreach (XmlNode node in document.DocumentElement.ChildNodes)
-        {
-            if (node is not XmlElement assetElement)
-                continue;
-
-            var asset = new InternalAssetInfo
-            {
-                Name = assetElement.GetAttribute("name"),
-                Version = Convert.ToInt32(assetElement.GetAttribute("version")),
-                Type = Enum.Parse<AssetInfo.TypeAsset>(assetElement.GetAttribute("type")),
-                Locale = Enum.Parse<RFC1766Locales.LanguageCodes>(assetElement.GetAttribute("language")),
-                BundleSize = Convert.ToInt32(assetElement.GetAttribute("size")),
-                Path = assetElement.InnerText
-            };
-
-            configuration.Add(asset);
-        }
-
-        return configuration;
-    }
-
-    private static List<InternalAssetInfo> OrderAssets(IEnumerable<InternalAssetInfo> assets) =>
-        assets.GroupBy(x => x.Type).SelectMany(g => g.OrderBy(x => x.Name).ToList()).ToList();
-
-    private static string GetPublishConfiguration(IEnumerable<InternalAssetInfo> assets, bool includePath)
-    {
-        var document = new XmlDocument();
-        var root = document.CreateElement("assets");
-
-        foreach (var asset in OrderAssets(assets))
-        {
-            var assetXml = document.CreateElement("asset");
-            assetXml.SetAttribute("name", asset.Name);
-            assetXml.SetAttribute("version", asset.Version.ToString());
-            assetXml.SetAttribute("type", Enum.GetName(asset.Type));
-            assetXml.SetAttribute("language", Enum.GetName(asset.Locale));
-            assetXml.SetAttribute("size", asset.BundleSize.ToString());
-
-            if (includePath)
-            {
-                var pathXml = document.CreateElement("path");
-                pathXml.InnerText = asset.Path;
-                assetXml.AppendChild(pathXml);
-            }
-
-            root.AppendChild(assetXml);
-        }
-
-        document.AppendChild(root);
-
-        using var stringWriter = new StringWriter();
-        using var xmlTextWriter = XmlWriter.Create(stringWriter,
-            new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true });
-
-        document.WriteTo(xmlTextWriter);
-        xmlTextWriter.Flush();
-
-        return stringWriter.GetStringBuilder().ToString();
-    }
+    private static InternalAssetInfo[] OrderAssets(IEnumerable<InternalAssetInfo> assets) =>
+        assets.GroupBy(x => x.Type).SelectMany(g => g.OrderBy(x => x.Name).ToList()).ToArray();
 
     private static string GetAssetString(TreeInfo info) =>
         GenerateStringFromTree(info.SubTrees.First(a => a.Name == "PPtr<Object> asset"));

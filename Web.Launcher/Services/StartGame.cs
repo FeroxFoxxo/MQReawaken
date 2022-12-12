@@ -152,14 +152,14 @@ public class StartGame : IService
             { $"{name}.unity.cache.expiration", "0" },
             { "asset.log", _lConfig.LogAssets ? "true" : "false" },
             { "asset.disableversioning", _lConfig.DisableVersions ? "true" : "false" },
-            { "asset.jboss", $"{_lConfig.BaseUrl}/Apps" },
+            { "asset.jboss", $"{_lConfig.BaseUrl}/Apps/" },
             { "asset.bundle", $"{_lConfig.BaseUrl}/Client/Bundles" },
             { "asset.audio", $"{_lConfig.BaseUrl}/Client/Audio" },
             { "logout.url", $"{_lConfig.BaseUrl}/Logout" },
             { "contactus.url", $"{_lConfig.BaseUrl}/Contact" },
-            { "tools.urlbase", $"{_lConfig.BaseUrl}/Tools" },
-            { "leaderboard.domain", $"{_lConfig.BaseUrl}/Leaderboard" },
-            { "analytics.baseurl", $"{_lConfig.BaseUrl}/Analytics" },
+            { "tools.urlbase", $"{_lConfig.BaseUrl}/Tools/" },
+            { "leaderboard.domain", $"{_lConfig.BaseUrl}/Leaderboard/" },
+            { "analytics.baseurl", $"{_lConfig.BaseUrl}/Analytics/" },
             { "analytics.enabled", _lConfig.AnalyticsEnabled ? "true" : "false" },
             { "analytics.apikey", _lConfig.AnalyticsApiKey }
         };
