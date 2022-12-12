@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Server.Web.Middleware;
 
-public class RequestLoggingMiddleware
+public class RequestLogger
 {
     private readonly RequestDelegate _next;
 
-    public RequestLoggingMiddleware(RequestDelegate next) => _next = next;
+    public RequestLogger(RequestDelegate next) => _next = next;
 
-    public async Task Invoke(HttpContext context, ILogger<RequestLoggingMiddleware> logger)
+    public async Task Invoke(HttpContext context, ILogger<RequestLogger> logger)
     {
         var method = context.Request.Method;
 

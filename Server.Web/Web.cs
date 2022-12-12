@@ -25,7 +25,7 @@ public class Web : WebModule
     {
     }
 
-    public override void AddServices(IServiceCollection services, IEnumerable<Module> modules)
+    public override void AddServices(IServiceCollection services, Module[] modules)
     {
         services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
         services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
@@ -76,7 +76,7 @@ public class Web : WebModule
 
         app.UseIpRateLimiting();
 
-        app.UseMiddleware<RequestLoggingMiddleware>();
+        app.UseMiddleware<RequestLogger>();
 
         app.UseStaticFiles(new StaticFileOptions
         {

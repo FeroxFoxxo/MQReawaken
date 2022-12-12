@@ -15,7 +15,7 @@ public class Reawakened : Module
     {
     }
 
-    public override void AddServices(IServiceCollection services, IEnumerable<Module> modules) =>
+    public override void AddServices(IServiceCollection services, Module[] modules) =>
         services
             .AddSingleton<ReflectionUtils>()
             .AddSingleton<SmartFoxClient>()

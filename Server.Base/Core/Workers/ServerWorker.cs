@@ -130,7 +130,7 @@ public class ServerWorker : IHostedService
         {
             if (_pump != null)
                 foreach (var listener in _pump.Listeners)
-                    listener.Dispose();
+                    listener?.Dispose();
         }
         catch (Exception ex)
         {

@@ -5,7 +5,6 @@ using Server.Base.Core.Abstractions;
 using Server.Base.Logging;
 using Server.Web.Abstractions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -47,7 +46,7 @@ public class Initialize
         }
     }
 
-    private static IEnumerable<Module> GetModules(ILogger logger)
+    private static Module[] GetModules(ILogger logger)
     {
         var modules = ImportModules.GetModules();
 
@@ -67,7 +66,7 @@ public class Initialize
         return modules;
     }
 
-    private static void InitializeModules(IEnumerable<Module> modules, WebApplicationBuilder builder, ILogger logger)
+    private static void InitializeModules(Module[] modules, WebApplicationBuilder builder, ILogger logger)
     {
         logger.LogInformation("Initializing Logging");
         foreach (var startup in modules)
@@ -99,7 +98,7 @@ public class Initialize
         logger.LogDebug("Successfully initialized web services");
     }
 
-    private static void ConfigureApp(IEnumerable<Module> modules, WebApplication app, ILogger logger)
+    private static void ConfigureApp(Module[] modules, WebApplication app, ILogger logger)
     {
         foreach (var startup in modules)
         {

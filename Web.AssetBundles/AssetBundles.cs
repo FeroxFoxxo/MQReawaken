@@ -17,9 +17,9 @@ public class AssetBundles : WebModule
     {
     }
 
-    public override void AddServices(IServiceCollection services, IEnumerable<Module> modules)
+    public override void AddServices(IServiceCollection services, Module[] modules)
     {
-        services.AddSingleton<BuildAssetBundles>();
+        services.AddSingleton<AssetEventSink>();
 
         Logger.LogInformation("Loading Bundles");
 

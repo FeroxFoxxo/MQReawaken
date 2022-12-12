@@ -2,12 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
+using Server.Base.Core.Helpers.Internal;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using Web.AssetBundles.Helpers;
-using Web.AssetBundles.Models;
-using Web.Launcher.Internal;
 using Web.Launcher.Models;
 
 namespace Web.Launcher.Services;
@@ -17,9 +14,7 @@ public class StartGame : IService
     private readonly IHostApplicationLifetime _appLifetime;
     private readonly LauncherConfig _lConfig;
     private readonly ILogger<StartGame> _logger;
-    private readonly BuildAssetBundles _buildBundles;
     private readonly SettingsConfig _sConfig;
-    private readonly AssetBundleConfig _aBConfig;
     private readonly EventSink _sink;
     private string _directory;
     private bool _dirSet, _appStart;
@@ -28,16 +23,13 @@ public class StartGame : IService
     public string CurrentVersion { get; private set; }
 
     public StartGame(EventSink sink, LauncherConfig lConfig, SettingsConfig sConfig,
-        IHostApplicationLifetime appLifetime, ILogger<StartGame> logger, BuildAssetBundles buildBundles,
-        AssetBundleConfig aBConfig)
+        IHostApplicationLifetime appLifetime, ILogger<StartGame> logger)
     {
         _sink = sink;
         _lConfig = lConfig;
         _sConfig = sConfig;
         _appLifetime = appLifetime;
         _logger = logger;
-        _buildBundles = buildBundles;
-        _aBConfig = aBConfig;
 
         _dirSet = false;
         _appStart = false;
@@ -50,29 +42,29 @@ public class StartGame : IService
         _sink.Shutdown += StopGame;
     }
 
+    private void StopGame() => _game?.CloseMainWindow();
+
     private void AppStarted()
     {
         _appStart = true;
+
         RunGame();
     }
 
-    private void RunGame()
+    private void GetGameInformation()
     {
-        if (!_appStart || !_dirSet)
-            return;
+        try
+        {
+            _lConfig.GameSettingsFile = SetFileValue.SetIfNotNull(_lConfig.GameSettingsFile, "Get Settings File",
+                "Settings File (*.txt)\0*.txt\0");
 
-        WriteConfig();
+            _sConfig.WriteToSettings(_lConfig);
+        }
+        catch
+        {
+            // ignored
+        }
 
-        _buildBundles.GenerateAssetBundles();
-
-        _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
-        _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
-    }
-
-    private void StopGame() => _game.CloseMainWindow();
-
-    public void EnsureSet()
-    {
         while (true)
         {
             _logger.LogInformation("Getting Game Executable");
@@ -95,23 +87,20 @@ public class StartGame : IService
             break;
         }
 
-        while (true)
-        {
-            _logger.LogInformation("Getting Cache Directory");
-
-            if (string.IsNullOrEmpty(_aBConfig.CacheInfoFile) || !_aBConfig.CacheInfoFile.EndsWith("__info"))
-            {
-                _logger.LogError("Please enter the absolute file path for your cache's ROOT '__info' file.");
-                _aBConfig.CacheInfoFile = Console.ReadLine() ?? string.Empty;
-                continue;
-            }
-
-            _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(_aBConfig.CacheInfoFile));
-            break;
-        }
-
         _dirSet = true;
+
         RunGame();
+    }
+
+    private void RunGame()
+    {
+        if (!_appStart || !_dirSet)
+            return;
+
+        WriteConfig();
+
+        _game = Process.Start(Path.Join(_directory, "launcher", "launcher.exe"));
+        _logger.LogDebug("Running game on process: {GamePath}", _game?.ProcessName);
     }
 
     private void WriteConfig()
@@ -174,36 +163,5 @@ public class StartGame : IService
             { "analytics.enabled", _lConfig.AnalyticsEnabled ? "true" : "false" },
             { "analytics.apikey", _lConfig.AnalyticsApiKey }
         };
-    }
-
-    private void GetGameInformation()
-    {
-        try
-        {
-            _lConfig.GameSettingsFile = SetIfNotNull(_lConfig.GameSettingsFile, "Get Settings File",
-                "Settings File (*.txt)\0*.txt\0");
-
-            _aBConfig.CacheInfoFile = SetIfNotNull(_aBConfig.CacheInfoFile, "Get Root Cache Info",
-                "Root Info File (__info)\0__info\0");
-
-            _sConfig.WriteToSettings(_lConfig);
-        }
-        catch
-        {
-            // ignored
-        }
-
-        EnsureSet();
-    }
-
-    private static string SetIfNotNull(string setting, string title, string filter)
-    {
-        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
-        return string.IsNullOrEmpty(setting)
-            ? isWindows
-                ? FileDialog.GetFile(title, filter)
-                : Console.ReadLine()
-            : setting;
     }
 }

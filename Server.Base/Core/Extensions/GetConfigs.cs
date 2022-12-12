@@ -17,7 +17,7 @@ public static class GetConfigs
             using var stream = GetFile.GetFileStream($"{configName}.json", ConfigDir, FileMode.Open);
             services.AddSingleton(config,
                 JsonSerializer.Deserialize(stream, config) ?? throw new InvalidCastException());
-            logger.LogTrace("   Config: Found {Name} in {Directory}", configName, stream.Name);
+            logger.LogTrace("   Config: Found {Name} in {Directory}", configName, Path.GetDirectoryName(stream.Name));
         }
         catch (FileNotFoundException)
         {

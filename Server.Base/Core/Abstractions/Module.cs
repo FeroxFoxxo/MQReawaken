@@ -18,7 +18,7 @@ public abstract class Module
     {
     }
 
-    public virtual void AddServices(IServiceCollection services, IEnumerable<Module> modules)
+    public virtual void AddServices(IServiceCollection services, Module[] modules)
     {
     }
 
@@ -26,7 +26,7 @@ public abstract class Module
     {
     }
 
-    public virtual void PostBuild(IServiceProvider services, IEnumerable<Module> modules)
+    public virtual void PostBuild(IServiceProvider services, Module[] modules)
     {
     }
 }

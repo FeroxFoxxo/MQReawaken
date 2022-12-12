@@ -88,8 +88,13 @@ public class CrashGuard : IService
     {
         try
         {
-            foreach (var file in Directory.GetFiles(originPath))
-                File.Copy(Path.Combine(originPath, file), Path.Combine(backupPath, file));
+            foreach (var fileLink in Directory.GetFiles(originPath))
+            {
+                var file = Path.GetFileName(fileLink);
+                var oldF = Path.Combine(originPath, file);
+                var newF = Path.Combine(backupPath, file);
+                File.Copy(oldF, newF, true);
+            }
         }
         catch (Exception ex)
         {

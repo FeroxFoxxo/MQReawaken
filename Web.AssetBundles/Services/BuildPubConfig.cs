@@ -1,26 +1,69 @@
 ﻿using AssetStudio;
 using Microsoft.Extensions.Logging;
+using Server.Base.Core.Abstractions;
+using Server.Base.Core.Helpers;
+using Server.Base.Core.Helpers.Internal;
 using ShellProgressBar;
 using System.Xml;
+using Web.AssetBundles.Events;
+using Web.AssetBundles.Extensions;
+using Web.AssetBundles.Helpers;
 using Web.AssetBundles.Models;
-using Object = AssetStudio.Object;
 
-namespace Web.AssetBundles.Helpers;
+namespace Web.AssetBundles.Services;
 
-public class BuildAssetBundles
+public class BuildPubConfig : IService
 {
-    private readonly ILogger<BuildAssetBundles> _logger;
+    private readonly ILogger<BuildPubConfig> _logger;
     private readonly AssetBundleConfig _config;
+    private readonly EventSink _sink;
+    private readonly AssetEventSink _assetSink;
 
-    private List<InternalAssetInfo> _internalAssets;
+    private InternalAssetInfo[] _internalAssets;
 
-    public BuildAssetBundles(ILogger<BuildAssetBundles> logger, AssetBundleConfig config)
+    public BuildPubConfig(ILogger<BuildPubConfig> logger, AssetBundleConfig config,
+        EventSink sink,
+        AssetEventSink assetSink)
     {
         _logger = logger;
         _config = config;
+        _sink = sink;
+        _assetSink = assetSink;
     }
 
     public string PublishConfiguration { get; private set; }
+
+    public void Initialize() => _sink.WorldLoad += SetAssetBundles;
+
+    public void SetAssetBundles()
+    {
+        try
+        {
+            _config.CacheInfoFile = SetFileValue.SetIfNotNull(_config.CacheInfoFile, "Get Root Cache Info",
+                "Root Info File (__info)\0__info\0");
+        }
+        catch
+        {
+            // ignored
+        }
+
+        while (true)
+        {
+            _logger.LogInformation("Getting Cache Directory");
+
+            if (string.IsNullOrEmpty(_config.CacheInfoFile) || !_config.CacheInfoFile.EndsWith("__info"))
+            {
+                _logger.LogError("Please enter the absolute file path for your cache's ROOT '__info' file.");
+                _config.CacheInfoFile = Console.ReadLine() ?? string.Empty;
+                continue;
+            }
+
+            _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(_config.CacheInfoFile));
+            break;
+        }
+
+        GenerateAssetBundles();
+    }
 
     public void GenerateAssetBundles()
     {
@@ -33,7 +76,7 @@ public class BuildAssetBundles
                 Logger.Default = new AssetBundleLogger(_logger);
 
             _logger.LogInformation("Generating Publish Configuration");
-            _internalAssets = new List<InternalAssetInfo>();
+            var assets = new List<InternalAssetInfo>();
 
             var directories = Directory.GetDirectories(Path.GetDirectoryName(_config.CacheInfoFile)!);
 
@@ -47,24 +90,27 @@ public class BuildAssetBundles
             {
                 foreach (var directory in directories)
                 {
-                    _internalAssets.Add(GetAssetBundle(directory, progressBar));
+                    assets.Add(GetAssetBundle(directory, progressBar));
                     progressBar.Tick();
                 }
 
                 progressBar.Message = "Finished " + _config.Message;
             }
 
+            _internalAssets = assets.ToArray();
             File.WriteAllText(_config.PubConfigFile, GetPublishConfiguration(_internalAssets, true));
         }
         else
         {
-            _internalAssets = GetPublishConfiguration(File.ReadAllText(_config.PubConfigFile));
+            _internalAssets = GetPublishConfiguration(File.ReadAllText(_config.PubConfigFile)).ToArray();
         }
 
         _logger.LogDebug("Publish configuration {Type} with {BundleNum} bundles.",
-            bundlesExist ? "loaded" : "generated", _internalAssets.Count);
+            bundlesExist ? "loaded" : "generated", _internalAssets.Length);
 
         PublishConfiguration = GetPublishConfiguration(_internalAssets, false);
+
+        _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(_internalAssets));
     }
 
     private InternalAssetInfo GetAssetBundle(string folderName, ProgressBarBase bar)
@@ -85,9 +131,9 @@ public class BuildAssetBundles
             Locale = RFC1766Locales.LanguageCodes.en_us
         };
 
-        var gameObj = GetNameOfGameObject(assetFile.ObjectsDic.Values, asset.Name);
-        var musicObj = GetNameOfMusic(assetFile.ObjectsDic.Values, asset.Name);
-        var textObj = GetNameOfText(assetFile.ObjectsDic.Values, asset.Name);
+        var gameObj = assetFile.ObjectsDic.Values.GetGameObject(asset.Name).m_Name;
+        var musicObj = assetFile.ObjectsDic.Values.GetMusic(asset.Name).m_Name;
+        var textObj = assetFile.ObjectsDic.Values.GetText(asset.Name).m_Name;
 
         if (!string.IsNullOrEmpty(gameObj))
         {
@@ -125,18 +171,6 @@ public class BuildAssetBundles
 
         return asset.Type == AssetInfo.TypeAsset.Unknown ? throw new InvalidDataException() : asset;
     }
-
-    private static string GetNameOfGameObject(IEnumerable<Object> objects, string assetName) =>
-        objects.OfType<GameObject>()
-            .FirstOrDefault(x => x.m_Name.Equals(assetName, StringComparison.OrdinalIgnoreCase))?.m_Name;
-
-    private static string GetNameOfMusic(IEnumerable<Object> objects, string assetName) =>
-        objects.OfType<AudioClip>()
-            .FirstOrDefault(x => x.m_Name.Equals(assetName, StringComparison.OrdinalIgnoreCase))?.m_Name;
-
-    private static string GetNameOfText(IEnumerable<Object> objects, string assetName) =>
-        objects.OfType<TextAsset>()
-            .FirstOrDefault(x => x.m_Name.Equals(assetName, StringComparison.OrdinalIgnoreCase))?.m_Name;
 
     private static string GetMainAssetName(SerializedFile assetFile)
     {
@@ -203,7 +237,7 @@ public class BuildAssetBundles
         var document = new XmlDocument();
         var root = document.CreateElement("assets");
 
-        foreach (var asset in assets.GroupBy(x => x.Type).SelectMany(g => g.ToList()))
+        foreach (var asset in assets.GroupBy(x => x.Type).SelectMany(g => g.OrderBy(x => x.Name).ToList()))
         {
             var assetXml = document.CreateElement("asset");
             assetXml.SetAttribute("name", asset.Name);

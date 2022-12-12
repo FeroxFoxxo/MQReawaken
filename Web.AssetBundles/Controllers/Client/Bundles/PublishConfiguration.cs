@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Web.AssetBundles.Helpers;
+using Web.AssetBundles.Services;
 
 namespace Web.AssetBundles.Controllers.Client.Bundles;
 
 [Route("Client/Bundles/PublishConfiguration.xml")]
 public class PublishConfiguration : Controller
 {
-    private readonly BuildAssetBundles _bundles;
+    private readonly BuildPubConfig _bundles;
 
-    public PublishConfiguration(BuildAssetBundles bundles) => _bundles = bundles;
+    public PublishConfiguration(BuildPubConfig bundles) => _bundles = bundles;
 
     [HttpGet]
     public IActionResult GetPublishConfiguration() => Ok(_bundles.PublishConfiguration);

@@ -7,6 +7,8 @@ public class NameSyllables : NamegenSyllablesXML, IBundledXml
 {
     public Dictionary<bool, List<List<string>>> Syllables;
 
+    public string BundleName => "NamegenSyllabes";
+
     public void LoadBundle(string xml)
     {
         Syllables = new Dictionary<bool, List<List<string>>>();

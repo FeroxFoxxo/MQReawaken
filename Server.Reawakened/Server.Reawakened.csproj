@@ -28,9 +28,6 @@
       <Reference Include="Assembly-UnityScript-firstpass">
         <HintPath>Dependencies\Assembly-UnityScript-firstpass.dll</HintPath>
       </Reference>
-      <Reference Include="AssetStudio">
-        <HintPath>Dependencies\AssetStudio.dll</HintPath>
-      </Reference>
       <Reference Include="Boo.Lang">
         <HintPath>Dependencies\Boo.Lang.dll</HintPath>
       </Reference>
@@ -45,9 +42,6 @@
       </Reference>
       <Reference Include="LitJson">
         <HintPath>Dependencies\LitJson.dll</HintPath>
-      </Reference>
-      <Reference Include="Mono.Security">
-        <HintPath>Dependencies\Mono.Security.dll</HintPath>
       </Reference>
       <Reference Include="MQXMPP">
         <HintPath>Dependencies\MQXMPP.dll</HintPath>

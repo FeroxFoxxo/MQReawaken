@@ -28,13 +28,13 @@ public class Server : Module
         loggingBuilder.AddProvider(new LoggerProvider());
     }
 
-    public override void AddServices(IServiceCollection services, IEnumerable<Module> modules)
+    public override void AddServices(IServiceCollection services, Module[] modules)
     {
         Logger.LogInformation("Loading Hosted Services");
 
         {
             services.AddHostedService<ServerWorker>();
-            Logger.LogTrace("    Loaded: Service Worker");
+            Logger.LogTrace("   Loaded: Service Worker");
         }
 
         Logger.LogDebug("Loaded hosted services");
@@ -78,8 +78,11 @@ public class Server : Module
             .AddSingleton<IpLimiter>();
     }
 
-    public override void PostBuild(IServiceProvider services, IEnumerable<Module> modules)
+    public override void PostBuild(IServiceProvider services, Module[] modules)
     {
+        foreach (var service in services.GetRequiredServices<IInjectModules>(modules))
+            service.Modules = modules;
+
         foreach (var service in services.GetRequiredServices<IService>(modules))
             service.Initialize();
 

@@ -5,7 +5,6 @@ using Protocols.System;
 using Server.Base.Core.Abstractions;
 using Server.Base.Logging;
 using Server.Reawakened;
-using System.Collections.Generic;
 using System.Linq;
 using Web.AssetBundles;
 using Web.Launcher;
@@ -14,7 +13,7 @@ namespace Init;
 
 public static class ImportModules
 {
-    public static IEnumerable<Module> GetModules()
+    public static Module[] GetModules()
     {
         var modules = new[]
         {
@@ -39,6 +38,6 @@ public static class ImportModules
 
         var provider = services.BuildServiceProvider();
 
-        return modules.Select(module => provider.GetRequiredService(module) as Module).ToList();
+        return modules.Select(module => provider.GetRequiredService(module) as Module).ToArray();
     }
 }

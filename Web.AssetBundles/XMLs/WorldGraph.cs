@@ -6,6 +6,8 @@ namespace Web.AssetBundles.XMLs;
 
 public class WorldGraph : WorldGraphXML, IBundledXml
 {
+    public string BundleName => "world_graph";
+
     public void LoadBundle(string xml)
     {
         _rootXmlName = "world_graph";
