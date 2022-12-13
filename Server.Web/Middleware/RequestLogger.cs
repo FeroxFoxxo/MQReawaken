@@ -27,12 +27,19 @@ public class RequestLogger
 
         try
         {
+            var postData = string.Empty;
+
+            if (context.Request.HasFormContentType)
+            {
+                postData = $" | Post Data: {string.Join(", ", context.Request.Form.Select(x => $"{x.Key}:{x.Value}"))}";
+                var split = postData.Split('\n');
+
+                if (split.Length > 1)
+                    postData = $"{string.Join('\n', split.Take(1))}\nMore data found, but was concatenated...";
+            }
+
             logger.LogTrace("INC {Method} {Path}{Query}{Post} | {IP}", method,
-                context.Request.Path.Value, context.Request.QueryString,
-                context.Request.HasFormContentType
-                    ? $" | Post Data: {string.Join(", ", context.Request.Form.Select(x => $"{x.Key}:{x.Value}"))}"
-                    : "",
-                GetIp(context, logger));
+                context.Request.Path.Value, context.Request.QueryString, postData, GetIp(context, logger));
 
             await _next(context);
 

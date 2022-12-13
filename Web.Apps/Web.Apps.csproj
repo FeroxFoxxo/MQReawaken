@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Server.Web\Server.Web.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\Server.Reawakened\Dependencies\Assembly-CSharp.dll</HintPath>
+      </Reference>
+        <Reference Include="Crisp.AutoSuggest">
+            <HintPath>..\Server.Reawakened\Dependencies\Crisp.AutoSuggest.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>

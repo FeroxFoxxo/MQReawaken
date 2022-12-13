@@ -6,6 +6,7 @@ using Server.Base.Core.Abstractions;
 using Server.Base.Logging;
 using Server.Reawakened;
 using System.Linq;
+using Web.Apps;
 using Web.AssetBundles;
 using Web.Launcher;
 
@@ -17,12 +18,13 @@ public static class ImportModules
     {
         var modules = new[]
         {
-            typeof(Reawakened),
             typeof(Server.Web.Web),
             typeof(Server.Base.Server),
+            typeof(Reawakened),
             typeof(SysProtocol),
             typeof(XtProtocol),
             typeof(Launcher),
+            typeof(Apps),
             typeof(AssetBundles)
         };
 

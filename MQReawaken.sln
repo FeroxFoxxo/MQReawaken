@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server.Web", "Server.Web\Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Launcher", "Web.Launcher\Web.Launcher.csproj", "{2C65DAF5-B760-4C69-89B6-1522FC3EE6BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.AssetBundles", "Web.AssetBundles\Web.AssetBundles.csproj", "{308F3542-2AE1-4F89-96C5-EAA8883EBF25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.AssetBundles", "Web.AssetBundles\Web.AssetBundles.csproj", "{308F3542-2AE1-4F89-96C5-EAA8883EBF25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Apps", "Web.Apps\Web.Apps.csproj", "{9DD9192A-9739-455E-B63A-2E5CABB8D27E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{308F3542-2AE1-4F89-96C5-EAA8883EBF25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{308F3542-2AE1-4F89-96C5-EAA8883EBF25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{308F3542-2AE1-4F89-96C5-EAA8883EBF25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DD9192A-9739-455E-B63A-2E5CABB8D27E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DD9192A-9739-455E-B63A-2E5CABB8D27E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DD9192A-9739-455E-B63A-2E5CABB8D27E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DD9192A-9739-455E-B63A-2E5CABB8D27E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -179,7 +179,7 @@ public class BuildPubConfig : IService
 
         document.AppendChild(root);
 
-        return document.WriteToString(false);
+        return document.WriteToString();
     }
 
     private static string GetAssetDictionary(IEnumerable<InternalAssetInfo> assets, bool includePath)
@@ -196,7 +196,7 @@ public class BuildPubConfig : IService
 
         document.AppendChild(root);
 
-        return document.WriteToString(false);
+        return document.WriteToString();
     }
 
     private static IEnumerable<InternalAssetInfo> GetAssetDictionary(string xml)

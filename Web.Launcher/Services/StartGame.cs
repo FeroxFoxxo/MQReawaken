@@ -142,14 +142,17 @@ public class StartGame : IService
         // believe we're doing anything wrong, but I'd
         // rather not chance it. Trademark ran out in 2018.
 
-        const string name = "mon" + "key" + "que" + "st";
+        const string header = "mon" + "key" + "que" + "st";
 
         return new Dictionary<string, string>
         {
-            { $"{name}.unity.cache.domain", $"{_lConfig.BaseUrl}/Cache" },
-            { $"{name}.unity.cache.license", $"{_lConfig.CacheLicense}" },
-            { $"{name}.unity.cache.size", "0" },
-            { $"{name}.unity.cache.expiration", "0" },
+            { $"{header}.unity.url.membership", $"{_lConfig.BaseUrl}/Membership" },
+            { $"{header}.unity.url.nickcash", $"{_lConfig.BaseUrl}/Cash" },
+            { $"{header}.unity.cache.domain", $"{_lConfig.BaseUrl}/Cache" },
+            { $"{header}.unity.cache.license", $"{_lConfig.CacheLicense}" },
+            { $"{header}.unity.cache.size", "0" },
+            { $"{header}.unity.cache.expiration", "0" },
+            { $"{header}.unity.url.crisp.host", $"{_lConfig.BaseUrl}/Chat/" },
             { "asset.log", _lConfig.LogAssets ? "true" : "false" },
             { "asset.disableversioning", _lConfig.DisableVersions ? "true" : "false" },
             { "asset.jboss", $"{_lConfig.BaseUrl}/Apps/" },
@@ -158,10 +161,12 @@ public class StartGame : IService
             { "logout.url", $"{_lConfig.BaseUrl}/Logout" },
             { "contactus.url", $"{_lConfig.BaseUrl}/Contact" },
             { "tools.urlbase", $"{_lConfig.BaseUrl}/Tools/" },
-            { "leaderboard.domain", $"{_lConfig.BaseUrl}/Leaderboard/" },
+            { "leaderboard.domain", $"{_lConfig.BaseUrl}/Apps/" },
             { "analytics.baseurl", $"{_lConfig.BaseUrl}/Analytics/" },
             { "analytics.enabled", _lConfig.AnalyticsEnabled ? "true" : "false" },
-            { "analytics.apikey", _lConfig.AnalyticsApiKey }
+            { "analytics.apikey", _lConfig.AnalyticsApiKey },
+            { "project.name", "MQReawakened" },
+            { "game.cacheversion", "1" }
         };
     }
 }
