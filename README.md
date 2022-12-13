@@ -18,13 +18,13 @@ I am completely unaffiliated with any prior remake attempts. This has just been 
 
 ### Prerequisites
 
-- 1. You **must** have your own copy of Monkey Quest and its associated asset bundles, set up on a private server which you can connect to. We cannot directly provide this due to copyright protection, so you'll have to find some way of doing this yourself. The web archive has a version publicly downloadable (however; this doesn't contain the asset bundle caches required, only the base game).
+1. You **must** have your own copy of Monkey Quest and its associated asset bundles, set up on a private server which you can connect to. We cannot directly provide this due to copyright protection, so you'll have to find some way of doing this yourself. The web archive has a version publicly downloadable (however; this doesn't contain the asset bundle caches required, only the base game).
 
-- 2. You **must** have the associated DLL for the game added to your server project. This is because, otherwise; the server would contain copywritten code. You can follow below to figure out how to do this.
+2. You **must** have the associated DLL for the game added to your server project. This is because, otherwise; the server would contain copywritten code. You can follow below to figure out how to do this.
 
 - Drag the DLL files in `game -> Monkeyquest_Data -> Managed` into `MQReawaken -> Server.Reawakened -> Dependencies (create if not exists)`
 
-- 3. On building the server in Visual Studio, run through the questions stated. It'll require you to set up where you have the game's settings file stored. This is found in the root of your Monkey Quest directory. It'll also ask you for where your cache files for MQ are stored - it wants the **root __info** file, which you can find at the bottom of your cache directory. You can create a blank one if need be. 
+3. On building the server in Visual Studio, run through the questions stated. It'll require you to set up where you have the game's settings file stored. This is found in the root of your Monkey Quest directory. It'll also ask you for where your cache files for MQ are stored - it wants the **root __info** file, which you can find at the bottom of your cache directory. You can create a blank one if need be. 
 
 ### Other information
 
