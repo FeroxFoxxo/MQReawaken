@@ -16,15 +16,19 @@ MQReawaken is a private server meant for educational use only. It's built off th
 
 I am completely unaffiliated with any prior remake attempts. This has just been a project to progress my own knowledge of C#.
 
-#### Requeriments
+### Prerequisites
 
-- Visual Studio 2022.
-- .NET Core 6.
-- The orignal game, as well as the accompanying asset bundles that it uses.
+- 1. You **must** have your own copy of Monkey Quest and its associated asset bundles, set up on a private server which you can connect to. We cannot directly provide this due to copyright protection, so you'll have to find some way of doing this yourself. The web archive has a version publicly downloadable (however; this doesn't contain the asset bundle caches required, only the base game).
 
-#### How to use
+- 2. You **must** have the associated DLL for the game added to your server project. This is because, otherwise; the server would contain copywritten code. You can follow below to figure out how to do this.
 
-- Compile and run the server using Visual Studio 2022.
+- Drag the DLL files in `game -> Monkeyquest_Data -> Managed` into `MQReawaken -> Server.Reawakened -> Dependencies (create if not exists)`
+
+- 3. On building the server in Visual Studio, run through the questions stated. It'll require you to set up where you have the game's settings file stored. This is found in the root of your Monkey Quest directory. It'll also ask you for where your cache files for MQ are stored - it wants the **root __info** file, which you can find at the bottom of your cache directory. You can create a blank one if need be. 
+
+### Other information
+
+- You'll also want to download ILSpy to peek around any dependencies of the original game to understand how they work, reverse engineering them to develop a server side implementation -> https://sourceforge.net/projects/ilspy.mirror . You can use this to peek into the DLL files mentioned above.
 
 #### Versioning
 
