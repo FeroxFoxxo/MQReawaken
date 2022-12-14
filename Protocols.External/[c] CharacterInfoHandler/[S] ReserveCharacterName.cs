@@ -6,7 +6,7 @@ namespace Protocols.External._c__CharacterInfoHandler;
 
 public class ReserveCharacterName : ExternalProtocol
 {
-    public readonly int Count = 4;
+    public const int Count = 4;
 
     public override string ProtocolName => "cS";
 

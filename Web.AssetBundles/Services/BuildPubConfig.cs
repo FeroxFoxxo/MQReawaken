@@ -8,6 +8,7 @@ using System.Xml;
 using Web.AssetBundles.Events;
 using Web.AssetBundles.Extensions;
 using Web.AssetBundles.Helpers;
+using Web.AssetBundles.LocalAssets;
 using Web.AssetBundles.Models;
 
 namespace Web.AssetBundles.Services;
@@ -19,10 +20,8 @@ public class BuildPubConfig : IService
     private readonly EventSink _sink;
     private readonly AssetEventSink _assetSink;
 
-    private InternalAssetInfo[] _internalAssets;
-
-    public string AssetDictionary { get; private set; }
-    public string PublishConfiguration { get; private set; }
+    public readonly Dictionary<string, string> PublishConfigs;
+    public readonly Dictionary<string, string> AssetDict;
 
     public BuildPubConfig(ILogger<BuildPubConfig> logger, AssetBundleConfig config,
         EventSink sink,
@@ -32,6 +31,9 @@ public class BuildPubConfig : IService
         _config = config;
         _sink = sink;
         _assetSink = assetSink;
+
+        PublishConfigs = new Dictionary<string, string>();
+        AssetDict = new Dictionary<string, string>();
     }
 
     public void Initialize() => _sink.WorldLoad += SetAssetBundles;
@@ -69,7 +71,14 @@ public class BuildPubConfig : IService
     public void GenerateAssetBundles()
     {
         _logger.LogInformation("Getting Publish Configuration");
-        var bundlesExist = File.Exists(_config.AssetDictionaryConfig);
+
+        InternalAssetInfo[] internalAssets;
+
+        if (!Directory.Exists(_config.SaveDirectory))
+            Directory.CreateDirectory(_config.SaveDirectory);
+
+        var assetDict = Path.Combine(_config.SaveDirectory, _config.StoredAssetDict);
+        var bundlesExist = File.Exists(assetDict);
 
         if (!bundlesExist)
         {
@@ -136,70 +145,100 @@ public class BuildPubConfig : IService
                         child.Tick();
                     }
 
-                    _internalAssets = OrderAssets(singleAssets.Values);
+                    internalAssets = OrderAssets(singleAssets.Values);
                 }
 
                 progressBar.Tick();
             }
 
             Console.WriteLine();
-            File.WriteAllText(_config.AssetDictionaryConfig, GetAssetDictionary(_internalAssets, true));
+
+            SaveStoredAssetDictionary(internalAssets, assetDict);
         }
         else
         {
-            _internalAssets = OrderAssets(GetAssetDictionary(File.ReadAllText(_config.AssetDictionaryConfig)));
+            internalAssets = OrderAssets(GetAssetsFromDictionary(File.ReadAllText(assetDict)));
         }
 
+        internalAssets = internalAssets.Concat(GetLocalAssets.GetLocalXmlFiles()).ToArray();
+
         _logger.LogDebug("Publish configuration {Type} with {BundleNum} bundles.",
-            bundlesExist ? "loaded" : "generated", _internalAssets.Length);
+            bundlesExist ? "loaded" : "generated", internalAssets.Length);
 
-        PublishConfiguration = GetPublishConfiguration(_internalAssets);
-        File.WriteAllText(_config.GlobalPublishConfig, PublishConfiguration);
+        var vgmtAssets = internalAssets.Where(x =>
+            _config.VirtualGoods.Any(a => string.Equals(a, x.Name) || x.Name.StartsWith($"{a}Dict_"))).ToArray();
 
-        AssetDictionary = GetAssetDictionary(_internalAssets, false);
-        File.WriteAllText(_config.GlobalAssetDictionary, AssetDictionary);
+        if (vgmtAssets.Length == 0)
+            throw new FileNotFoundException(
+                "Could not find any virtual good assets! Try adding them into the LocalAsset directory.");
 
-        _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(_internalAssets));
+        var gameAssets = internalAssets.Where(x => !vgmtAssets.Contains(x)).ToArray();
+
+        PublishConfigs.Clear();
+        AssetDict.Clear();
+
+        AddPublishConfiguration(gameAssets, _config.PublishConfigKey);
+        AddAssetDictionary(gameAssets, _config.PublishConfigKey);
+
+        AddPublishConfiguration(vgmtAssets, _config.PublishConfigVgmtKey);
+        AddAssetDictionary(vgmtAssets, _config.PublishConfigVgmtKey);
+
+        _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(internalAssets));
     }
 
-    private static string GetPublishConfiguration(IEnumerable<InternalAssetInfo> assets)
+    private void AddPublishConfiguration(IEnumerable<InternalAssetInfo> assets, string key)
     {
         var document = new XmlDocument();
         var root = document.CreateElement("PublishConfiguration");
 
         var xmlElements = document.CreateElement("xml_version");
+
         foreach (var asset in assets.Where(x => x.Type == AssetInfo.TypeAsset.XML))
             xmlElements.AppendChild(asset.ToXml("item", document));
+
         root.AppendChild(xmlElements);
 
         var dict = document.CreateElement("item");
-        dict.SetAttribute("name", "publish.asset_dictionary");
-        dict.SetAttribute("value", "assetDictionary.xml");
+        dict.SetAttribute("name", _config.AssetDictKey);
+        dict.SetAttribute("value", _config.AssetDictConfigs[key]);
         root.AppendChild(dict);
 
         document.AppendChild(root);
 
-        return document.WriteToString();
+        var config = document.WriteToString();
+        File.WriteAllText(Path.Combine(_config.SaveDirectory, _config.PublishConfigs[key]), config);
+        PublishConfigs.Add(key, config);
     }
 
-    private static string GetAssetDictionary(IEnumerable<InternalAssetInfo> assets, bool includePath)
+    private void AddAssetDictionary(IEnumerable<InternalAssetInfo> assets, string key)
     {
         var document = new XmlDocument();
         var root = document.CreateElement("assets");
 
         foreach (var asset in assets)
-        {
-            root.AppendChild(includePath
-                ? asset.ToXmlWithTypePath("asset", document)
-                : asset.ToXmlWithType("asset", document));
-        }
+            root.AppendChild(asset.ToXmlWithType("asset", document));
 
         document.AppendChild(root);
 
-        return document.WriteToString();
+        var assetDict = document.WriteToString();
+        File.WriteAllText(Path.Combine(_config.SaveDirectory, _config.AssetDictConfigs[key]), assetDict);
+        AssetDict.Add(key, assetDict);
     }
 
-    private static IEnumerable<InternalAssetInfo> GetAssetDictionary(string xml)
+    private static void SaveStoredAssetDictionary(IEnumerable<InternalAssetInfo> assets, string saveDir)
+    {
+        var document = new XmlDocument();
+        var root = document.CreateElement("assets");
+
+        foreach (var asset in assets)
+            root.AppendChild(asset.ToXmlWithTypePath("asset", document));
+
+        document.AppendChild(root);
+
+        File.WriteAllText(saveDir, document.WriteToString());
+    }
+
+    private static IEnumerable<InternalAssetInfo> GetAssetsFromDictionary(string xml)
     {
         var configuration = new List<InternalAssetInfo>();
 

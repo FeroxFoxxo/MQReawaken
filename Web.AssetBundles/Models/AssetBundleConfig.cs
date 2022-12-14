@@ -5,23 +5,56 @@ namespace Web.AssetBundles.Models;
 
 public class AssetBundleConfig : IConfig
 {
-    public string GlobalAssetDictionary { get; set; }
-    public string GlobalPublishConfig { get; set; }
-    public string AssetDictionaryConfig { get; set; }
+    public string AssetDictKey { get; set; }
+
+    public string SaveDirectory { get; set; }
+    public string StoredAssetDict { get; set; }
 
     public bool ShouldLogAssets { get; set; }
     public string CacheInfoFile { get; set; }
     public string Message { get; set; }
 
+    public string PublishConfigKey { get; set; }
+    public string PublishConfigVgmtKey { get; set; }
+
+    public Dictionary<string, string> PublishConfigs { get; set; }
+    public Dictionary<string, string> AssetDictConfigs { get; set; }
+    public List<string> VirtualGoods { get; set; }
+
     public AssetBundleConfig()
     {
-        AssetDictionaryConfig = Path.Combine(InternalDirectory.GetBaseDirectory(), "Configs/AssetDictionaryConfig.xml");
+        AssetDictKey = "publish.asset_dictionary";
 
-        GlobalPublishConfig = Path.Combine(InternalDirectory.GetBaseDirectory(), "Configs/GlobalPublishConfig.xml");
-        GlobalAssetDictionary = Path.Combine(InternalDirectory.GetBaseDirectory(), "Configs/GlobalAssetDictionary.xml");
+        SaveDirectory = Path.Combine(InternalDirectory.GetBaseDirectory(), "Assets");
+        StoredAssetDict = "CachedAssetDictionary.xml";
 
         ShouldLogAssets = false;
-        Message = "Loading Asset Bundles";
         CacheInfoFile = string.Empty;
+        Message = "Loading Asset Bundles";
+
+        PublishConfigKey = "unity.game.publishconfig";
+        PublishConfigVgmtKey = "unity.game.vgmt.publishconfig";
+
+        PublishConfigs = new Dictionary<string, string>
+        {
+            { PublishConfigKey, "PublishConfiguration.xml" },
+            { PublishConfigVgmtKey, "PublishConfiguration.VGMT.xml" }
+        };
+
+        AssetDictConfigs = new Dictionary<string, string>
+        {
+            { PublishConfigKey, "assetDictionary.xml" },
+            { PublishConfigVgmtKey, "assetDictionary.VGMT.xml" }
+        };
+
+        VirtualGoods = new List<string>
+        {
+            "ItemCatalog",
+            "PetAbilities",
+            "UserGiftMessage",
+            "vendor_catalogs",
+            "IconBank_VGMT",
+            "IconBank_Pets"
+        };
     }
 }

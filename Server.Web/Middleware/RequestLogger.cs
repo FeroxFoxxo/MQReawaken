@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Server.Web.Models;
 
 namespace Server.Web.Middleware;
 
@@ -9,7 +10,7 @@ public class RequestLogger
 
     public RequestLogger(RequestDelegate next) => _next = next;
 
-    public async Task Invoke(HttpContext context, ILogger<RequestLogger> logger)
+    public async Task Invoke(HttpContext context, ILogger<RequestLogger> logger, WebConfig webConfig)
     {
         var method = context.Request.Method;
 
@@ -29,13 +30,14 @@ public class RequestLogger
         {
             var postData = string.Empty;
 
-            if (context.Request.HasFormContentType)
+            if (context.Request.HasFormContentType & webConfig.ShouldConcat)
             {
                 postData = $" | Post Data: {string.Join(", ", context.Request.Form.Select(x => $"{x.Key}:{x.Value}"))}";
                 var split = postData.Split('\n');
 
                 if (split.Length > 1)
-                    postData = $"{string.Join('\n', split.Take(1))}\nMore data found, but was concatenated...";
+                    postData = $"{string.Join('\n', split.Take(1))}\n" +
+                               "More data found, but was concatenated. To view the full log, enable WebConfig.ShouldConcat.";
             }
 
             logger.LogTrace("INC {Method} {Path}{Query}{Post} | {IP}", method,
