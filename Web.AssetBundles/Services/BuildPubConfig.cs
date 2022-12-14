@@ -23,6 +23,8 @@ public class BuildPubConfig : IService
     public readonly Dictionary<string, string> PublishConfigs;
     public readonly Dictionary<string, string> AssetDict;
 
+    public Dictionary<string, InternalAssetInfo> InternalAssets;
+
     public BuildPubConfig(ILogger<BuildPubConfig> logger, AssetBundleConfig config,
         EventSink sink,
         AssetEventSink assetSink)
@@ -182,6 +184,8 @@ public class BuildPubConfig : IService
 
         AddPublishConfiguration(vgmtAssets, _config.PublishConfigVgmtKey);
         AddAssetDictionary(vgmtAssets, _config.PublishConfigVgmtKey);
+
+        InternalAssets = internalAssets.ToDictionary(x => x.Name, x => x);
 
         _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(internalAssets));
     }

@@ -29,7 +29,7 @@ public class AssetHostController : Controller
 
         if (!publishConfig.IsDefault())
         {
-            _logger.LogDebug("Getting Publish Configuration {Type}", publishConfig.Key);
+            _logger.LogDebug("Getting Publish Configuration {Type} ({Folder})", publishConfig.Key, folder);
             return Ok(_bundles.PublishConfigs[publishConfig.Key]);
         }
 
@@ -37,14 +37,19 @@ public class AssetHostController : Controller
 
         if (!assetDict.IsDefault())
         {
-            _logger.LogDebug("Getting Asset Dictionary {Type}", assetDict.Key);
+            _logger.LogDebug("Getting Asset Dictionary {Type} ({Folder})", assetDict.Key, folder);
             return Ok(_bundles.AssetDict[assetDict.Key]);
         }
 
-        _logger.LogDebug("Getting asset {folder}/{name}", folder, name);
+        name = name.Split('.')[0];
 
-        _logger.LogError("Could not find asset {folder}/{name}", folder, name);
+        if (!_bundles.InternalAssets.ContainsKey(name))
+            return NotFound();
 
-        return NotFound();
+        var asset = _bundles.InternalAssets[name];
+        _logger.LogDebug("Getting asset {Name} from {File} ({Folder})", asset.Name, Path.GetFileName(asset.Path),
+            folder);
+        var bytes = System.IO.File.ReadAllBytes(asset.Path ?? throw new InvalidDataException());
+        return new FileContentResult(bytes, "application/octet-stream");
     }
 }
