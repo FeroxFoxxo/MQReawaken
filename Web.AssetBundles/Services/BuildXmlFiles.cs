@@ -35,7 +35,9 @@ public class BuildXmlFiles : IService, IInjectModules
     {
         _logger.LogInformation("Reading XML Files From Bundles");
 
-        var assets = assetLoadEvent.InternalAssets.Where(x => x.Type == AssetInfo.TypeAsset.XML).ToArray();
+        var assets = assetLoadEvent.InternalAssets
+            .Select(x => x.Value)
+            .Where(x => x.Type == AssetInfo.TypeAsset.XML);
 
         foreach (var xmlBundle in _services.GetRequiredServices<IBundledXml>(Modules))
         {

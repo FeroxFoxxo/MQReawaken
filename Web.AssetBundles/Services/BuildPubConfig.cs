@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using Server.Base.Core.Abstractions;
 using Server.Base.Core.Helpers;
 using Server.Base.Core.Helpers.Internal;
+using Server.Base.Core.Models;
+using Server.Base.Core.Services;
 using ShellProgressBar;
 using System.Xml;
 using Web.AssetBundles.Events;
@@ -17,6 +19,7 @@ public class BuildPubConfig : IService
 {
     private readonly ILogger<BuildPubConfig> _logger;
     private readonly AssetBundleConfig _config;
+    private readonly ServerConsole _console;
     private readonly EventSink _sink;
     private readonly AssetEventSink _assetSink;
 
@@ -24,15 +27,17 @@ public class BuildPubConfig : IService
     public readonly Dictionary<string, string> AssetDict;
 
     public Dictionary<string, InternalAssetInfo> InternalAssets;
+    public string AssetDictLocation;
 
     public BuildPubConfig(ILogger<BuildPubConfig> logger, AssetBundleConfig config,
         EventSink sink,
-        AssetEventSink assetSink)
+        AssetEventSink assetSink, ServerConsole console)
     {
         _logger = logger;
         _config = config;
         _sink = sink;
         _assetSink = assetSink;
+        _console = console;
 
         PublishConfigs = new Dictionary<string, string>();
         AssetDict = new Dictionary<string, string>();
@@ -42,9 +47,46 @@ public class BuildPubConfig : IService
 
     public void SetAssetBundles()
     {
+        _console.AddCommand(new ConsoleCommand("setAssetsToDefault",
+            "Force generates asset dictionary from default caches directory.",
+            _ => LoadDefaultCache(true)));
+
+        _console.AddCommand(new ConsoleCommand("changeDefaultCacheDir",
+            "Change the default cache directory and regenerate dictionary.",
+            _ =>
+            {
+                _config.CacheInfoFile = TryGetCacheInfoFile(string.Empty);
+                LoadDefaultCache(true);
+            }));
+
+        _console.AddCommand(new ConsoleCommand("addCachesToDict",
+            "Adds a cache directory to the current asset dictionary.",
+            _ =>
+            {
+                var cacheDir = Path.GetDirectoryName(TryGetCacheInfoFile(string.Empty));
+                var assets = GetAssetsFromCache(cacheDir).Where(a => !InternalAssets.ContainsKey(a.Key));
+                foreach (var asset in assets)
+                {
+                    _logger.LogDebug("Loading new cache file {Name} ({Type})", asset.Key, asset.Value.Type);
+                    InternalAssets.Add(asset.Key, asset.Value);
+                }
+            }));
+
+        _config.CacheInfoFile = TryGetCacheInfoFile(_config.CacheInfoFile);
+
+        if (!Directory.Exists(_config.SaveDirectory))
+            Directory.CreateDirectory(_config.SaveDirectory);
+
+        AssetDictLocation = Path.Combine(_config.SaveDirectory, _config.StoredAssetDict);
+
+        LoadDefaultCache(false);
+    }
+
+    private string TryGetCacheInfoFile(string defaultFile)
+    {
         try
         {
-            _config.CacheInfoFile = SetFileValue.SetIfNotNull(_config.CacheInfoFile, "Get Root Cache Info",
+            defaultFile = SetFileValue.SetIfNotNull(defaultFile, "Get Root Cache Info",
                 "Root Info File (__info)\0__info\0");
         }
         catch
@@ -56,125 +98,54 @@ public class BuildPubConfig : IService
         {
             _logger.LogInformation("Getting Cache Directory");
 
-            if (string.IsNullOrEmpty(_config.CacheInfoFile) || !_config.CacheInfoFile.EndsWith("__info"))
+            if (string.IsNullOrEmpty(defaultFile) || !defaultFile.EndsWith("__info"))
             {
                 _logger.LogError("Please enter the absolute file path for your cache's ROOT '__info' file.");
-                _config.CacheInfoFile = Console.ReadLine() ?? string.Empty;
+                defaultFile = Console.ReadLine() ?? string.Empty;
                 continue;
             }
 
-            _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(_config.CacheInfoFile));
+            _logger.LogDebug("Got cache directory: {Directory}", Path.GetDirectoryName(defaultFile));
             break;
         }
 
-        GenerateAssetBundles();
+        return defaultFile;
     }
 
-    public void GenerateAssetBundles()
+    private void LoadDefaultCache(bool forceGenerate)
     {
-        _logger.LogInformation("Getting Publish Configuration");
+        _logger.LogInformation("Getting Asset Dictionary");
 
-        InternalAssetInfo[] internalAssets;
+        var dictExists = File.Exists(AssetDictLocation);
 
-        if (!Directory.Exists(_config.SaveDirectory))
-            Directory.CreateDirectory(_config.SaveDirectory);
+        InternalAssets = new Dictionary<string, InternalAssetInfo>();
 
-        var assetDict = Path.Combine(_config.SaveDirectory, _config.StoredAssetDict);
-        var bundlesExist = File.Exists(assetDict);
+        InternalAssets = !dictExists || forceGenerate
+            ? GetAssetsFromCache(Path.GetDirectoryName(_config.CacheInfoFile))
+            : OrderAssetsByName(GetAssetsFromDictionary(File.ReadAllText(AssetDictLocation)));
 
-        if (!bundlesExist)
-        {
-            if (_config.ShouldLogAssets)
-                Logger.Default = new AssetBundleLogger(_logger);
+        InternalAssets.AddLocalXmlFiles(_logger);
 
-            _logger.LogInformation("Generating Publish Configuration");
-            var assets = new List<InternalAssetInfo>();
+        _logger.LogDebug("Loaded {Count} assets to memory.", InternalAssets.Count);
 
-            var directories = Directory.GetDirectories(Path.GetDirectoryName(_config.CacheInfoFile)!);
+        RefreshAssetConfigurations();
+    }
 
-            var options = new ProgressBarOptions
-            {
-                ForegroundColor = ConsoleColor.Yellow,
-                BackgroundColor = ConsoleColor.DarkYellow,
-                ForegroundColorDone = ConsoleColor.DarkGreen,
-                ProgressCharacter = '─',
-                ProgressBarOnBottom = true
-            };
+    private void RefreshAssetConfigurations()
+    {
+        SaveStoredAssetDictionary(InternalAssets.Values, AssetDictLocation);
 
-            var opt2 = options.DeepCopy();
-            opt2.DisableBottomPercentage = true;
+        var vgmtAssets = InternalAssets.Where(x =>
+                _config.VirtualGoods.Any(a => string.Equals(a, x.Key) || x.Key.StartsWith($"{a}Dict_")))
+            .ToDictionary(x => x.Key, x => x.Value);
 
-            using (var progressBar = new ProgressBar(2, "", opt2))
-            {
-                using (var child = progressBar.Spawn(directories.Length, _config.Message, options))
-                {
-                    foreach (var directory in directories)
-                    {
-                        assets.Add(GetAssetBundle(directory, child));
-                        child.Tick();
-                    }
+        if (!vgmtAssets.Any())
+            _logger.LogError("Could not find any virtual good assets! " +
+                             "Try adding them into the LocalAsset directory. " +
+                             "The game will not run without these.");
 
-                    child.Message = "Finished " + _config.Message;
-                }
-
-                progressBar.Tick();
-
-                using (var child = progressBar.Spawn(assets.Count, "Removing Duplicates", options))
-                {
-                    var singleAssets = new Dictionary<string, InternalAssetInfo>();
-
-                    foreach (var asset in assets)
-                    {
-                        if (singleAssets.ContainsKey(asset.Name))
-                        {
-                            var testAsset = singleAssets[asset.Name];
-
-                            if (testAsset.Type == asset.Type)
-                            {
-                                if (testAsset.BundleSize < asset.BundleSize)
-                                    singleAssets[asset.Name] = asset;
-                            }
-                            else
-                            {
-                                throw new InvalidDataException();
-                            }
-                        }
-                        else
-                        {
-                            singleAssets.Add(asset.Name, asset);
-                        }
-
-                        child.Tick();
-                    }
-
-                    internalAssets = OrderAssets(singleAssets.Values);
-                }
-
-                progressBar.Tick();
-            }
-
-            Console.WriteLine();
-
-            SaveStoredAssetDictionary(internalAssets, assetDict);
-        }
-        else
-        {
-            internalAssets = OrderAssets(GetAssetsFromDictionary(File.ReadAllText(assetDict)));
-        }
-
-        internalAssets = internalAssets.Concat(GetLocalAssets.GetLocalXmlFiles()).ToArray();
-
-        _logger.LogDebug("Publish configuration {Type} with {BundleNum} bundles.",
-            bundlesExist ? "loaded" : "generated", internalAssets.Length);
-
-        var vgmtAssets = internalAssets.Where(x =>
-            _config.VirtualGoods.Any(a => string.Equals(a, x.Name) || x.Name.StartsWith($"{a}Dict_"))).ToArray();
-
-        if (vgmtAssets.Length == 0)
-            throw new FileNotFoundException(
-                "Could not find any virtual good assets! Try adding them into the LocalAsset directory.");
-
-        var gameAssets = internalAssets.Where(x => !vgmtAssets.Contains(x)).ToArray();
+        var gameAssets = InternalAssets.Where(x => !vgmtAssets.ContainsKey(x.Key))
+            .Select(x => x.Value).ToList();
 
         PublishConfigs.Clear();
         AssetDict.Clear();
@@ -182,12 +153,79 @@ public class BuildPubConfig : IService
         AddPublishConfiguration(gameAssets, _config.PublishConfigKey);
         AddAssetDictionary(gameAssets, _config.PublishConfigKey);
 
-        AddPublishConfiguration(vgmtAssets, _config.PublishConfigVgmtKey);
-        AddAssetDictionary(vgmtAssets, _config.PublishConfigVgmtKey);
+        AddPublishConfiguration(vgmtAssets.Values, _config.PublishConfigVgmtKey);
+        AddAssetDictionary(vgmtAssets.Values, _config.PublishConfigVgmtKey);
 
-        InternalAssets = internalAssets.ToDictionary(x => x.Name, x => x);
+        _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(InternalAssets));
+    }
 
-        _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(internalAssets));
+    private Dictionary<string, InternalAssetInfo> GetAssetsFromCache(string directoryPath)
+    {
+        if (_config.ShouldLogAssets)
+            Logger.Default = new AssetBundleLogger(_logger);
+
+        var assets = new List<InternalAssetInfo>();
+
+        var directories = Directory.GetDirectories(directoryPath);
+
+        var options = new ProgressBarOptions
+        {
+            ForegroundColor = ConsoleColor.Yellow,
+            BackgroundColor = ConsoleColor.DarkYellow,
+            ForegroundColorDone = ConsoleColor.DarkGreen,
+            ProgressCharacter = '─',
+            ProgressBarOnBottom = true
+        };
+
+        var opt2 = options.DeepCopy();
+        opt2.DisableBottomPercentage = true;
+
+        var singleAssets = new Dictionary<string, InternalAssetInfo>();
+
+        using (var progressBar = new ProgressBar(directories.Length, "", opt2))
+        {
+            using var bundleBar = progressBar.Spawn(directories.Length, _config.Message, options);
+
+            foreach (var directory in directories)
+            {
+                var asset = GetAssetBundle(directory, bundleBar);
+
+                if (asset != null)
+                    assets.Add(asset);
+
+                bundleBar.Tick();
+                progressBar.Tick();
+            }
+
+            bundleBar.Message = $"Finished {_config.Message}";
+
+            foreach (var asset in assets)
+            {
+                if (singleAssets.ContainsKey(asset.Name))
+                {
+                    var testAsset = singleAssets[asset.Name];
+
+                    if (testAsset.Type == asset.Type)
+                    {
+                        if (testAsset.BundleSize < asset.BundleSize)
+                            singleAssets[asset.Name] = asset;
+                    }
+                    else
+                    {
+                        throw new InvalidDataException();
+                    }
+                }
+                else
+                {
+                    singleAssets.Add(asset.Name, asset);
+                }
+            }
+        }
+
+        Console.WriteLine();
+        _logger.LogDebug("Built asset bundle dictionary");
+
+        return OrderAssetsByName(singleAssets.Values);
     }
 
     private void AddPublishConfiguration(IEnumerable<InternalAssetInfo> assets, string key)
@@ -279,7 +317,13 @@ public class BuildPubConfig : IService
         var manager = new AssetsManager();
         manager.LoadFolder(folderName);
 
-        var assetFile = manager.assetsFileList.First();
+        var assetFile = manager.assetsFileList.FirstOrDefault();
+
+        if (assetFile == null)
+        {
+            _logger.LogError("Could not find asset in {folderName}, skipping!", folderName);
+            return null;
+        }
 
         var asset = new InternalAssetInfo
         {
@@ -304,8 +348,8 @@ public class BuildPubConfig : IService
                 if (!asset.Name.Contains("mesh") && !asset.Name.Contains("plane"))
                 {
                     asset.Type = AssetInfo.TypeAsset.Level;
-                    bar.Message = _config.Message +
-                                  $" - found possible level '{asset.Name}' in {assetFile.fileName.Split('/').Last()}";
+                    bar.Message =
+                        $"{_config.Message} - found possible level '{asset.Name}' in {assetFile.fileName.Split('/').Last()}";
                 }
 
             if (asset.Type == AssetInfo.TypeAsset.Unknown)
@@ -326,8 +370,8 @@ public class BuildPubConfig : IService
             }
             else
             {
-                bar.Message = _config.Message +
-                              $" - found possible XML '{asset.Name}' in {assetFile.fileName.Split('/').Last()}";
+                bar.Message =
+                    $"{_config.Message} - found possible XML '{asset.Name}' in {assetFile.fileName.Split('/').Last()}";
 
                 if (Enum.TryParse<RFC1766Locales.LanguageCodes>(
                         asset.Name.Split('_').Last().Replace('-', '_'),
@@ -372,8 +416,10 @@ public class BuildPubConfig : IService
         throw new InvalidDataException();
     }
 
-    private static InternalAssetInfo[] OrderAssets(IEnumerable<InternalAssetInfo> assets) =>
-        assets.GroupBy(x => x.Type).SelectMany(g => g.OrderBy(x => x.Name).ToList()).ToArray();
+    private static Dictionary<string, InternalAssetInfo> OrderAssetsByName(IEnumerable<InternalAssetInfo> assets) =>
+        assets.GroupBy(x => x.Type)
+            .SelectMany(g => g.OrderBy(x => x.Name).ToList())
+            .ToDictionary(x => x.Name, x => x);
 
     private static string GetAssetString(TreeInfo info) =>
         GenerateStringFromTree(info.SubTrees.First(a => a.Name == "PPtr<Object> asset"));

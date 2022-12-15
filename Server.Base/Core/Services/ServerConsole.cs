@@ -11,7 +11,7 @@ namespace Server.Base.Core.Services;
 
 public class ServerConsole : IService
 {
-    private readonly Dictionary<string, Command> _commands;
+    private readonly Dictionary<string, ConsoleCommand> _commands;
     private readonly ServerHandler _handler;
     private readonly EventSink _sink;
     private readonly ILogger<ServerConsole> _logger;
@@ -32,7 +32,7 @@ public class ServerConsole : IService
         _logger = logger;
         _appLifetime = appLifetime;
 
-        _commands = new Dictionary<string, Command>();
+        _commands = new Dictionary<string, ConsoleCommand>();
 
         _consoleThread = new Thread(ConsoleLoopThread)
         {
@@ -40,7 +40,7 @@ public class ServerConsole : IService
         };
     }
 
-    public void AddCommand(Command command) => _commands.Add(command.Name, command);
+    public void AddCommand(ConsoleCommand consoleCommand) => _commands.Add(consoleCommand.Name, consoleCommand);
 
     public void Initialize()
     {
@@ -50,7 +50,7 @@ public class ServerConsole : IService
 
     public void RunConsoleListener()
     {
-        AddCommand(new Command(
+        AddCommand(new ConsoleCommand(
             "restart",
             "Sends a message to players informing them that the server is\n" +
             "           restarting, performs a forced save, then shuts down and\n" +
@@ -58,13 +58,13 @@ public class ServerConsole : IService
             _ => _handler.KillServer(true)
         ));
 
-        AddCommand(new Command(
+        AddCommand(new ConsoleCommand(
             "shutdown",
             "Performs a forced save then shuts down the server.",
             _ => _handler.KillServer(false)
         ));
 
-        AddCommand(new Command(
+        AddCommand(new ConsoleCommand(
             "crash",
             "Forces an exception to be thrown.",
             _ => _timerThread.DelayCall(() => throw new Exception("Forced Crash"))
@@ -97,9 +97,6 @@ public class ServerConsole : IService
         if (_handler.IsClosing || _handler.HasCrashed)
             return;
 
-        if (string.IsNullOrEmpty(_command))
-            return;
-
         ProcessCommand(_command);
         Interlocked.Exchange(ref _command, string.Empty);
     }
@@ -110,9 +107,14 @@ public class ServerConsole : IService
         var name = inputs.FirstOrDefault();
 
         if (name != null && _commands.ContainsKey(name))
+        {
             _commands[name].CommandMethod(inputs);
+            _logger.LogInformation("Successfully Ran Command '{Name}'", name);
+        }
         else
+        {
             DisplayHelp();
+        }
     }
 
     private void DisplayHelp()

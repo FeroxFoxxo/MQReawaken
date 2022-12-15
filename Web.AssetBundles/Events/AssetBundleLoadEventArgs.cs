@@ -4,7 +4,8 @@ namespace Web.AssetBundles.Events;
 
 public class AssetBundleLoadEventArgs
 {
-    public readonly InternalAssetInfo[] InternalAssets;
+    public readonly Dictionary<string, InternalAssetInfo> InternalAssets;
 
-    public AssetBundleLoadEventArgs(InternalAssetInfo[] internalAssets) => InternalAssets = internalAssets;
+    public AssetBundleLoadEventArgs(Dictionary<string, InternalAssetInfo> internalAssets) =>
+        InternalAssets = internalAssets;
 }

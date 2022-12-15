@@ -1,6 +1,6 @@
 ﻿namespace Server.Base.Core.Models;
 
-public class Command
+public class ConsoleCommand
 {
     public delegate void RunConsoleCommand(string[] command);
 
@@ -8,7 +8,7 @@ public class Command
     public string Description { get; set; }
     public RunConsoleCommand CommandMethod { get; set; }
 
-    public Command(string name, string description, RunConsoleCommand commandMethod)
+    public ConsoleCommand(string name, string description, RunConsoleCommand commandMethod)
     {
         CommandMethod = commandMethod;
         Name = name;
