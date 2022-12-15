@@ -97,6 +97,9 @@ public class ServerConsole : IService
         if (_handler.IsClosing || _handler.HasCrashed)
             return;
 
+        if (string.IsNullOrEmpty(_command))
+            return;
+
         ProcessCommand(_command);
         Interlocked.Exchange(ref _command, string.Empty);
     }
