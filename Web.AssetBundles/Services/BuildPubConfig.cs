@@ -135,6 +135,9 @@ public class BuildPubConfig : IService
     {
         SaveStoredAssetDictionary(InternalAssets.Values, AssetDictLocation);
 
+        foreach (var asset in InternalAssets.Values.Where(x => x.Type == AssetInfo.TypeAsset.Unknown))
+            _logger.LogError("Could not find type for asset '{Name}' in '{File}'.", asset.Name, asset.Path);
+
         var vgmtAssets = InternalAssets.Where(x =>
                 _config.VirtualGoods.Any(a => string.Equals(a, x.Key) || x.Key.StartsWith($"{a}Dict_")))
             .ToDictionary(x => x.Key, x => x.Value);
@@ -159,6 +162,17 @@ public class BuildPubConfig : IService
         _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(InternalAssets));
     }
 
+    private void GetLowestDirectories(string directory, List<string> directories)
+    {
+        var subDirs = Directory.GetDirectories(directory);
+
+        if (subDirs.Length > 0)
+            foreach (var subDir in subDirs)
+                GetLowestDirectories(subDir, directories);
+        else
+            directories.Add(directory);
+    }
+
     private Dictionary<string, InternalAssetInfo> GetAssetsFromCache(string directoryPath)
     {
         if (_config.ShouldLogAssets)
@@ -166,7 +180,8 @@ public class BuildPubConfig : IService
 
         var assets = new List<InternalAssetInfo>();
 
-        var directories = Directory.GetDirectories(directoryPath);
+        var directories = new List<string>();
+        GetLowestDirectories(directoryPath, directories);
 
         var options = new ProgressBarOptions
         {
@@ -182,9 +197,9 @@ public class BuildPubConfig : IService
 
         var singleAssets = new Dictionary<string, InternalAssetInfo>();
 
-        using (var progressBar = new ProgressBar(directories.Length, "", opt2))
+        using (var progressBar = new ProgressBar(directories.Count, "", opt2))
         {
-            using var bundleBar = progressBar.Spawn(directories.Length, _config.Message, options);
+            using var bundleBar = progressBar.Spawn(directories.Count, _config.Message, options);
 
             foreach (var directory in directories)
             {
@@ -384,7 +399,10 @@ public class BuildPubConfig : IService
             }
         }
 
-        return asset.Type == AssetInfo.TypeAsset.Unknown ? throw new InvalidDataException() : asset;
+        if (asset.Type == AssetInfo.TypeAsset.Unknown)
+            bar.Message = $"{_config.Message} - WARNING: could not find type of asset {asset.Name}";
+
+        return asset;
     }
 
     private static string GetMainAssetName(SerializedFile assetFile)
