@@ -48,9 +48,19 @@ public class AssetHostController : Controller
             return NotFound();
 
         var asset = _bundles.InternalAssets[name];
-        _logger.LogDebug("Getting asset {Name} from {File} ({Folder})", asset.Name, Path.GetFileName(asset.Path),
-            folder);
 
-        return new FileContentResult(asset.ApplyFixes(), "application/octet-stream");
+        var bundlePath = Path.Join(_config.BundleSaveDirectory, asset.Name);
+
+        if (!System.IO.File.Exists(bundlePath) || _config.AlwaysRecreateBundle)
+        {
+            _logger.LogInformation("Creating Bundle {Name} [{Type}]", asset.Name,
+                _config.AlwaysRecreateBundle ? "FORCED" : "NOT EXIST");
+
+            System.IO.File.WriteAllBytes(bundlePath, asset.ApplyFixes());
+        }
+
+        _logger.LogDebug("Getting asset {Name} from {File} ({Folder})", asset.Name, bundlePath, folder);
+
+        return new FileContentResult(System.IO.File.ReadAllBytes(bundlePath), "application/octet-stream");
     }
 }

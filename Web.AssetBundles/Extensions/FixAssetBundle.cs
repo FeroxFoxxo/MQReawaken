@@ -1,14 +1,16 @@
 ﻿using AssetStudio;
-using System;
-using System.Text;
 using Web.AssetBundles.Models;
+
 using static AssetStudio.BundleFile;
 
 namespace Web.AssetBundles.Extensions;
 
 public static class FixAssetBundle
 {
-    public static byte[] ApplyFixes(this InternalAssetInfo asset)
+    public static byte[] ApplyFixes(this InternalAssetInfo asset) =>
+        asset.GetHeader().Concat(asset.GetBundle()).ToArray();
+
+    private static byte[] GetHeader(this InternalAssetInfo asset)
     {
         var header = new Header()
         {
@@ -42,10 +44,45 @@ public static class FixAssetBundle
 
         var headerArray = memStream.ToArray();
 
-        Console.WriteLine(BitConverter.ToString(headerArray));
-        Console.WriteLine(Encoding.UTF8.GetString(headerArray));
+        return headerArray;
+    }
 
-        return File.ReadAllBytes(asset.Path);
+    private static byte[] GetBundle(this InternalAssetInfo asset)
+    {
+        var assetArray = File.ReadAllBytes(asset.Path);
+
+        using var memStream = new MemoryStream();
+        var binWriter = new BinaryWriter(memStream);
+
+        binWriter.WriteStringTillNull(asset.UnityVersion);
+        binWriter.Write((byte)0x06);
+
+        var seq = memStream.ToArray();
+
+        var charIndex = assetArray.GetIndexOfByteSequence(seq);
+
+        assetArray[charIndex + seq.Length - 1] = 0x13;
+
+        return assetArray;
+    }
+
+    private static int GetIndexOfByteSequence(this byte[] array, byte[] subSeq)
+    {
+        for(var i = 0; i < array.Length - subSeq.Length; i++)
+        {
+            var isOfSequence = true;
+
+            for (var j = 0; j < subSeq.Length; j++)
+                if (subSeq[j] != array[i + j])
+                {
+                    isOfSequence = false;
+                    break;
+                }
+
+            if (isOfSequence)
+                return i;
+        }
+        throw new InvalidDataException();
     }
 
     public static int[] GetUnityVersionArray(this string version) =>

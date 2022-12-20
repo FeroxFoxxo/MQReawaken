@@ -21,8 +21,14 @@ public class AssetBundleConfig : IConfig
     public Dictionary<string, string> AssetDictConfigs { get; set; }
     public List<string> VirtualGoods { get; set; }
 
+    public string BundleSaveDirectory { get; set; }
+    public bool AlwaysRecreateBundle { get; set; }
+
     public AssetBundleConfig()
     {
+        BundleSaveDirectory = Path.Combine(InternalDirectory.GetBaseDirectory(), "Bundles");
+        AlwaysRecreateBundle = true;
+
         AssetDictKey = "publish.asset_dictionary";
 
         SaveDirectory = Path.Combine(InternalDirectory.GetBaseDirectory(), "Assets");

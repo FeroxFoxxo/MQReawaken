@@ -77,6 +77,9 @@ public class BuildAssetList : IService
         if (!Directory.Exists(_config.SaveDirectory))
             Directory.CreateDirectory(_config.SaveDirectory);
 
+        if (!Directory.Exists(_config.BundleSaveDirectory))
+            Directory.CreateDirectory(_config.BundleSaveDirectory);
+
         AssetDictLocation = Path.Combine(_config.SaveDirectory, _config.StoredAssetDict);
 
         GenerateDefaultAssetList(false);
@@ -210,7 +213,7 @@ public class BuildAssetList : IService
                         var oldAssetVersion = oldAsset.UnityVersion.GetUnityVersionDouble();
                         var newAssetVersion = newAsset.UnityVersion.GetUnityVersionDouble();
 
-                        if (oldAssetVersion < newAssetVersion || (oldAssetVersion == newAssetVersion && oldAsset.BundleSize < newAsset.BundleSize))
+                        if (oldAssetVersion < newAssetVersion || oldAssetVersion == newAssetVersion && oldAsset.BundleSize < newAsset.BundleSize)
                             singleAssets[newAsset.Name] = newAsset;
                     }
                     else
