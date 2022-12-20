@@ -1,4 +1,7 @@
 ﻿using AssetStudio;
+using System.Drawing;
+using System.Reflection.PortableExecutable;
+using UnityEngine;
 using Web.AssetBundles.Models;
 
 using static AssetStudio.BundleFile;
@@ -12,6 +15,8 @@ public static class FixAssetBundle
 
     private static byte[] GetHeader(this InternalAssetInfo asset)
     {
+        // HEADER
+
         var header = new Header()
         {
             signature = "UnityRaw",
@@ -38,9 +43,61 @@ public static class FixAssetBundle
         var binWriter = new BinaryWriter(memStream);
 
         binWriter.WriteStringTillNull(header.signature);
-        binWriter.WriteUInt32(header.version, EndianType.BigEndian);
+        binWriter.WriteUInt32(header.version);
         binWriter.WriteStringTillNull(header.unityVersion);
         binWriter.WriteStringTillNull(header.unityRevision);
+
+        // BLOCKS
+
+        var fileLength = Convert.ToUInt32(new FileInfo(asset.Path).Length);
+        uint headerSize = 60;
+        var withoutHeader = fileLength - headerSize;
+
+        var minimumStreamedBytes = fileLength;
+        header.size = headerSize;
+
+        var m_BlocksInfo = new StorageBlock[1] {
+            new StorageBlock() { compressedSize = withoutHeader, uncompressedSize = withoutHeader }
+        };
+
+        var blockCount = Convert.ToUInt32(m_BlocksInfo.Length); // LCount & NumDownload
+
+        var completeFileSize = fileLength;
+        uint fileInfoHeaderSize = 64;
+
+        binWriter.WriteUInt32(minimumStreamedBytes);
+        binWriter.WriteUInt32(headerSize);
+        binWriter.WriteUInt32(blockCount); // Number to download before stream
+        binWriter.WriteUInt32(blockCount); // Level count
+
+        foreach (var block in m_BlocksInfo)
+        {
+            binWriter.WriteUInt32(block.compressedSize);
+            binWriter.WriteUInt32(block.uncompressedSize);
+        }
+
+        if (header.version >= 2)
+            binWriter.WriteUInt32(completeFileSize);
+
+        if (header.version >= 3)
+            binWriter.WriteUInt32(fileInfoHeaderSize);
+
+        // UNKNOWN
+
+        binWriter.WriteUInt32(0);
+        binWriter.Write((byte)0x01);
+
+        // Name
+
+        binWriter.WriteStringTillNull(Path.GetFileName(asset.Path));
+
+        // UNKNOWN
+
+        binWriter.WriteUInt32(fileInfoHeaderSize);
+        binWriter.WriteUInt32(withoutHeader - fileInfoHeaderSize);
+        binWriter.Write((byte) 0x00);
+
+        // WRITE
 
         var headerArray = memStream.ToArray();
 

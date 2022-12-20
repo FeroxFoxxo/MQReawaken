@@ -8,7 +8,7 @@ public static class BinaryWriterExtensions
     public static void WriteStringTillNull(this BinaryWriter writer, string value) =>
         writer.Write(Encoding.UTF8.GetBytes($"{value}\0"));
     
-    public static void WriteUInt32(this BinaryWriter writer, uint value, EndianType endian)
+    public static void WriteUInt32(this BinaryWriter writer, uint value, EndianType endian = EndianType.BigEndian)
     {
         if (endian == EndianType.BigEndian)
         {
