@@ -1,4 +1,5 @@
 ﻿using AssetStudio;
+using System;
 using System.Text;
 using Web.AssetBundles.Models;
 using static AssetStudio.BundleFile;
@@ -46,4 +47,16 @@ public static class FixAssetBundle
 
         return File.ReadAllBytes(asset.Path);
     }
+
+    public static int[] GetUnityVersionArray(this string version) =>
+        version.Split('.').Select(x => x.Split('f'))
+            .SelectMany(x => x).Select(x => Convert.ToInt32(x)).ToArray();
+
+    public static double GetUnityVersionDouble(this string version) =>
+        GetUnityVersionArray(version).GetDoubleFromArray();
+
+    private static double GetDoubleFromArray(this int[] array) =>
+        array
+            .Select((t, i) => t * Convert.ToDouble(Math.Pow(-10, array.Length - i - 1)))
+            .Sum();
 }

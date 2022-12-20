@@ -49,14 +49,14 @@ public class BuildAssetList : IService
     {
         _console.AddCommand(new ConsoleCommand("setAssetsToDefault",
             "Force generates asset dictionary from default caches directory.",
-            _ => LoadDefaultCache(true)));
+            _ => GenerateDefaultAssetList(true)));
 
         _console.AddCommand(new ConsoleCommand("changeDefaultCacheDir",
             "Change the default cache directory and regenerate dictionary.",
             _ =>
             {
                 _config.CacheInfoFile = TryGetCacheInfoFile(string.Empty);
-                LoadDefaultCache(true);
+                GenerateDefaultAssetList(true);
             }));
 
         _console.AddCommand(new ConsoleCommand("addCachesToDict",
@@ -79,7 +79,7 @@ public class BuildAssetList : IService
 
         AssetDictLocation = Path.Combine(_config.SaveDirectory, _config.StoredAssetDict);
 
-        LoadDefaultCache(false);
+        GenerateDefaultAssetList(false);
     }
 
     private string TryGetCacheInfoFile(string defaultFile)
@@ -112,7 +112,7 @@ public class BuildAssetList : IService
         return defaultFile;
     }
 
-    private void LoadDefaultCache(bool forceGenerate)
+    private void GenerateDefaultAssetList(bool forceGenerate)
     {
         _logger.LogInformation("Getting Asset Dictionary");
 
@@ -122,17 +122,12 @@ public class BuildAssetList : IService
 
         InternalAssets = !dictExists || forceGenerate
             ? GetAssetsFromCache(Path.GetDirectoryName(_config.CacheInfoFile))
-            : OrderAssetsByName(GetAssetsFromDictionary(File.ReadAllText(AssetDictLocation)));
+            : GetAssetsFromDictionary(File.ReadAllText(AssetDictLocation)).OrderAssets();
 
         InternalAssets.AddLocalXmlFiles(_logger);
 
         _logger.LogDebug("Loaded {Count} assets to memory.", InternalAssets.Count);
-
-        RefreshAssetConfigurations();
-    }
-
-    private void RefreshAssetConfigurations()
-    {
+        
         SaveStoredAssets(InternalAssets.Values, AssetDictLocation);
 
         foreach (var asset in InternalAssets.Values.Where(x => x.Type == AssetInfo.TypeAsset.Unknown))
@@ -159,18 +154,9 @@ public class BuildAssetList : IService
         AddPublishConfiguration(vgmtAssets.Values, _config.PublishConfigVgmtKey);
         AddAssetDictionary(vgmtAssets.Values, _config.PublishConfigVgmtKey);
 
+        _logger.LogDebug("Generated default dictionaries.");
+
         _assetSink.InvokeAssetBundlesLoaded(new AssetBundleLoadEventArgs(InternalAssets));
-    }
-
-    private void GetLowestDirectories(string directory, List<string> directories)
-    {
-        var subDirs = Directory.GetDirectories(directory);
-
-        if (subDirs.Length > 0)
-            foreach (var subDir in subDirs)
-                GetLowestDirectories(subDir, directories);
-        else
-            directories.Add(directory);
     }
 
     private Dictionary<string, InternalAssetInfo> GetAssetsFromCache(string directoryPath)
@@ -180,8 +166,7 @@ public class BuildAssetList : IService
 
         var assets = new List<InternalAssetInfo>();
 
-        var directories = new List<string>();
-        GetLowestDirectories(directoryPath, directories);
+        var directories = directoryPath.GetLowestDirectories();
 
         var options = new ProgressBarOptions
         {
@@ -214,16 +199,19 @@ public class BuildAssetList : IService
 
             bundleBar.Message = $"Finished {_config.Message}";
 
-            foreach (var asset in assets)
+            foreach (var newAsset in assets)
             {
-                if (singleAssets.ContainsKey(asset.Name))
+                if (singleAssets.ContainsKey(newAsset.Name))
                 {
-                    var testAsset = singleAssets[asset.Name];
+                    var oldAsset = singleAssets[newAsset.Name];
 
-                    if (testAsset.Type == asset.Type)
+                    if (oldAsset.Type == newAsset.Type)
                     {
-                        if (testAsset.BundleSize < asset.BundleSize)
-                            singleAssets[asset.Name] = asset;
+                        var oldAssetVersion = oldAsset.UnityVersion.GetUnityVersionDouble();
+                        var newAssetVersion = newAsset.UnityVersion.GetUnityVersionDouble();
+
+                        if (oldAssetVersion < newAssetVersion || (oldAssetVersion == newAssetVersion && oldAsset.BundleSize < newAsset.BundleSize))
+                            singleAssets[newAsset.Name] = newAsset;
                     }
                     else
                     {
@@ -232,7 +220,7 @@ public class BuildAssetList : IService
                 }
                 else
                 {
-                    singleAssets.Add(asset.Name, asset);
+                    singleAssets.Add(newAsset.Name, newAsset);
                 }
             }
         }
@@ -240,80 +228,7 @@ public class BuildAssetList : IService
         Console.WriteLine();
         _logger.LogDebug("Built asset bundle dictionary");
 
-        return OrderAssetsByName(singleAssets.Values);
-    }
-
-    private void AddPublishConfiguration(IEnumerable<InternalAssetInfo> assets, string key)
-    {
-        var document = new XmlDocument();
-        var root = document.CreateElement("PublishConfiguration");
-
-        var xmlElements = document.CreateElement("xml_version");
-
-        foreach (var asset in assets.Where(x => x.Type == AssetInfo.TypeAsset.XML))
-            xmlElements.AppendChild(asset.ToAssetXml("item", document));
-
-        root.AppendChild(xmlElements);
-
-        var dict = document.CreateElement("item");
-        dict.SetAttribute("name", _config.AssetDictKey);
-        dict.SetAttribute("value", _config.AssetDictConfigs[key]);
-        root.AppendChild(dict);
-
-        document.AppendChild(root);
-
-        var config = document.WriteToString();
-        File.WriteAllText(Path.Combine(_config.SaveDirectory, _config.PublishConfigs[key]), config);
-        PublishConfigs.Add(key, config);
-    }
-
-    private void AddAssetDictionary(IEnumerable<InternalAssetInfo> assets, string key)
-    {
-        var document = new XmlDocument();
-        var root = document.CreateElement("assets");
-
-        foreach (var asset in assets)
-            root.AppendChild(asset.ToPubXml("asset", document));
-
-        document.AppendChild(root);
-
-        var assetDict = document.WriteToString();
-        File.WriteAllText(Path.Combine(_config.SaveDirectory, _config.AssetDictConfigs[key]), assetDict);
-        AssetDict.Add(key, assetDict);
-    }
-
-    private static void SaveStoredAssets(IEnumerable<InternalAssetInfo> assets, string saveDir)
-    {
-        var document = new XmlDocument();
-        var root = document.CreateElement("assets");
-
-        foreach (var asset in assets)
-            root.AppendChild(asset.ToStoredXml("asset", document));
-
-        document.AppendChild(root);
-
-        File.WriteAllText(saveDir, document.WriteToString());
-    }
-
-    private static IEnumerable<InternalAssetInfo> GetAssetsFromDictionary(string xml)
-    {
-        var configuration = new List<InternalAssetInfo>();
-
-        var document = new XmlDocument();
-        document.LoadXml(xml);
-
-        if (document.DocumentElement == null)
-            return configuration;
-
-        foreach (XmlNode node in document.DocumentElement.ChildNodes)
-        {
-            if (node is not XmlElement assetElement)
-                continue;
-
-            configuration.Add(assetElement.XmlToAsset());
-        }
-
-        return configuration;
+        return singleAssets.Values.OrderAssets();
     }
 
     private InternalAssetInfo GetAssetBundle(string folderName, ProgressBarBase bar)
@@ -395,8 +310,76 @@ public class BuildAssetList : IService
         return asset;
     }
 
-    private static Dictionary<string, InternalAssetInfo> OrderAssetsByName(IEnumerable<InternalAssetInfo> assets) =>
-        assets.GroupBy(x => x.Type)
-            .SelectMany(g => g.OrderBy(x => x.Name).ToList())
-            .ToDictionary(x => x.Name, x => x);
+    private void AddPublishConfiguration(IEnumerable<InternalAssetInfo> assets, string key)
+    {
+        var document = new XmlDocument();
+        var root = document.CreateElement("PublishConfiguration");
+
+        var xmlElements = document.CreateElement("xml_version");
+
+        foreach (var asset in assets.Where(x => x.Type == AssetInfo.TypeAsset.XML))
+            xmlElements.AppendChild(asset.ToAssetXml("item", document));
+
+        root.AppendChild(xmlElements);
+
+        var dict = document.CreateElement("item");
+        dict.SetAttribute("name", _config.AssetDictKey);
+        dict.SetAttribute("value", _config.AssetDictConfigs[key]);
+        root.AppendChild(dict);
+
+        document.AppendChild(root);
+
+        var config = document.WriteToString();
+        File.WriteAllText(Path.Combine(_config.SaveDirectory, _config.PublishConfigs[key]), config);
+        PublishConfigs.Add(key, config);
+    }
+
+    private void AddAssetDictionary(IEnumerable<InternalAssetInfo> assets, string key)
+    {
+        var document = new XmlDocument();
+        var root = document.CreateElement("assets");
+
+        foreach (var asset in assets)
+            root.AppendChild(asset.ToPubXml("asset", document));
+
+        document.AppendChild(root);
+
+        var assetDict = document.WriteToString();
+        File.WriteAllText(Path.Combine(_config.SaveDirectory, _config.AssetDictConfigs[key]), assetDict);
+        AssetDict.Add(key, assetDict);
+    }
+
+    private static void SaveStoredAssets(IEnumerable<InternalAssetInfo> assets, string saveDir)
+    {
+        var document = new XmlDocument();
+        var root = document.CreateElement("assets");
+
+        foreach (var asset in assets)
+            root.AppendChild(asset.ToStoredXml("asset", document));
+
+        document.AppendChild(root);
+
+        File.WriteAllText(saveDir, document.WriteToString());
+    }
+
+    private static IEnumerable<InternalAssetInfo> GetAssetsFromDictionary(string xml)
+    {
+        var configuration = new List<InternalAssetInfo>();
+
+        var document = new XmlDocument();
+        document.LoadXml(xml);
+
+        if (document.DocumentElement == null)
+            return configuration;
+
+        foreach (XmlNode node in document.DocumentElement.ChildNodes)
+        {
+            if (node is not XmlElement assetElement)
+                continue;
+
+            configuration.Add(assetElement.XmlToAsset());
+        }
+
+        return configuration;
+    }
 }
