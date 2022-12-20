@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Extensions;
+using Web.AssetBundles.Extensions;
 using Web.AssetBundles.Models;
 using Web.AssetBundles.Services;
 
@@ -11,10 +12,10 @@ public class AssetHostController : Controller
 {
     private readonly ILogger<AssetHostController> _logger;
 
-    private readonly BuildPubConfig _bundles;
+    private readonly BuildAssetList _bundles;
     private readonly AssetBundleConfig _config;
 
-    public AssetHostController(BuildPubConfig bundles, ILogger<AssetHostController> logger,
+    public AssetHostController(BuildAssetList bundles, ILogger<AssetHostController> logger,
         AssetBundleConfig config)
     {
         _bundles = bundles;
@@ -49,7 +50,7 @@ public class AssetHostController : Controller
         var asset = _bundles.InternalAssets[name];
         _logger.LogDebug("Getting asset {Name} from {File} ({Folder})", asset.Name, Path.GetFileName(asset.Path),
             folder);
-        var bytes = System.IO.File.ReadAllBytes(asset.Path ?? throw new InvalidDataException());
-        return new FileContentResult(bytes, "application/octet-stream");
+
+        return new FileContentResult(asset.ApplyFixes(), "application/octet-stream");
     }
 }

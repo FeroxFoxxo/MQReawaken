@@ -1,4 +1,5 @@
 ﻿using Server.Base.Core.Abstractions;
+using Server.Base.Core.Extensions;
 using Server.Base.Core.Helpers;
 using System.Security.Cryptography;
 using System.Text;
@@ -27,12 +28,7 @@ public class ChatHandler : IService
     public byte[] Encrypt(string data)
     {
         var dataArray = Encoding.UTF8.GetBytes(data);
-
-        var key = _chatConfig.CrispKey;
-        var keyArray = new byte[key.Length / 2];
-
-        for (var i = 0; i < key.Length; i += 2)
-            keyArray[i / 2] = (byte)Convert.ToInt32(key.Substring(i, 2), 16);
+        var keyArray = _chatConfig.CrispKey.StringToByteArray();
 
         using var aes = Aes.Create();
 

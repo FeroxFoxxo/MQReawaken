@@ -15,9 +15,9 @@ using Web.AssetBundles.Models;
 
 namespace Web.AssetBundles.Services;
 
-public class BuildPubConfig : IService
+public class BuildAssetList : IService
 {
-    private readonly ILogger<BuildPubConfig> _logger;
+    private readonly ILogger<BuildAssetList> _logger;
     private readonly AssetBundleConfig _config;
     private readonly ServerConsole _console;
     private readonly EventSink _sink;
@@ -29,7 +29,7 @@ public class BuildPubConfig : IService
     public Dictionary<string, InternalAssetInfo> InternalAssets;
     public string AssetDictLocation;
 
-    public BuildPubConfig(ILogger<BuildPubConfig> logger, AssetBundleConfig config,
+    public BuildAssetList(ILogger<BuildAssetList> logger, AssetBundleConfig config,
         EventSink sink,
         AssetEventSink assetSink, ServerConsole console)
     {
@@ -133,7 +133,7 @@ public class BuildPubConfig : IService
 
     private void RefreshAssetConfigurations()
     {
-        SaveStoredAssetDictionary(InternalAssets.Values, AssetDictLocation);
+        SaveStoredAssets(InternalAssets.Values, AssetDictLocation);
 
         foreach (var asset in InternalAssets.Values.Where(x => x.Type == AssetInfo.TypeAsset.Unknown))
             _logger.LogError("Could not find type for asset '{Name}' in '{File}'.", asset.Name, asset.Path);
@@ -251,7 +251,7 @@ public class BuildPubConfig : IService
         var xmlElements = document.CreateElement("xml_version");
 
         foreach (var asset in assets.Where(x => x.Type == AssetInfo.TypeAsset.XML))
-            xmlElements.AppendChild(asset.ToXml("item", document));
+            xmlElements.AppendChild(asset.ToAssetXml("item", document));
 
         root.AppendChild(xmlElements);
 
@@ -273,7 +273,7 @@ public class BuildPubConfig : IService
         var root = document.CreateElement("assets");
 
         foreach (var asset in assets)
-            root.AppendChild(asset.ToXmlWithType("asset", document));
+            root.AppendChild(asset.ToPubXml("asset", document));
 
         document.AppendChild(root);
 
@@ -282,13 +282,13 @@ public class BuildPubConfig : IService
         AssetDict.Add(key, assetDict);
     }
 
-    private static void SaveStoredAssetDictionary(IEnumerable<InternalAssetInfo> assets, string saveDir)
+    private static void SaveStoredAssets(IEnumerable<InternalAssetInfo> assets, string saveDir)
     {
         var document = new XmlDocument();
         var root = document.CreateElement("assets");
 
         foreach (var asset in assets)
-            root.AppendChild(asset.ToXmlWithTypePath("asset", document));
+            root.AppendChild(asset.ToStoredXml("asset", document));
 
         document.AppendChild(root);
 
@@ -310,18 +310,7 @@ public class BuildPubConfig : IService
             if (node is not XmlElement assetElement)
                 continue;
 
-            var asset = new InternalAssetInfo
-            {
-                Name = assetElement.GetAttribute("name"),
-                Version = Convert.ToInt32(assetElement.GetAttribute("version")),
-                Type = Enum.Parse<AssetInfo.TypeAsset>(assetElement.GetAttribute("type")),
-                Locale = Enum.Parse<RFC1766Locales.LanguageCodes>(assetElement.GetAttribute("language")
-                    .Replace('-', '_')),
-                BundleSize = Convert.ToInt32(assetElement.GetAttribute("size")),
-                Path = assetElement.InnerText
-            };
-
-            configuration.Add(asset);
+            configuration.Add(assetElement.XmlToAsset());
         }
 
         return configuration;
@@ -342,16 +331,17 @@ public class BuildPubConfig : IService
 
         var asset = new InternalAssetInfo
         {
-            Name = GetMainAssetName(assetFile),
+            Name = assetFile.GetMainAssetName(),
             Path = assetFile.fullName,
 
             Version = 0,
             Type = AssetInfo.TypeAsset.Unknown,
             BundleSize = Convert.ToInt32(new FileInfo(assetFile.fullName).Length / 1024),
-            Locale = RFC1766Locales.LanguageCodes.en_us
+            Locale = RFC1766Locales.LanguageCodes.en_us,
+            UnityVersion = assetFile.unityVersion
         };
 
-        var gameObj = assetFile.ObjectsDic.Values.GetGameObject(asset.Name)?.m_Name;
+        var gameObj = assetFile.ObjectsDic.Values.ToList().GetGameObject(asset.Name)?.m_Name;
         var musicObj = assetFile.ObjectsDic.Values.GetMusic(asset.Name)?.m_Name;
         var textObj = assetFile.ObjectsDic.Values.GetText(asset.Name)?.m_Name;
 
@@ -405,65 +395,8 @@ public class BuildPubConfig : IService
         return asset;
     }
 
-    private static string GetMainAssetName(SerializedFile assetFile)
-    {
-        var assetBundle = assetFile.ObjectsDic.Values.First(o => o.type == ClassIDType.AssetBundle);
-
-        var dump = assetBundle.Dump();
-        var lines = dump.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-        var tree = GetTree(lines);
-
-        var baseBundle = tree.First(a => a.Name == "AssetBundle Base");
-        var mainAsset = baseBundle.SubTrees.First(a => a.Name == "AssetInfo m_MainAsset");
-        var asset = GetAssetString(mainAsset);
-
-        var container = baseBundle.SubTrees.First(a => a.Name == "map m_Container");
-        var array = container.SubTrees.First(a => a.Name.StartsWith("int size = "));
-
-        foreach (var data in array.SubTrees.Where(a => a.Name == "pair data"))
-        {
-            var dAssetInfo = data.SubTrees.First(a => a.Name == "AssetInfo second");
-
-            if (GetAssetString(dAssetInfo) != asset)
-                continue;
-
-            const string nameStart = "string first = \"";
-            return data.SubTrees.First(a => a.Name.StartsWith(nameStart)).Name[nameStart.Length..][..^1];
-        }
-
-        throw new InvalidDataException();
-    }
-
     private static Dictionary<string, InternalAssetInfo> OrderAssetsByName(IEnumerable<InternalAssetInfo> assets) =>
         assets.GroupBy(x => x.Type)
             .SelectMany(g => g.OrderBy(x => x.Name).ToList())
             .ToDictionary(x => x.Name, x => x);
-
-    private static string GetAssetString(TreeInfo info) =>
-        GenerateStringFromTree(info.SubTrees.First(a => a.Name == "PPtr<Object> asset"));
-
-    private static string GenerateStringFromTree(TreeInfo tree) =>
-        $"{tree.Name}\n{string.Join('\t', tree.SubTrees.Select(GenerateStringFromTree))}";
-
-    private static TreeInfo[] GetTree(IEnumerable<string> tree)
-    {
-        var info = new List<KeyValuePair<string, List<string>>>();
-        KeyValuePair<string, List<string>> pair = default;
-
-        foreach (var treeTxt in tree)
-        {
-            if (!treeTxt.StartsWith('\t'))
-            {
-                pair = new KeyValuePair<string, List<string>>(treeTxt, new List<string>());
-                if (pair.Key != default)
-                    info.Add(pair);
-            }
-            else if (pair.Key != default)
-            {
-                pair.Value.Add(treeTxt[1..]);
-            }
-        }
-
-        return info.Select(i => new TreeInfo(i.Key, GetTree(i.Value))).ToArray();
-    }
 }

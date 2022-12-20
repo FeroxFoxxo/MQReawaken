@@ -8,7 +8,7 @@ namespace Web.AssetBundles.LocalAssets;
 public static class AssetExtensionsLocal
 {
     public static void AddLocalXmlFiles(this Dictionary<string, InternalAssetInfo> assets,
-        ILogger<BuildPubConfig> logger)
+        ILogger<BuildAssetList> logger)
     {
         var localPath = Path.Combine(InternalDirectory.GetBaseDirectory(), "LocalAssets");
 
