@@ -29,4 +29,10 @@
         </Reference>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="LocalAssets\PetAbilities.xml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

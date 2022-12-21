@@ -363,5 +363,3 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /Server.Reawakened/Dependencies/*.dll
-
-/Web.AssetBundles/LocalAssets/*.xml

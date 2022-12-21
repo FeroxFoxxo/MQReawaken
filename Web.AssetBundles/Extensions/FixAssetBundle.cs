@@ -10,8 +10,10 @@ namespace Web.AssetBundles.Extensions;
 
 public static class FixAssetBundle
 {
-    public static byte[] ApplyFixes(this InternalAssetInfo asset) =>
-        asset.GetHeader().Concat(asset.GetBundle()).ToArray();
+    public static byte[] ApplyFixes(this InternalAssetInfo asset)
+        => asset.Path.EndsWith(".xml") ?
+            File.ReadAllBytes(asset.Path) :
+            asset.GetHeader().Concat(asset.GetBundle()).ToArray();
 
     private static byte[] GetHeader(this InternalAssetInfo asset)
     {
