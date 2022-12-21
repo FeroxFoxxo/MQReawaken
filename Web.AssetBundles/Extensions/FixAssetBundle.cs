@@ -51,21 +51,24 @@ public static class FixAssetBundle
 
         // BLOCKS
 
-        var fileLength = Convert.ToUInt32(new FileInfo(asset.Path).Length);
+        // Magic numbers
         uint headerSize = 60;
-        var withoutHeader = fileLength - headerSize;
+        uint fileInfoHeaderSize = 64;
+        uint streamedBytes = 124;
 
-        var minimumStreamedBytes = fileLength;
+        var fileLength = Convert.ToUInt32(new FileInfo(asset.Path).Length);
+        var storage = fileLength;
+
+        var minimumStreamedBytes = fileLength + streamedBytes;
         header.size = headerSize;
 
         var m_BlocksInfo = new StorageBlock[1] {
-            new StorageBlock() { compressedSize = withoutHeader, uncompressedSize = withoutHeader }
+            new StorageBlock() { compressedSize = storage, uncompressedSize = storage }
         };
 
         var blockCount = Convert.ToUInt32(m_BlocksInfo.Length); // LCount & NumDownload
 
         var completeFileSize = fileLength;
-        uint fileInfoHeaderSize = 64;
 
         binWriter.WriteUInt32(minimumStreamedBytes);
         binWriter.WriteUInt32(headerSize);
@@ -96,7 +99,7 @@ public static class FixAssetBundle
         // UNKNOWN
 
         binWriter.WriteUInt32(fileInfoHeaderSize);
-        binWriter.WriteUInt32(withoutHeader - fileInfoHeaderSize);
+        binWriter.WriteUInt32(fileLength);
         binWriter.Write((byte) 0x00);
 
         // WRITE

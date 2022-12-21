@@ -13,6 +13,7 @@ public class LauncherConfig : IConfig
 
     public string BaseUrl { get; set; }
 
+    public bool CrashOnError { get; set; }
     public bool LogAssets { get; set; }
     public bool DisableVersions { get; set; }
     public string CacheLicense { get; set; }
@@ -26,6 +27,7 @@ public class LauncherConfig : IConfig
         AnalyticsApiKey = "ANALYTICS_KEY";
         BaseUrl = "http://localhost";
 
+        CrashOnError = false;
         LogAssets = true;
         DisableVersions = true;
         CacheLicense = "UNKNOWN";

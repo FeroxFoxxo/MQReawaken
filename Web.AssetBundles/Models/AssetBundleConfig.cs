@@ -21,18 +21,22 @@ public class AssetBundleConfig : IConfig
     public Dictionary<string, string> AssetDictConfigs { get; set; }
     public List<string> VirtualGoods { get; set; }
 
+    public string SaveBundleExtension { get; set; }
     public string BundleSaveDirectory { get; set; }
     public bool AlwaysRecreateBundle { get; set; }
+    public bool FlushCacheOnStart { get; set; }
 
     public AssetBundleConfig()
     {
         BundleSaveDirectory = Path.Combine(InternalDirectory.GetBaseDirectory(), "Bundles");
         AlwaysRecreateBundle = true;
+        FlushCacheOnStart = true;
+        SaveBundleExtension = "unity3d";
 
         AssetDictKey = "publish.asset_dictionary";
 
         SaveDirectory = Path.Combine(InternalDirectory.GetBaseDirectory(), "Assets");
-        StoredAssetDict = "CachedAssetDictionary.xml";
+        StoredAssetDict = "StoredAssets.xml";
 
         ShouldLogAssets = false;
         CacheInfoFile = string.Empty;

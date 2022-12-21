@@ -49,7 +49,7 @@ public class AssetHostController : Controller
 
         var asset = _bundles.InternalAssets[name];
 
-        var bundlePath = Path.Join(_config.BundleSaveDirectory, asset.Name);
+        var bundlePath = Path.Join(_config.BundleSaveDirectory, $"{asset.Name}.{_config.SaveBundleExtension}");
 
         if (!System.IO.File.Exists(bundlePath) || _config.AlwaysRecreateBundle)
         {

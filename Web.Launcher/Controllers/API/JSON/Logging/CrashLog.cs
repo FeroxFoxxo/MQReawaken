@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Server.Base.Core.Services;
+using Web.Launcher.Models;
 
 namespace Web.Launcher.Controllers.API.JSON.Logging;
 
@@ -9,11 +10,13 @@ public class CrashLog : Controller
 {
     private readonly ILogger<CrashLog> _logger;
     private readonly ServerHandler _handler;
+    private readonly LauncherConfig _config;
 
-    public CrashLog(ILogger<CrashLog> logger, ServerHandler handler)
+    public CrashLog(ILogger<CrashLog> logger, ServerHandler handler, LauncherConfig config)
     {
         _logger = logger;
         _handler = handler;
+        _config = config;
     }
 
     [HttpPost]
@@ -23,7 +26,8 @@ public class CrashLog : Controller
         _logger.LogError("{Error}",
             string.Join('\n', log.Split('\n').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x))));
 
-        _handler.KillServer(false);
+        if (_config.CrashOnError)
+            _handler.KillServer(false);
 
         return Ok();
     }

@@ -43,9 +43,9 @@ public class BuildAssetList : IService
         AssetDict = new Dictionary<string, string>();
     }
 
-    public void Initialize() => _sink.WorldLoad += SetAssetBundles;
+    public void Initialize() => _sink.WorldLoad += Load;
 
-    public void SetAssetBundles()
+    public void Load()
     {
         _console.AddCommand(new ConsoleCommand("setAssetsToDefault",
             "Force generates asset dictionary from default caches directory.",
@@ -79,6 +79,11 @@ public class BuildAssetList : IService
 
         if (!Directory.Exists(_config.BundleSaveDirectory))
             Directory.CreateDirectory(_config.BundleSaveDirectory);
+
+
+        if (_config.FlushCacheOnStart)
+            foreach (var file in Directory.GetFiles(_config.BundleSaveDirectory, $"*.{_config.SaveBundleExtension}"))
+                File.Delete(file);
 
         AssetDictLocation = Path.Combine(_config.SaveDirectory, _config.StoredAssetDict);
 
